@@ -1,4 +1,5 @@
 {
+  "$schema": "../../schema/controllers.schema.json",
   "controllers": [
     {
       "controller_id": "LC_BASIN",

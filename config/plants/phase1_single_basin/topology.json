@@ -1,4 +1,5 @@
 {
+  "$schema": "../../schema/topology.schema.json",
   "units": [
     {
       "unit_id": "SOURCE",

@@ -1,4 +1,5 @@
 {
+  "$schema": "../../schema/initial_conditions.schema.json",
   "unit_states": [
     {
       "unit_id": "SOURCE",

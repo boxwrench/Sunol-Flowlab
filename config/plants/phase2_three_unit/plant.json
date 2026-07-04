@@ -1,4 +1,5 @@
 {
+  "$schema": "../../schema/plant.schema.json",
   "plant_id": "phase2_three_unit",
   "display_name": "Phase 2 Three-Unit Sandbox",
   "simulation_settings": {

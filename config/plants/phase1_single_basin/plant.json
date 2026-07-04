@@ -1,4 +1,5 @@
 {
+  "$schema": "../../schema/plant.schema.json",
   "plant_id": "phase1_single_basin",
   "display_name": "Phase 1 Single Basin Prototype",
   "simulation_settings": {
