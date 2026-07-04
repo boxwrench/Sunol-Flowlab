@@ -56,6 +56,8 @@ Each rule below exists because the failure it names actually occurred in this re
 
 12. **All deliverables live inside the repository.** Never write plans, specs, reports, or any referenced file to a scratch, brain, artifact, or tool-internal folder (e.g., `~/.gemini/.../brain/...`). Those locations are invisible to the orchestrator, to git, to other agents, and to future sessions. Every file you mention in a report must exist at a repo-relative path and be committed. If your tooling drafts in a scratch location, copying it into the repo and committing it IS the deliverable step — a report referencing an uncommitted scratch file counts as work not done. *(Occurred: a Phase 2 plan was reported as delivered but existed only in an agent's brain folder.)*
 
+13. **Config schema sync.** Any addition or change to a plant-config field updates the matching schema in `config/schema/` and `scripts/configuration/plant_validator.gd` in the same commit. `tools/ci/validate_configs.sh` must pass. Field documentation lives in the schema `description` — do not duplicate it in prose docs.
+
 ## Development checklist
 
 Before completing a task, an agent should:

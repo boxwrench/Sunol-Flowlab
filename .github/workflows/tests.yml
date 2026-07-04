@@ -63,3 +63,15 @@ jobs:
               exit 1
             fi
           fi
+
+  config-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install check-jsonschema
+        run: pip install check-jsonschema
+      - name: Validate plant configs against schemas
+        run: bash tools/ci/validate_configs.sh
