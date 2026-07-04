@@ -8,6 +8,7 @@ Audience: AI coding agents (Claude Code, Codex) executing work packages; solo or
 
 If you are an agent starting from a fresh context, read these **in order** before touching any file:
 
+0. **Integrity check:** run `git status`. If the tree shows modified files you didn't change, inspect them — a recurring environment issue truncates working-tree files mid-line between sessions (twice observed; commits stay intact). Restore any truncated file from HEAD (`git show HEAD:<file> > <file>`) and report it before starting work. Never build on a corrupted tree.
 1. `AGENTS.md` — all of it, especially § "Verification and failure-mode guardrails" (11 binding rules; each traces to a real failure in this repo).
 2. `docs/REPOSITORY_ARCHITECTURE.md` — canonical layout and dependency rules; wins all structural conflicts.
 3. Your assigned WP in this plan — including its **done-when** list; you own nothing outside its file list.
