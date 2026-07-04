@@ -47,10 +47,15 @@ func update_level() -> void:
 func available_withdrawal_m3(_dt: float) -> float:
 	return max(0.0, volume_m3)
 
+# F2.2-4 canonical min-vol computation — the ONE production location for
+# min_operating_level_m * surface_area_m2. Both the accessor and solve_tick
+# call this; the FlowSolver calls available_outlet_withdrawal_m3 which delegates here.
+func get_min_outlet_volume_m3() -> float:
+	return min_operating_level_m * surface_area_m2
+
 # Volume available to OUTLET ports only (above low-low cutoff, Edge Rule 3)
 func available_outlet_withdrawal_m3(_dt: float) -> float:
-	var min_vol: float = min_operating_level_m * surface_area_m2
-	return max(0.0, volume_m3 - min_vol)
+	return max(0.0, volume_m3 - get_min_outlet_volume_m3())
 
 func available_receiving_m3(_dt: float) -> float:
 	return max(0.0, maximum_volume_m3 - volume_m3)
@@ -73,13 +78,15 @@ func solve_tick(context: RefCounted) -> void:
 	var dt: float = context.dt
 
 	var inflows_arr: Array[float] = []
+	# F2.2-1: sum per-type using += so every outlet/drain link contributes.
+	# Iterate in sorted port_id order for determinism (SIMULATION_RULES §Determinism Mechanics rule 3).
 	var requested_outflow: float = 0.0
 	var requested_drain: float = 0.0
 
-	var outlet_link: FlowLink = null
-	var drain_link: FlowLink = null
+	var sorted_port_ids: Array = ports.keys()
+	sorted_port_ids.sort()
 
-	for port_id in ports:
+	for port_id in sorted_port_ids:
 		var port: FlowPort = ports[port_id]
 		var link: FlowLink = port.connected_link
 		if link == null:
@@ -96,14 +103,16 @@ func solve_tick(context: RefCounted) -> void:
 		if port.port_type == &"INLET":
 			inflows_arr.append(link.actual_flow_m3s)
 		elif port.port_type == &"OUTLET":
-			requested_outflow = link.actual_flow_m3s
-			outlet_link = link
+			# F2.2-1: += so multiple OUTLET links are all summed (not overwritten)
+			requested_outflow += link.actual_flow_m3s
 		elif port.port_type == &"DRAIN":
-			requested_drain = link.actual_flow_m3s
-			drain_link = link
+			# F2.2-1: += so multiple DRAIN links are all summed (not overwritten)
+			requested_drain += link.actual_flow_m3s
 
+	# F2.2-4: min_vol uses get_min_outlet_volume_m3() — the canonical single production
+	# location for min_operating_level_m * surface_area_m2 (guardrail 5, Edge Rule 3).
 	var spill_vol: float = spill_level_m * surface_area_m2
-	var min_vol: float = min_operating_level_m * surface_area_m2
+	var min_vol: float = get_min_outlet_volume_m3()
 
 	var balance: Dictionary = StorageBalance.solve(
 		volume_m3,

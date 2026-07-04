@@ -10,8 +10,12 @@ const EPSILON: float = 1e-9
 # Parameters:
 #   current_volume_m3        — volume at start of tick
 #   inflows_m3s              — array of granted inflow rates [m³/s]
-#   requested_outflow_m3s    — granted flow on the OUTLET link [m³/s]
-#   requested_drain_flow_m3s — granted flow on the DRAIN link [m³/s]
+#   requested_outflow_m3s    — caller pre-sums ALL OUTLET link granted flows
+#                              (m³/s total) before passing here. StorageBalance
+#                              treats this as the aggregate OUTLET withdrawal.
+#   requested_drain_flow_m3s — caller pre-sums ALL DRAIN link granted flows
+#                              (m³/s total) before passing here. StorageBalance
+#                              treats this as the aggregate DRAIN withdrawal.
 #   max_volume_m3            — physical capacity of the unit
 #   spill_volume_m3          — volume at which passive spill begins
 #   min_outlet_volume_m3     — volume below which OUTLET flow is zero
@@ -78,7 +82,10 @@ static func solve(
 		actual_spill_flow_m3s = excess_volume / dt
 		new_volume_m3 = spill_volume_m3
 
-	# g) Clamp sub-epsilon residuals to exactly zero (guardrail 9: ledgered clamp)
+	# g) Clamp sub-epsilon residuals to exactly zero (SIMULATION_RULES §Numerical tolerances:
+	#    "Consider any volume below epsilon as zero and clamp negative values to zero").
+	#    The discarded residual (≤ EPSILON) feeds no ledger term; this is spec-sanctioned,
+	#    NOT a guardrail-9 ledgered clamp.
 	if new_volume_m3 < EPSILON:
 		new_volume_m3 = 0.0
 

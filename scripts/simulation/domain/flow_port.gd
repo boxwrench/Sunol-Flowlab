@@ -3,7 +3,7 @@ extends RefCounted
 
 var port_id: StringName
 var parent_unit: RefCounted # ProcessUnit
-var port_type: StringName # INLET, OUTLET
+var port_type: StringName # INLET, OUTLET, DRAIN
 var connected_link: RefCounted = null # FlowLink
 
 func _init(p_id: StringName, p_parent: RefCounted, p_type: StringName) -> void:

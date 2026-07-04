@@ -31,17 +31,19 @@ static func solve_flows(context: SimulationContext) -> void:
 			if port.port_type != &"INLET":
 				continue
 			var link: FlowLink = port.connected_link
-			if link == null or not link.is_enabled:
+			if link == null:
 				continue
-			# COMMANDED mode: warn and treat as RESTRICTED at full opening (Edge Rule 6)
-			if link.flow_mode == &"COMMANDED":
-				push_warning(
-					"FlowSolver: link '%s' is COMMANDED — unimplemented. Treating as RESTRICTED at opening=1.0." \
-					% link.link_id
-				)
-				link.requested_flow_m3s = link.max_flow_m3s
-			else:
+			if not link.is_enabled:
+				# F2.2-2: disabled links must be explicitly zeroed — not silently skipped —
+				# so stale flows from previous ticks are cleared. calculate_requested_flow()
+				# zeroes requested_flow_m3s and sets constraint_reason = "Link Disabled".
 				link.calculate_requested_flow()
+				link.granted_flow_m3s = 0.0
+				# Excluded from proration sets; do not append to incoming_links.
+				continue
+			# F2.2-5: COMMANDED / GRAVITY handling is now consolidated in
+			# FlowLink.calculate_requested_flow() — solver always calls it.
+			link.calculate_requested_flow()
 			incoming_links.append(link)
 			
 		# Enforce flow_limit_m3s on ExternalBoundary sink units (sink-side proration)
@@ -66,7 +68,12 @@ static func solve_flows(context: SimulationContext) -> void:
 		for port_id in ports:
 			var port: FlowPort = ports[port_id]
 			var link: FlowLink = port.connected_link
-			if link == null or not link.is_enabled:
+			if link == null:
+				continue
+			if not link.is_enabled:
+				# F2.2-2: zero the grant on disabled outgoing links so the final
+				# sweep propagates 0 to actual_flow_m3s. Excluded from proration sets.
+				link.granted_flow_m3s = 0.0
 				continue
 			if port.port_type == &"OUTLET":
 				outlet_links.append(link)
@@ -110,7 +117,11 @@ static func _grant_storage_source(
 	drain_links: Array[FlowLink],
 	dt: float
 ) -> void:
-	var min_vol: float = unit.min_operating_level_m * unit.surface_area_m2
+	# F2.2-4: use the shared accessor so min-vol math lives in exactly one
+	# production location (StorageUnit.available_outlet_withdrawal_m3 /
+	# available_withdrawal_m3). grep for "min_operating_level_m * surface_area_m2"
+	# must yield only those two accessor bodies after this change.
+
 	# Sum inflows already granted on INLET ports this tick
 	var granted_inflow_m3s: float = 0.0
 	for port_id in unit.ports:
@@ -119,9 +130,11 @@ static func _grant_storage_source(
 			granted_inflow_m3s += port.connected_link.granted_flow_m3s
 
 	# Tier 1: supply available to OUTLET ports (above low-low cutoff, Edge Rule 3)
-	var outlet_supply_m3s: float = max(0.0, unit.volume_m3 - min_vol) / dt + granted_inflow_m3s
+	# Uses unit.available_outlet_withdrawal_m3 — the canonical one-place definition.
+	var outlet_supply_m3s: float = unit.available_outlet_withdrawal_m3(dt) / dt + granted_inflow_m3s
 	# Tier 2: total supply including the low-low reserve (available to DRAIN)
-	var total_supply_m3s: float = max(0.0, unit.volume_m3) / dt + granted_inflow_m3s
+	# Uses unit.available_withdrawal_m3 — the canonical one-place definition.
+	var total_supply_m3s: float = unit.available_withdrawal_m3(dt) / dt + granted_inflow_m3s
 
 	# --- Compute OUTLET grants ---
 	var total_outlet_request: float = 0.0

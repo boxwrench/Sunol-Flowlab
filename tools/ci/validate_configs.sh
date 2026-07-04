@@ -7,6 +7,12 @@ set -u
 SCHEMA_DIR="config/schema"
 fail=0
 
+# Guard: check-jsonschema must be installed before either loop runs.
+# Without this guard, a missing tool causes the negative leg to silently
+# label failures as "ok (rejected as intended)" — overall exit fails via
+# the positive leg but the output is misleading.
+command -v check-jsonschema > /dev/null || { echo "FAIL: check-jsonschema not installed"; exit 1; }
+
 for f in config/plants/*/*.json; do
   name=$(basename "$f")
   schema="$SCHEMA_DIR/${name%.json}.schema.json"

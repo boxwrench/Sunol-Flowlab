@@ -87,9 +87,17 @@ func _step_resolve_requested_flows() -> void:
 	FlowSolver.solve_flows(context)
 
 func _step_apply_constraints() -> void:
+	# Guardrail 4: constraint work (link is_enabled, valve closure) is enforced
+	# inside step 5's FlowSolver.solve_flows() call via calculate_requested_flow()
+	# and the disabled-link zeroing path. No additional work here in Phase 2.
+	# Future phases may add interlock logic here (named WP TBD).
 	pass
 
 func _step_transfer_water() -> void:
+	# Guardrail 4: water transfer is effected by StorageUnit.solve_tick() in
+	# step 8 (_step_update_volumes), which reads actual_flow_m3s written by
+	# FlowSolver's final sweep. No separate transfer step is needed in Phase 2.
+	# Future phases may move spill routing here (named WP TBD).
 	pass
 
 func _step_update_volumes() -> void:
@@ -110,13 +118,17 @@ func _step_calculate_levels_spills() -> void:
 		if link.destination_port != null and link.destination_port.parent_unit is ExternalBoundary:
 			link.destination_port.parent_unit.current_flow_m3s += link.actual_flow_m3s
 
-	# Apply flow_limit_m3s cap to each boundary's accumulated total (Edge Rule 4).
-	# When the total exceeds the limit, clamp — the FlowSolver has already prorated
-	# individual links; this cap handles any floating-point residual.
+	# F2.2-3: replace the silent clamp with a debug assert (guardrail 9).
+	# The FlowSolver has already prorated individual links; any residual
+	# that exceeds flow_limit_m3s here means the solver had a grant leak.
+	# A clamp would mask the error; an assert makes it loud.
 	for unit in context.units_list:
 		if unit is ExternalBoundary and unit.flow_limit_m3s >= 0.0:
-			if unit.current_flow_m3s > unit.flow_limit_m3s + 1e-9:
-				unit.current_flow_m3s = unit.flow_limit_m3s
+			assert(
+				unit.current_flow_m3s <= unit.flow_limit_m3s + 1e-9,
+				"_step_calculate_levels_spills: boundary '%s' accumulated flow (%f) exceeds limit (%f) — solver grant leak." \
+				% [unit.unit_id, unit.current_flow_m3s, unit.flow_limit_m3s]
+			)
 
 	# Route spill from each StorageUnit to its configured spill boundary (Edge Rule 5).
 	# spill_destination_id must resolve to a unit in units_dict; if it doesn't
