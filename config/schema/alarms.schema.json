@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "alarms.json — threshold alarm definitions",
+  "description": "Threshold alarms evaluated at tick step 11. plant_validator.gd additionally enforces: target_unit_id resolves to the topology.",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string", "description": "Editor hint; ignored by the engine." },
+    "alarms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "alarm_id": { "$ref": "defs.schema.json#/$defs/tag_id" },
+          "display_name": { "$ref": "defs.schema.json#/$defs/display_name" },
+          "target_unit_id": {
+            "$ref": "defs.schema.json#/$defs/tag_id",
+            "description": "Unit whose property is monitored."
+          },
+          "target_property": {
+            "type": "string",
+            "examples": ["level_m"],
+            "description": "Property monitored against the threshold."
+          },
+          "alarm_type": {
+            "enum": ["HIGH", "LOW"],
+            "description": "HIGH activates when value >= threshold; LOW when value <= threshold."
+          },
+          "threshold_value": {
+            "type": "number",
+            "description": "Activation threshold (units of target_property)."
+          },
+          "delay_s": {
+            "$ref": "defs.schema.json#/$defs/non_negative_number",
+            "description": "Seconds the condition must persist before activation."
+          },
+          "deadband": {
+            "$ref": "defs.schema.json#/$defs/non_negative_number",
+            "description": "Hysteresis band (units of target_property) the value must clear past the threshold before the alarm resets."
+          }
+        },
+        "required": [
+          "alarm_id", "display_name", "target_unit_id", "target_property",
+          "alarm_type", "threshold_value", "delay_s", "deadband"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["alarms"],
+  "additionalProperties": false
+}

@@ -1,0 +1,18 @@
+{
+  "controllers": [
+    {
+      "controller_id": "LC_BAD",
+      "type": "LevelController",
+      "display_name": "Bad Controller",
+      "target_actuator_id": "VALVE_X",
+      "pv_unit_id": "BASIN_01",
+      "pv_property": "level_m",
+      "control_mode": "TURBO",
+      "setpoint": 5.0,
+      "gain": 0.0,
+      "deadband_m": -0.1,
+      "min_output": 0.0,
+      "max_output": 100.0
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "controllers.json — automation controller definitions",
+  "description": "Controllers evaluated at tick step 4. plant_validator.gd additionally enforces: target_actuator_id and pv_unit_id resolve to the topology, and min_output < max_output. FORCED/FAILED modes are deferred; only MANUAL and AUTO are valid.",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string", "description": "Editor hint; ignored by the engine." },
+    "controllers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "controller_id": { "$ref": "defs.schema.json#/$defs/tag_id" },
+          "type": {
+            "enum": ["LevelController"],
+            "description": "Controller class instantiated by plant_factory.gd."
+          },
+          "display_name": { "$ref": "defs.schema.json#/$defs/display_name" },
+          "target_actuator_id": {
+            "$ref": "defs.schema.json#/$defs/tag_id",
+            "description": "Valve whose commanded_position this controller drives in AUTO."
+          },
+          "pv_unit_id": {
+            "$ref": "defs.schema.json#/$defs/tag_id",
+            "description": "Unit providing the process variable."
+          },
+          "pv_property": {
+            "type": "string",
+            "examples": ["level_m"],
+            "description": "Snapshot property read as the process variable."
+          },
+          "control_mode": {
+            "enum": ["MANUAL", "AUTO"],
+            "description": "Starting mode. MANUAL: evaluate() does nothing. AUTO: proportional control with deadband."
+          },
+          "setpoint": {
+            "type": "number",
+            "description": "Target process-variable value (units of pv_property, e.g. [m] for level_m)."
+          },
+          "gain": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Proportional gain: output_delta = gain * error."
+          },
+          "deadband_m": {
+            "$ref": "defs.schema.json#/$defs/non_negative_number",
+            "description": "Half-width [m] of the no-action zone around zero error; output holds inside it."
+          },
+          "min_output": {
+            "$ref": "defs.schema.json#/$defs/percent",
+            "description": "Output clamp floor [%]. Must be < max_output (runtime cross-check)."
+          },
+          "max_output": {
+            "$ref": "defs.schema.json#/$defs/percent",
+            "description": "Output clamp ceiling [%]."
+          }
+        },
+        "required": [
+          "controller_id", "type", "display_name", "target_actuator_id",
+          "pv_unit_id", "pv_property", "control_mode", "setpoint",
+          "gain", "deadband_m", "min_output", "max_output"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["controllers"],
+  "additionalProperties": false
+}

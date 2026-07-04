@@ -1,0 +1,14 @@
+{
+  "alarms": [
+    {
+      "alarm_id": "ALM_BAD",
+      "display_name": "Bad Alarm",
+      "target_unit_id": "BASIN_01",
+      "target_property": "level_m",
+      "alarm_type": "MEDIUM",
+      "threshold_value": 9.0,
+      "delay_s": -5.0,
+      "deadband": 0.1
+    }
+  ]
+}
