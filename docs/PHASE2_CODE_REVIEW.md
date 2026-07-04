@@ -75,6 +75,28 @@ The solver's COMMANDED branch (warn + RESTRICTED@1.0) bypasses `FlowLink.calcula
 
 Session evidence shows Task 7's reviewer agent failed to start (model unavailable, then session limit); the commit landed unreviewed at HEAD. Reviewed now: **approved.** `tools/ci/validate_configs.sh` verified in sandbox — 8/8 shipped configs pass their schemas, 6/6 negative fixtures rejected, exit 0; the new CI job is correctly formed; `CONFIGURATION_REFERENCE.md` rewrite matches new AGENTS rule 13 (no duplicated field docs). Two nits, non-blocking: (1) when `check-jsonschema` is not installed, the negative-fixture leg mislabels failures as "ok (rejected as intended)" — overall exit still fails via the positive leg, but the output lies; guard with `command -v check-jsonschema || exit 1`. (2) No shipped plant has a `presentation_map.json`, so that schema's positive path is exercised nowhere — fine until WP2.5's review, which should add one.
 
+## WP2.2-R verification (2026-07-04, commit `19f521e`) — ACCEPTED, G5 GATE CLOSED
+
+All five findings fixed and independently verified against the diff, not the report:
+F2.2-1 `+=` summation with sorted-port iteration and aggregate-total `StorageBalance` docstring; F2.2-2 disabled links explicitly zeroed in both passes (request via `calculate_requested_flow()`, grant to 0, excluded from proration); F2.2-3 clamp replaced with debug assert; F2.2-4 `get_min_outlet_volume_m3()` is the single executable occurrence (grep verified — remaining hits are comments); F2.2-5 COMMANDED/GRAVITY consolidated in `FlowLink` with warn-once flags, GRAVITY falls back to RESTRICTED at current opening (agent chose fallback over validator rejection, stated in report). All minors done. The agent's report was honest and accurate throughout, including the required "NOT executed — unverified" declaration.
+
+Reviewer-run verification (Godot 4.5 Windows console, GUT 9.7, full suite):
+**22 scripts collected, 57/57 passed, 0 failing, 501,291 asserts, 136.7 s** — including the WP2.6 100k-tick soak. Both new tests (`test_multi_outlet_worked_example_1`, `test_disabled_link_zeroes_flows`) pass and are correctly end-to-end. Notably, the new F2.2-3 assert was live through the full soak and never fired, confirming the replaced clamp had been guarding only floating-point residuals.
+
+**G5 gate: CLOSED.** Remaining Phase 2 acceptance: reviews of WP2.3, WP2.4, WP2.5, WP2.6, one per cycle.
+
+## Phase 3 plan review (`d72eeb6`) — conditionally approved, amendments required
+
+The plan's architecture section is sound (spec-first WP3.0, FlowSolver-as-only-splitter, junction-as-small-storage, DAG constraint, rule-13 schema sync, presentation_map positive path). Required amendments, one docs commit before or as part of WP3.0:
+
+- **P3-A1 (would not compile):** WP3.3 says "add `var in_service: bool = true` to `storage_unit.gd`" — that field **already exists on `ProcessUnit`** (declared and config-loaded since Phase 1) and redeclaring it in a subclass is a parse error. Amend to use the inherited field. Also note: `in_service` is currently loaded-but-unenforced (guardrail 10); Phase 3 is what finally wires it — WP3.0 should state this.
+- **P3-A2 (internal contradiction):** §1.4 says out-of-service disables links on "INLET, OUTLET, **and DRAIN** ports"; WP3.3 step 2 explicitly leaves DRAIN enabled (and tests for it). Resolve in favor of WP3.3 — a drained-down basin must stay drainable — and fix §1.4 in WP3.0.
+- **P3-A3 (architecture mismatch):** §1.4 speaks of a "spill link" that "remains enabled" and of "disabling the spill boundary link". Spill is not a link in this engine — it is per-unit `spill_destination_id`, engine-routed, passive. Rewrite: spill cannot be disabled, period.
+- **P3-A4 (guardrail 5 risk):** WP3.5's `headworks_level_controller.gd` commands **five actuators from one controller** — a new contract; `LevelController` is single-actuator. Either use five `LevelController` instances (preferred; zero new proportional logic) or spec the multi-output controller in WP3.0 before code. Do not silently fork the P-control implementation.
+- **P3-A5 (bad heuristic):** WP3.6's proposed warning (`surface_area_m2 > 1.0` AND `maximum_volume_m3 ≤ 10.0`) is inverted relative to §1.2's sizing rule and would false-positive on legitimately small basins. Drop it; the existing `simulation_resolution_warning` (max_inflow × dt vs operating volume) already covers fast-turnover risk.
+- **P3-A6 (API drift):** WP3.7 references `MassBalanceTracker.total_error_m3` (no such member — use `report().mass_balance_error_m3`) and a linear `EPSILON × tick_count` tolerance (use the established `1e-9 × scale × sqrt(ticks)` form).
+- **P3-A7 (scope statement):** add one line stating whether headworks presentation/visuals are in Phase 3 or deferred, and to where — implementation-state drift in docs is a known failure mode here.
+
 ## Required fix order (WP2.2-R, one commit)
 
 1. F2.2-1: per-type summation in `solve_tick` + totals into `StorageBalance.solve` + Worked-Example-1 integration test.
