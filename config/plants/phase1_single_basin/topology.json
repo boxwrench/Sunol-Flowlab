@@ -1,0 +1,127 @@
+{
+  "units": [
+    {
+      "unit_id": "SOURCE",
+      "type": "ExternalBoundary",
+      "display_name": "External Inflow Source",
+      "boundary_type": "SOURCE_INFLOW",
+      "flow_limit_m3s": 10.0,
+      "ports": [
+        {
+          "port_id": "PORT_SRC_OUT",
+          "port_type": "OUTLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "BASIN_01",
+      "type": "StorageUnit",
+      "display_name": "Sedimentation Basin 1",
+      "maximum_volume_m3": 1000.0,
+      "surface_area_m2": 100.0,
+      "bottom_elevation_m": 0.0,
+      "high_level_m": 9.0,
+      "spill_level_m": 9.5,
+      "min_operating_level_m": 0.5,
+      "ports": [
+        {
+          "port_id": "PORT_BASIN_IN",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_BASIN_OUT",
+          "port_type": "OUTLET"
+        },
+        {
+          "port_id": "PORT_BASIN_DRAIN",
+          "port_type": "OUTLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "SINK",
+      "type": "ExternalBoundary",
+      "display_name": "Treated Water Sink",
+      "boundary_type": "TREATED_DEMAND",
+      "ports": [
+        {
+          "port_id": "PORT_SINK_IN",
+          "port_type": "INLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "DRAIN_SINK",
+      "type": "ExternalBoundary",
+      "display_name": "Drain Waste Sink",
+      "boundary_type": "DRAIN",
+      "ports": [
+        {
+          "port_id": "PORT_DRAIN_IN",
+          "port_type": "INLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "SPILL_SINK",
+      "type": "ExternalBoundary",
+      "display_name": "Spill Overflow Sink",
+      "boundary_type": "SPILL",
+      "ports": [
+        {
+          "port_id": "PORT_SPILL_IN",
+          "port_type": "INLET"
+        }
+      ]
+    }
+  ],
+  "actuators": [
+    {
+      "actuator_id": "VALVE_IN",
+      "display_name": "Inlet Control Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT",
+      "display_name": "Outlet Control Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN",
+      "display_name": "Drain Waste Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    }
+  ],
+  "links": [
+    {
+      "link_id": "LINK_IN",
+      "display_name": "Source to Basin Link",
+      "max_flow_m3s": 5.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_SRC_OUT",
+      "destination_port_id": "PORT_BASIN_IN",
+      "actuator_id": "VALVE_IN"
+    },
+    {
+      "link_id": "LINK_OUT",
+      "display_name": "Basin to Sink Link",
+      "max_flow_m3s": 4.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_OUT",
+      "destination_port_id": "PORT_SINK_IN",
+      "actuator_id": "VALVE_OUT"
+    },
+    {
+      "link_id": "LINK_DRAIN",
+      "display_name": "Basin Drain Link",
+      "max_flow_m3s": 3.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_DRAIN",
+      "destination_port_id": "PORT_DRAIN_IN",
+      "actuator_id": "VALVE_DRAIN"
+    }
+  ]
+}

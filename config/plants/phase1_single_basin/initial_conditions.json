@@ -1,0 +1,45 @@
+{
+  "unit_states": [
+    {
+      "unit_id": "SOURCE",
+      "in_service": true
+    },
+    {
+      "unit_id": "BASIN_01",
+      "in_service": true,
+      "volume_m3": 500.0
+    },
+    {
+      "unit_id": "SINK",
+      "in_service": true
+    },
+    {
+      "unit_id": "DRAIN_SINK",
+      "in_service": true
+    },
+    {
+      "unit_id": "SPILL_SINK",
+      "in_service": true
+    }
+  ],
+  "actuator_states": [
+    {
+      "actuator_id": "VALVE_IN",
+      "is_manual": true,
+      "commanded_position": 50.0,
+      "position": 50.0
+    },
+    {
+      "actuator_id": "VALVE_OUT",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    }
+  ]
+}

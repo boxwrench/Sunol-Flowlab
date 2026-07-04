@@ -1,0 +1,15 @@
+{
+  "units": [
+    {
+      "unit_id": "BASIN_01",
+      "type": "StorageUnit",
+      "display_name": "Sedimentation Basin 1",
+      "maximum_volume_m3": 500.0,
+      "surface_area_m2": 100.0,
+      "bottom_elevation_m": 0.0,
+      "high_level_m": 9.0,
+      "spill_level_m": 9.5,
+      "min_operating_level_m": 0.5
+    }
+  ]
+}
