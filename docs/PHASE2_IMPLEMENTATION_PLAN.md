@@ -91,6 +91,8 @@ To satisfy the **six Determinism and Edge Rules** defined in [SIMULATION_RULES.m
      returns `max(0.0, volume_m3 - min_operating_level_m * surface_area_m2)`.
    - `available_withdrawal_m3(dt)` (existing method) continues to serve DRAIN ports and returns
      total volume `max(0.0, volume_m3)`.
+   - In `solve_tick()`, add a debug assert on every inlet/outlet/drain link before integrating:
+     `assert(link.actual_flow_m3s == link.granted_flow_m3s, "actual/granted mismatch — FlowSolver final sweep did not run")` (Edge Rule 2).
 2. Update [storage_balance.gd](../scripts/simulation/hydraulics/storage_balance.gd):
    - Redefine available volume checks for `requested_outflow_m3s` (OUTLET) and `requested_drain_flow_m3s` (DRAIN) using the same min-level cutoff as `available_outlet_withdrawal_m3`.
    - In `solve()`, add a debug assert: `assert(total_requested_withdrawal_volume <= available_volume + EPSILON, "StorageBalance proration triggered! This indicates a solver grant leak.")` (Edge Rule 2).
@@ -109,9 +111,11 @@ To satisfy the **six Determinism and Edge Rules** defined in [SIMULATION_RULES.m
      - Prorate `DRAIN` links against `total_supply`.
      - If total grants (outlet + drain) exceed `total_supply`, prorate all outgoing links proportionally to fit the total supply limit.
      - If the source is an `ExternalBoundary` with `flow_limit_m3s >= 0.0`, prorate outgoing links to fit the boundary limit (Edge Rule 4).
-     - Set `link.granted_flow_m3s = link.requested_flow_m3s` (capped by proration). **Note**: the
-       assignment is `granted_flow_m3s = <prorated value>` — never `actual_flow_m3s = granted_flow_m3s`
-       at this stage; `actual_flow_m3s` is written only after `StorageBalance.solve()` in `solve_tick()`.
+     - Set `link.granted_flow_m3s = link.requested_flow_m3s` (capped by proration).
+    - **Final actual-flow sweep (after both passes complete)**:
+      - Iterate `context.links_list` and write `link.actual_flow_m3s = link.granted_flow_m3s` for
+        **every** link. This ensures boundary-sourced links (which have no `StorageBalance` to write
+        them) are updated identically to storage-sourced links (SIMULATION_RULES § Final actual-flow sweep).
 4. Update [simulation_engine.gd](../scripts/simulation/core/simulation_engine.gd):
    - In `_step_calculate_levels_spills()`, set boundary flows using `+=` to sum flows across multiple links (Edge Rule 4).
    - Route `StorageUnit` spills to their configured `spill_destination_id` boundary instead of global summing (Edge Rule 5).

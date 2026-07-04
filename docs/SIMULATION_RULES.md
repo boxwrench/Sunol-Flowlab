@@ -124,9 +124,12 @@ To ensure consistent flow calculations and avoid ad-hoc solutions, the simulatio
      - If `total_requested_withdrawal > available_supply`, the supply is over-committed. The solver prorates the available supply proportionally among all competing links:
        `proration_factor = available_supply / total_requested_withdrawal`
        `link.granted_flow_m3s = link.requested_flow_m3s * proration_factor`
-   - Once all links are resolved, `link.actual_flow_m3s = link.granted_flow_m3s`.
    - **Boundary Flow Limit Enforcement**: If a link connects to or from an `ExternalBoundary` unit with a positive `flow_limit_m3s`, the link's granted flow is capped at the boundary's limit:
      `link.granted_flow_m3s = min(link.granted_flow_m3s, boundary.flow_limit_m3s)`
+
+3. **Final actual-flow sweep (after pass 2 completes).** After both passes are done, `FlowSolver` performs one final loop over **all** links in the context and writes:
+   `link.actual_flow_m3s = link.granted_flow_m3s`
+   This covers boundary-sourced links (which have no `StorageBalance` to write them) identically to storage-sourced links. `StorageUnit.solve_tick` subsequently reads `link.actual_flow_m3s` for its ledger and in debug builds **asserts** that the value matches `link.granted_flow_m3s` (any mismatch indicates a solver bug, not a balance error).
 
 ---
 
@@ -168,13 +171,13 @@ To preserve the pure Directed Acyclic Graph (DAG) and the single-mutator 1D Eule
 
 1. **Deterministic topological order.** A topological sort is not unique. The solver's order must be computed with Kahn's algorithm using a ready-set **sorted by unit ID**, so ties always break identically (INV-2). The order is computed once at plant build by the factory, cached on the context, and recomputed only when topology changes. A test must assert the order is identical under permuted unit-declaration order.
 
-2. **One proration authority.** The FlowSolver's grant pass is the *only* place proration is expected to occur. `StorageBalance.solve` retains its proration arithmetic strictly as a defensive backstop: if it ever triggers after a correct solver pass, that is a solver bug — debug builds must `assert` when StorageBalance proration activates while the full solver is in use.
+2. **One proration authority.** The FlowSolver's grant pass is the *only* place proration is expected to occur. `StorageBalance.solve` retains its proration arithmetic strictly as a defensive backstop: if it ever triggers after a correct solver pass, that is a solver bug — debug builds must `assert` when StorageBalance proration activates while the full solver is in use. Additionally, `StorageUnit.solve_tick` must debug-assert that each link's `actual_flow_m3s` equals `granted_flow_m3s` before integrating; a discrepancy means FlowSolver's final sweep did not run or was bypassed.
 
 3. **Withdrawable vs total volume.** For OUTLET ports, `available_supply` uses only the volume **above `min_operating_level_m`** (the low-low cutoff); DRAIN ports may draw down to zero. The solver and `StorageBalance` must use the same definition, or granted flows will exceed what integration allows.
 
 4. **Boundary flows sum across links.** An `ExternalBoundary` connected to multiple links accumulates `current_flow_m3s` as the **sum** of its links' actual flows — never overwrite. `flow_limit_m3s` caps that *total*, not each link independently; when the total must be limited, the constraint prorates across the boundary's links like any other over-committed source.
 
-5. **Spill routing is per-unit.** Each `StorageUnit`'s spill is routed to a configured spill destination (default: the plant-wide spill boundary). A spill boundary receives only the spill routed to it — never the plant total. The current engine behavior (every SPILL boundary receives total plant spill) is correct only while exactly one spill boundary exists and must be replaced when the second one appears.
+5. **Spill routing is per-unit.** Each `StorageUnit`'s `spill_destination_id` is read from config; no code default is injected. The plant validator errors if `spill_destination_id` is absent or does not resolve to a known boundary. A spill boundary receives only the spill routed to it — never the plant total. The prior engine behavior (every SPILL boundary receives total plant spill) is correct only while exactly one spill boundary exists and must be replaced when the second one appears.
 
 6. **COMMANDED mode is unimplemented.** Until Phase 2 controllers land, a link configured as `COMMANDED` must `push_warning` and behave as `RESTRICTED` at full opening. Silent placeholder behavior is prohibited (AGENTS.md guardrail 10).
 
