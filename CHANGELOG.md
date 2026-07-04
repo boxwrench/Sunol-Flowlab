@@ -2,10 +2,10 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased] — WP2.4-R2 (remediation, pending reviewer verification)
+## [Unreleased] — WP2.4-R3 (remediation, pending reviewer verification)
 
 ### Added
-- **W2.4-5 / docs**: Added a "Control loop characteristics" note with proportional gain-scaling, droop, and loop stability guidance to `CONTROL_LOGIC.md`.
+- **W2.4-5 / docs**: Added a "Control loop characteristics" section to `CONTROL_LOGIC.md` explaining that velocity-form proportional control behaves as pure integral action, exhibiting zero steady-state droop, deadband limit cycles (undamped double integrator under lag), and loop gain scaling. Cites the 4.981m measurement.
 
 ### Fixed
 - **W2.4-1**: `LevelController.evaluate()` now warns once and falls back to MANUAL mode for unknown control modes (non-MANUAL, non-AUTO). `PlantValidator` enforces `control_mode` enum `{MANUAL, AUTO}`.
@@ -16,9 +16,10 @@ All notable changes to this project will be documented in this file. The format 
 ### Tests Added / Rewritten
 - `test_level_controller_unknown_mode_fallback` — verifies warn-once and fallback to MANUAL for unknown starting control modes.
 - `test_invalid_controller_config` — validates validator rejection of unknown types, invalid modes, and invalid properties.
-- `test_closed_loop_level_stabilization` — rewritten to use the **shipped-scale gain of 2.0** and a small demand step, asserting the level settles at the predicted droop level of 4.25m using a time-averaged level over the final 50-tick window.
+- `test_closed_loop_level_stabilization` — rewritten to use the **shipped-scale gain of 2.0** and a small demand step, asserting the level settles with zero steady-state droop (time-averaged level over final 50-tick window within ±0.1 of the 5.0 setpoint) and max deviation within 0.3m.
 
 ---
+
 
 
 ## [1.1.0] — WP2.2-R Remediation (G5 gate closed)

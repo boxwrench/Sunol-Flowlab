@@ -72,21 +72,25 @@ Document the chosen fallback for each controller.
 
 ## Control loop characteristics
 
-### Proportional control gain scaling
+### Velocity-form proportional control mechanics
 
 The proportional control loop uses a velocity-form algorithm:
 ```
 error = setpoint - measured_level
 output = previous_output + gain × error
 ```
-Because `gain` is defined in units of `[% valve opening / m error]`, its magnitude dictates the steady-state offset (droop) of the process variable under load. 
+Although conventionally named a "proportional" controller, the velocity-form implementation operates mathematically as a **pure integral controller** because the change in output is added to the previous valve command on every tick. Consequently:
+- **No steady-state offset (droop)**: Unlike a position-form P-controller, the velocity-form P-controller does not exhibit steady-state droop under sustained load changes. In steady state, the level error converges to zero (or within the deadband bounds). For example, under a sustained downstream demand step from 50% to 52% with a loop gain of 2.0, the time-averaged level stabilizes at approximately **4.981m** (representing zero offset within deadband limit-cycle fluctuations).
+- **Transient error integral**: Rather than a sustained error offset, a permanent change in output ($\Delta \text{output}$) requires a transient cumulative error over time:
+  $$\sum \text{error} \times \Delta t = \frac{\Delta \text{output}}{\text{gain}}$$
+- **Limit cycles and stability**: Because the storage unit acts as a physical integrator (volume integrates net flow) and the velocity-form controller acts as an integral controller, the closed-loop system is an undamped double integrator. Combined with one-tick scan/actuator lag, the loop cannot asymptotically settle and will exhibit deadband-bounded limit cycles.
+- **Tuning and Loop Gain**: High gains destabilize the loop and cause rapid, high-amplitude valve oscillations (rail-to-rail chattering). The loop gain per tick is approximated by:
+  $$\text{Loop Gain} \approx \frac{\text{gain} \times \text{max\_flow\_m3s}}{100 \times \text{surface\_area\_m2}}$$
+  To avoid severe limit cycles and preserve equipment lifetime, the gain should be kept small (e.g., `gain = 2.0`). Adding derivative/damping terms (PID) is a roadmap item for future phases.
 
-When configuring or tuning the controller:
-1. **Reverse-acting vs. Direct-acting**: With a positive gain, this formula is reverse-acting (output increases when PV is below setpoint). It must only target inflow control elements (e.g., inflow valves) to be stable. Targeting an outflow control element with a positive gain results in positive feedback and loop instability.
-2. **Gain magnitude**: A low gain (e.g., the default `gain = 2.0`) is highly stable but results in significant steady-state droop under sustained demand changes. For example, a 1.5% increase in valve opening requires a 0.75m level error to sustain.
-3. **Scaling guidance**: To minimize droop without causing actuator wear, the gain should be scaled based on the target storage unit's surface area and flow capacities:
-   ```
-   gain ≈ (required_valve_change_percent) / (acceptable_steady_state_offset_m)
-   ```
-   Where tighter level tolerance is required, the gain should be increased (e.g., `gain = 20.0` or higher), or the control structure should be upgraded to a PI/PID controller in a future phase.
+### Loop direction and element pairing
+
+When pairing controllers with physical actuators:
+- **Reverse-acting vs. Direct-acting**: With a positive gain, the error formula `setpoint - measured_level` is reverse-acting (output increases when PV is below setpoint). It must only target inflow control elements (e.g., inflow valves) to be stable. Targeting an outflow control element with a positive gain results in positive feedback and loop instability.
+
 

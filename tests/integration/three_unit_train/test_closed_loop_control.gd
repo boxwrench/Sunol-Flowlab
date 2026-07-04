@@ -218,12 +218,18 @@ func test_closed_loop_level_stabilization() -> void:
 			final_levels.append(basin.level_m)
 			
 	var sum_levels: float = 0.0
+	var max_dev: float = 0.0
 	for lvl in final_levels:
 		sum_levels += lvl
+		var dev = abs(lvl - 5.0)
+		if dev > max_dev:
+			max_dev = dev
 	var avg_level: float = sum_levels / final_levels.size()
 	
-	# With gain=2.0, required valve increase is 1.5% (from 37.5% to 39.0%).
-	# required_error = 1.5% / 2.0 = 0.75m. Expected level = 5.0m - 0.75m = 4.25m.
-	assert_almost_eq(avg_level, 4.25, 0.05, "Time-averaged level over final 50-tick window should stabilize near 4.25m")
+	# Under velocity-form P control (integral action), the level converges to setpoint 5.0m
+	# with zero steady-state droop, within deadband limit-cycle bounds.
+	assert_almost_eq(avg_level, 5.0, 0.1, "Time-averaged level over final 50-tick window should regulate close to 5.0m setpoint")
+	assert_true(max_dev <= 0.3, "Maximum level deviation over final window should be bounded within 0.3m")
+
 
 
