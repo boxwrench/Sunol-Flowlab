@@ -43,6 +43,8 @@ Validation is by filename convention: `<name>.json` validates against `config/sc
 
 ### Task 1: Validation harness + defs + plant schema
 
+> **✅ COMPLETE** (commits `ab569a9`→`3c0fb7f`, reviewed). Deviation for all later tasks: **omit the relative `"$id"` line from every schema** — a relative `$id` makes check-jsonschema resolve sibling `$ref`s against process CWD (verified failure mode). `simulation_settings` gained a `description` per Global Constraints.
+
 **Files:**
 - Create: `tools/ci/validate_configs.sh`, `config/schema/defs.schema.json`, `config/schema/plant.schema.json`, `tests/fixtures/schema_invalid/plant.json`
 - Test: the harness itself (positive: shipped plants pass; negative: invalid fixture fails)
