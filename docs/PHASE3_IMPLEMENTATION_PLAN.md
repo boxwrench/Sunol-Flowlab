@@ -1,14 +1,21 @@
 # Implementation Plan — Phase 3: Headworks & Five Sedimentation Trains
 
+> **Amendments applied**: P3-A1 through P3-A7 per reviewer commit `446546e`.
+
 This document defines the work-package (WP) breakdown for Phase 3 of Sunol FlowLab.
 The goal of Phase 3 is to build the full headworks topology and five parallel sedimentation
 trains: two source reservoirs, inlet manifold, flash mix, distribution box, five floc/sed basins,
 and the applied channel. This introduces flow splitting across parallel trains and basin
 availability (in-service / out-of-service toggling at runtime).
 
-**Gate prerequisite**: WP2.2-R must be reviewed and its G5 gate closed before any Phase 3 WP
-begins. Reviews of WP2.3–2.6 must follow, one per cycle, in order. Phase 3 does not start
-until all outstanding Phase 2 reviews are complete.
+**Presentation scope (P3-A7)**: headworks and basin visuals are **deferred** — Phase 3 is
+simulation-domain and configuration only. A presentation WP (analogous to WP2.5) will be
+proposed in a future plan once the domain layer is reviewer-accepted. No scene files, no
+visual adapter scripts, and no `tscn` assets are created in any Phase 3 WP.
+
+**Gate prerequisite**: WP2.2-R reviewed (G5 gate closed ✅). Reviews of WP2.3–2.6 must
+follow, one per cycle, in order. Phase 3 execution is gated on completion of all outstanding
+Phase 2 reviews.
 
 ---
 
@@ -62,31 +69,37 @@ algorithm.
 
 ### 1.4 Basin availability semantics
 
-> **This subsection defines binding rules that WP3.1 will write into SIMULATION_RULES and
+> **This subsection defines binding rules that WP3.0 will write into SIMULATION_RULES and
 > PROCESS_UNIT_CONTRACTS before any code WP.**
 
+**P3-A1 note**: `in_service: bool` already exists on `ProcessUnit` (declared and config-loaded
+since Phase 1). It is currently **loaded-but-unenforced** — a standing guardrail-10 debt that
+Phase 3 finally pays. WP3.3 does **not** redeclare the field; it wires enforcement through
+`SetBasinServiceCommand`. WP3.0 must document this existing-field-now-enforced pattern.
+
 A floc/sed basin is considered **available** when both:
-1. Its `in_service` boolean flag is `true` on the `StorageUnit`, AND
+1. Its inherited `in_service` boolean flag is `true` (from `ProcessUnit`), AND
 2. All links attached to its INLET and OUTLET ports have `is_enabled = true`.
 
 Taking a basin **out of service** means:
-- Setting `unit.in_service = false` on the `StorageUnit` (tracking field, no direct solver effect).
-- Setting `is_enabled = false` on **every FlowLink** connected to the basin's INLET, OUTLET,
-  and DRAIN ports. This causes FlowSolver (F2.2-2 fix) to zero all three flow fields
-  (`requested`, `granted`, `actual`) on those links and exclude them from proration sets.
+- Setting `unit.in_service = false` (the field inherited from `ProcessUnit` — no redeclaration).
+- Setting `is_enabled = false` on every `FlowLink` connected to the basin's **INLET and OUTLET**
+  ports. This causes FlowSolver (F2.2-2 fix) to zero all three flow fields (`requested`,
+  `granted`, `actual`) on those links and exclude them from proration sets.
+- **DRAIN links remain enabled** (P3-A2). A basin being taken out of service must still be
+  drainable; disabling its DRAIN link would prevent emptying and is operationally incorrect.
+- **Spill is not a link** (P3-A3). Spill is handled by per-unit `spill_destination_id`
+  engine routing — there is no "spill link" to enable or disable. Spill will continue to be
+  routed by `_step_calculate_levels_spills()` regardless of `in_service` state. An operator
+  who wants to stop spill must drain the basin below `spill_level_m` first.
 - The basin's own `solve_tick` continues to run but receives zero inflows and grants zero
-  outflows, so its volume is frozen (no flow = no change from flow).
+  outflows (INLET/OUTLET disabled), so its volume changes only via DRAIN or passive spill.
 - The basin does **not** get removed from the topological list; the DAG remains static.
-- Spill: if a basin is out of service and still has volume above `spill_level_m`, its spill
-  link remains enabled (spill is gravity/passive, not operator-controlled). If the basin is
-  to be isolated completely, the operator must also drain it via the DRAIN link before
-  disabling the spill boundary link.
 
-**F2.2-2 fix is a prerequisite for basin availability**. The fix must be accepted (reviewer
-confirmed) before WP3.3 (which wires basin availability at runtime) begins.
+**F2.2-2 fix is a prerequisite for basin availability** (G5 gate closed ✅; prerequisite met).
 
-Taking a basin **back into service** reverses the above: re-enable all its links. FlowSolver
-then begins granting flow naturally on the next tick.
+Taking a basin **back into service** reverses the above: re-enable its INLET and OUTLET links.
+FlowSolver then begins granting flow naturally on the next tick.
 
 ### 1.5 Topology remains a DAG
 
@@ -107,12 +120,12 @@ This is the mandatory first deliverable.
 
 | WP | Title | Layer | Primary Files | Depends On |
 |---|---|---|---|---|
-| **WP3.0** | Spec: basin-availability semantics + small-storage sizing | Documentation | `SIMULATION_RULES.md`, `PROCESS_UNIT_CONTRACTS.md` | WP2.2-R reviewed; WP2.3–2.6 reviewed |
+| **WP3.0** | Spec: basin-availability semantics + small-storage sizing | Documentation | `SIMULATION_RULES.md`, `PROCESS_UNIT_CONTRACTS.md` | WP2.3–2.6 all reviewed |
 | **WP3.1** | Source Reservoirs & Inlet Manifold config + wiring | Configuration / Data | `config/plants/phase3_headworks/` | WP3.0 |
 | **WP3.2** | Flash Mix & Distribution Box config + wiring | Configuration / Data | `config/plants/phase3_headworks/` | WP3.1 |
-| **WP3.3** | Five Floc/Sed Basins — config, wiring, availability | Configuration / Domain | plant config, `storage_unit.gd` `in_service` field | WP3.2 |
+| **WP3.3** | Five Floc/Sed Basins — config, wiring, availability | Configuration / Domain | plant config, `set_basin_service_command.gd` (wires inherited `in_service`) | WP3.2 |
 | **WP3.4** | Applied Channel config + level alarm | Configuration / Domain | plant config, alarm config | WP3.3 |
-| **WP3.5** | Basin availability commands & controller | Automation / Commands | `set_basin_service_command.gd` | WP3.3 |
+| **WP3.5** | Five LevelControllers for applied-channel level regulation | Automation / Commands | `level_controller.gd` ×5 instances, `controllers.json` | WP3.4 |
 | **WP3.6** | Config schema sync (all Phase 3 new fields) | Configuration / Schema | `config/schema/`, `plant_validator.gd` | WP3.4, WP3.5 |
 | **WP3.7** | Phase 3 Verification & Soak Suite | Verification / Tests | `tests/integration/phase3_headworks/` | WP3.6 |
 
@@ -129,34 +142,39 @@ before any code is written. This is the spec-first guardrail for Phase 3.
 
 **Files**:
 - `docs/SIMULATION_RULES.md` — new subsection: **Basin Availability Semantics**
-- `docs/PROCESS_UNIT_CONTRACTS.md` — new subsection: **Basin Availability Contract**;
-  update `StorageUnit` contract to include `in_service` field
+- `docs/PROCESS_UNIT_CONTRACTS.md` — update `StorageUnit` contract; new `SetBasinServiceCommand`
 
 **Steps**:
 
 1. Add to `SIMULATION_RULES.md` § Basin Availability Semantics (new subsection after
-   Determinism and Edge Rules):
-   - Define `in_service` as a `StorageUnit` tracking field (not a solver field directly).
-   - Define the "out of service" precondition: all attached links `is_enabled = false`.
-   - Define the tick behavior when out of service (frozen volume, no spill suppression).
-   - Cite the F2.2-2 fix as prerequisite.
-   - Define the `simulation_resolution_warning` sizing rule for junction StorageUnits
-     (surface_area ≤ 1.0 m², max_volume ≤ 10.0 m³, no min_operating_level).
+   Determinism and Edge Rules), stating explicitly:
+   - `in_service` is **inherited from `ProcessUnit`** (exists since Phase 1; previously
+     loaded-but-unenforced, guardrail-10 debt). Phase 3 wires enforcement — no redeclaration.
+   - Out-of-service precondition: `is_enabled = false` on all INLET and OUTLET links.
+     DRAIN links remain enabled (draining must remain possible). Spill cannot be disabled
+     (it is engine-routed via `spill_destination_id`, not a link).
+   - Tick behavior when out of service: INLET/OUTLET links carry zero flow; basin volume
+     changes only via DRAIN or passive spill; the unit remains in the topological list.
+   - Define the `simulation_resolution_warning` sizing rule for junction `StorageUnit`s:
+     `surface_area_m2 ≤ 1.0 m²`, `maximum_volume_m3 ≤ 10.0 m³`, `min_operating_level_m = 0.0`.
 
-2. Add to `PROCESS_UNIT_CONTRACTS.md`:
-   - `in_service: bool` field in the `StorageUnit` contract (default `true`).
-   - New command: `SetBasinServiceCommand` (enable/disable all links + flip flag).
-   - Confirm that out-of-service does **not** remove the unit from the topological list.
+2. Update `PROCESS_UNIT_CONTRACTS.md`:
+   - In `StorageUnit` contract: note that `in_service` is **inherited from `ProcessUnit`**,
+     was previously unenforced, and Phase 3 wires it. Do not re-list it as a new field.
+   - Add `SetBasinServiceCommand`: toggles `in_service` flag AND sets `is_enabled` on
+     INLET/OUTLET links; leaves DRAIN links enabled.
+   - Confirm out-of-service does **not** remove the unit from `topological_units_list`.
 
-3. Cross-reference INDEX.md (already links PROCESS_UNIT_CONTRACTS and SIMULATION_RULES).
+3. Cross-reference INDEX.md (already links both spec documents).
 
 **Tests**: None — docs-only WP.
 
 **Done when**:
-- `docs/SIMULATION_RULES.md` contains the Basin Availability Semantics subsection with all
-  rules from §1.4 of this plan explicitly stated and no contradictions with existing rules.
-- `docs/PROCESS_UNIT_CONTRACTS.md` defines the `in_service` field and `SetBasinServiceCommand`.
-- Commit message begins `spec:`. No code files, no config files, no test files in this commit.
+- `SIMULATION_RULES.md` contains the Basin Availability Semantics subsection matching §1.4
+  of this plan with P3-A1/A2/A3 corrections applied.
+- `PROCESS_UNIT_CONTRACTS.md` updated with `SetBasinServiceCommand` contract.
+- No contradictions with existing rules in either document.
+- Commit message begins `spec:`. No code, config, or test files in this commit.
 
 ---
 
@@ -253,61 +271,60 @@ produces deterministic splits.
 ### WP3.3 — Five Floc/Sed Basins — Config, Wiring & Availability
 
 **Goal**: Replace the five placeholder sink boundaries with five full `StorageUnit` basins.
-Add `in_service` field to `StorageUnit`. Implement `SetBasinServiceCommand` which toggles
-`is_enabled` on all attached links and flips the `in_service` flag. Wire the command into
-`PlantFactory` and `PlantValidator`.
+Implement `SetBasinServiceCommand` which wires the **existing inherited** `in_service` flag
+by toggling `is_enabled` on INLET/OUTLET links. Wire the command into `PlantFactory` and
+`PlantValidator`.
 
 **Prerequisite**: WP3.0 spec must be committed; the Basin Availability Semantics section in
-SIMULATION_RULES must be accepted before writing any `in_service` code.
+`SIMULATION_RULES.md` must be accepted before writing any availability code.
+
+**P3-A1**: Do **not** add `var in_service: bool = true` to `storage_unit.gd` — that field
+is already declared on `ProcessUnit` and already config-loaded. Adding it to `StorageUnit`
+would be a parse error (duplicate declaration in subclass). Use the inherited field as-is.
 
 **Files**:
-- `scripts/simulation/domain/storage_unit.gd` — add `var in_service: bool = true`
 - `scripts/simulation/commands/set_basin_service_command.gd` (new)
 - `scripts/configuration/plant_factory.gd` — register new command type
-- `scripts/configuration/plant_validator.gd` — validate `in_service` field type
+- `scripts/configuration/plant_validator.gd` — validate `in_service` field type (already
+  accepted by `ProcessUnit.initialize()`; add an explicit boolean type-check here)
 - `config/plants/phase3_headworks/topology.json` (update — replace placeholder sinks)
 - `tests/unit/domain/test_basin_availability.gd` (new)
 - `tests/integration/phase3_headworks/test_basin_availability_integration.gd` (new)
 
 **Steps**:
 
-1. Update `storage_unit.gd`:
-   - Add `var in_service: bool = true`, loaded from config with default `true`.
-   - `initialize()` reads `config.get("in_service", true)`.
-   - No solver logic added here — availability is enforced through link `is_enabled` only.
-
-2. Create `set_basin_service_command.gd` (`extends SimulationCommand`):
+1. Create `set_basin_service_command.gd` (`extends SimulationCommand`):
    - Fields: `target_unit_id: StringName`, `put_in_service: bool`.
    - `execute(context)`:
-     1. Resolve `target_unit_id` → `StorageUnit`.
-     2. Set `unit.in_service = put_in_service`.
+     1. Resolve `target_unit_id` → `StorageUnit` (assert it is one).
+     2. Set `unit.in_service = put_in_service` (writes the inherited field).
      3. For each port on the unit, if `port.connected_link != null`:
-        - If port type is INLET or OUTLET: `link.is_enabled = put_in_service`.
-        - If port type is DRAIN: leave enabled (drain must remain available for emptying).
-     4. Do NOT disable spill destination links (spill is passive/gravity).
+        - If port type is **INLET or OUTLET**: `link.is_enabled = put_in_service`.
+        - If port type is **DRAIN**: leave `is_enabled` unchanged (P3-A2 — drain must
+          remain available for emptying an out-of-service basin).
+        - Spill is not a link; no spill path exists to toggle (P3-A3).
    - `validate(context)`: verify `target_unit_id` resolves to a `StorageUnit`.
 
-3. Extend `config/plants/phase3_headworks/topology.json`:
-   - Replace five placeholder sinks with five `StorageUnit` basins
-     (`BASIN_01` … `BASIN_05`).
+2. Extend `config/plants/phase3_headworks/topology.json`:
+   - Replace five placeholder sinks with five `StorageUnit` basins (`BASIN_01`…`BASIN_05`).
    - Each basin declares `spill_destination_id`, INLET, OUTLET, and DRAIN ports.
-   - Applied channel placeholder sink (`APPLIED_CHANNEL_PLACEHOLDER`) as downstream boundary
-     until WP3.4.
+   - Applied channel placeholder sink (`APPLIED_CHANNEL_PLACEHOLDER`) downstream until WP3.4.
 
-4. Create `tests/unit/domain/test_basin_availability.gd`:
-   - `test_out_of_service_zeroes_all_link_flows`: put one basin out of service, run one
-     FlowSolver solve, assert `requested == granted == actual == 0` on all its INLET and
-     OUTLET links.
-   - `test_in_service_restore_flows`: re-enable, run solver again, assert nonzero flow on
-     at least one link.
-   - `test_drain_stays_enabled_when_out_of_service`: verify DRAIN link is not disabled by
-     `SetBasinServiceCommand`.
+3. Create `tests/unit/domain/test_basin_availability.gd`:
+   - `test_out_of_service_zeroes_all_link_flows`: use `SetBasinServiceCommand` to put one
+     basin out of service, run one `FlowSolver.solve_flows`, assert
+     `requested == granted == actual == 0` on all its INLET and OUTLET links.
+   - `test_in_service_restore_flows`: re-enable via command, run solver again, assert
+     nonzero flow on at least one INLET or OUTLET link.
+   - `test_drain_stays_enabled_when_out_of_service`: assert DRAIN link `is_enabled` is
+     still `true` after `SetBasinServiceCommand(put_in_service=false)` runs.
 
-5. Create `tests/integration/phase3_headworks/test_basin_availability_integration.gd`:
-   - `test_four_basin_proration`: take one basin out of service, assert the remaining four
-     basins receive proportionally more flow (total grant unchanged, redistributed).
-   - `test_availability_churn_mass_conservation`: take basins in and out of service 100
-     times over 1000 ticks, assert mass-balance ledger ≤ tolerance and no negative volume.
+4. Create `tests/integration/phase3_headworks/test_basin_availability_integration.gd`:
+   - `test_four_basin_proration`: take one basin out of service, run solver, assert the
+     remaining four basins receive proportionally redistributed flow and total granted
+     outflow from `DIST_BOX_01` is unchanged.
+   - `test_availability_churn_mass_conservation`: toggle basins in/out of service 100 times
+     over 1000 ticks; assert mass-balance ledger ≤ tolerance and no negative volume.
 
 **Tests**:
 - `test_out_of_service_zeroes_all_link_flows`
@@ -363,42 +380,49 @@ applied channel as the single downstream collector for all five basin OUTLET lin
 
 ---
 
-### WP3.5 — Basin Availability Commands & Controller
+### WP3.5 — Level Controllers for Applied-Channel Regulation
 
-**Goal**: Add a proportional level controller targeting `APPLIED_CHANNEL_01` level, which
-modulates the distribution box outlet valve openings to maintain a setpoint. Verify that
-toggling basin availability causes the controller to re-distribute flow across remaining
-in-service basins without operator intervention.
+**Goal**: Configure five existing `LevelController` instances (one per basin inlet gate) to
+regulate `APPLIED_CHANNEL_01` level by modulating each gate's opening proportionally to the
+level error. No new controller class is created. (P3-A4: a single controller commanding five
+actuators requires a new multi-output contract; to avoid forking the P-control implementation,
+we use five independent `LevelController` instances sharing the same PV unit and setpoint.)
+
+**Design rationale**: Each `LevelController` targets one actuator (the inlet gate from
+`DIST_BOX_01` to one basin). All five share the same `pv_unit_id = "APPLIED_CHANNEL_01"` and
+`pv_property = "level_m"`. The FlowSolver then prorates naturally if the combined request
+exceeds supply — the controllers provide equal proportional demand signals; proration handles
+redistribution when a basin goes out of service (its gate is disabled, removing it from the
+proration set automatically).
 
 **Files**:
-- `scripts/simulation/automation/headworks_level_controller.gd` (new — extends
-  `SimController`)
-- `config/plants/phase3_headworks/controllers.json`
+- `config/plants/phase3_headworks/controllers.json` — five `LevelController` config entries
 - `tests/integration/phase3_headworks/test_headworks_controller.gd`
 
 **Steps**:
 
-1. Create `headworks_level_controller.gd`:
-   - Operates in AUTO mode: reads `APPLIED_CHANNEL_01.level_m` as PV, modulates the
-     distribution box outlet valve openings proportionally.
-   - In MANUAL mode: hold current output.
-   - Warn-once on FORCED / FAILED mode (not implemented; treated as MANUAL).
-   - Bumpless transfer: initialize output to current valve position on MANUAL → AUTO switch.
+1. Create `controllers.json` with five `LevelController` entries:
+   - Each entry: `type = "LevelController"`, `pv_unit_id = "APPLIED_CHANNEL_01"`,
+     `pv_property = "level_m"`, `target_actuator_id = "<basin_N_inlet_gate>"`,
+     same `gain`, `deadband_m`, `min_output = 0.0`, `max_output = 1.0`.
+   - Wire into `PlantFactory` (already handles `LevelController` from WP2.4; no new
+     factory code needed — confirm the existing loading path handles multiple instances).
 
-2. Wire into `controllers.json` and `PlantFactory`.
-
-3. Create `tests/integration/phase3_headworks/test_headworks_controller.gd`:
-   - `test_controller_stabilizes_applied_channel_level`: run 1000 ticks with level controller
-     in AUTO, assert `|level - setpoint| ≤ deadband_m` after settling.
-   - `test_controller_redistributes_on_basin_loss`: take one basin out of service mid-run,
-     assert controller adapts and level stays within ±10% of setpoint within 100 ticks.
+2. Create `tests/integration/phase3_headworks/test_headworks_controller.gd`:
+   - `test_five_controllers_stabilize_applied_channel_level`: run 1000 ticks with all five
+     controllers in AUTO, assert `|APPLIED_CHANNEL_01.level_m - setpoint| ≤ deadband_m`
+     after settling.
+   - `test_controller_redistribution_on_basin_loss`: take one basin out of service mid-run
+     (disabling its inlet gate link); assert the four remaining controllers still maintain
+     level within ±10% of setpoint within 100 ticks.
 
 **Tests**:
-- `test_controller_stabilizes_applied_channel_level`
-- `test_controller_redistributes_on_basin_loss`
+- `test_five_controllers_stabilize_applied_channel_level`
+- `test_controller_redistribution_on_basin_loss`
 
 **Done when**:
 - Both tests pass headless (pasted GUT Run Summary with Scripts count). 0 failing.
+- No new `SimController` subclass created — only `LevelController` instances in config.
 
 ---
 
@@ -410,30 +434,31 @@ schema entry in `config/schema/` and is validated by `plant_validator.gd`. Add a
 in CI (addressing the WP2.5 review nit).
 
 **Files**:
-- `config/schema/topology.schema.json` (update — `in_service`, junction sizing constraints)
+- `config/schema/topology.schema.json` (update — confirm `in_service` field already present
+  since Phase 1; add it if absent)
 - `config/schema/presentation_map.schema.json` (confirm exists from WP2.5)
 - `config/plants/phase3_headworks/presentation_map.json` (new)
-- `scripts/configuration/plant_validator.gd` (update — validate `in_service`, warn on
-  junction sizing violations)
-- `tools/ci/validate_configs.sh` (confirm guard in place from WP2.2-R)
+- `scripts/configuration/plant_validator.gd` (update — explicit boolean type-check for
+  `in_service`; no junction-size heuristic — see P3-A5 below)
+- `tools/ci/validate_configs.sh` (guard already in place from WP2.2-R)
 
 **Steps**:
 
 1. Update `config/schema/topology.schema.json`:
-   - Add `in_service` field (type: boolean, default: true).
-   - Add a `simulation_resolution_warning` check comment for junction units (schema cannot
-     enforce warnings, so `plant_validator.gd` emits `push_warning` if `surface_area_m2 > 1.0`
-     on a unit whose `maximum_volume_m3 ≤ 10.0`).
+   - Ensure `in_service` (type: boolean, default: true) is present.
 
-2. Create `config/plants/phase3_headworks/presentation_map.json` so
-   `presentation_map.schema.json` positive path is exercised.
+2. Update `plant_validator.gd`:
+   - Add explicit boolean type-check for `in_service` if present in config.
+   - **P3-A5**: Do **not** add a `surface_area_m2 > 1.0 AND maximum_volume_m3 ≤ 10.0`
+     warning. That heuristic is inverted relative to §1.2's sizing rule and would
+     false-positive on legitimately small basins. The existing `simulation_resolution_warning`
+     (`max_inflow × dt vs operating_volume`) in `SIMULATION_RULES.md` already covers
+     fast-turnover risk; replicate that ratio check if any automated check is needed.
 
-3. Run `tools/ci/validate_configs.sh` — must exit 0.
+3. Create `config/plants/phase3_headworks/presentation_map.json` so
+   `presentation_map.schema.json` positive path is exercised in CI.
 
-4. Update `plant_validator.gd`:
-   - Validate `in_service` is boolean if present.
-   - Emit `push_warning` (not error) when a `StorageUnit` has
-     `surface_area_m2 > 1.0` and `maximum_volume_m3 ≤ 10.0` (possible junction misconfiguration).
+4. Run `tools/ci/validate_configs.sh` — must exit 0.
 
 **Tests**: All existing integration + schema validation CI must still pass.
 
@@ -467,8 +492,17 @@ across the full headworks train.
      trajectories (bit-exact comparison of snapshots).
 
 2. `test_phase3_invariants.gd`:
-   - **`test_no_water_created_phase3`**: after every tick in a 10,000-tick run, assert
-     `MassBalanceTracker.total_error_m3 ≤ EPSILON * tick_count`.
+   - **`test_no_water_created_phase3`** (P3-A6): validate mass conservation across a
+     10,000-tick run. The assertion form must use the established tolerance:
+     ```
+     # Correct — matches Phase 2 invariant test form:
+     assert mass_balance_report.mass_balance_error_m3 <= 1e-9 * scale * sqrt(tick_count)
+     # where scale accounts for the larger Phase 3 plant volume
+     #
+     # Obtain the report via:
+     var report: Dictionary = engine.mass_balance_tracker.report()
+     # NOT: MassBalanceTracker.total_error_m3  (no such field)
+     ```
    - **`test_dag_unchanged_after_availability_toggle`**: assert `topological_units_list` is
      identical before and after a basin is taken out of service (DAG is static).
 
