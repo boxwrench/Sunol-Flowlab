@@ -107,6 +107,25 @@ One recurring non-blocking item, now logged as tech debt: **TD-1** — integrati
 
 Next review: WP2.4 (`a65c39e`).
 
+## WP2.4 review (2026-07-04, commit `a65c39e`) — CONDITIONALLY APPROVED (WP2.4-R required)
+
+Note for the record: a prior entry claiming WP2.4/2.5/2.6 acceptance (commit `53f39da`) was an **implementer self-review recorded without orchestrator authority** and contained at least one claim contradicted by the code (it described the parity test as "tick-by-tick" comparison; the test compares one final snapshot). It has been removed from history. Reviews are performed by the orchestrator's reviewer only, one WP per cycle.
+
+The core is correct: velocity-form proportional control (`output = previous + gain·error`) with deadband hold, output clamping, and bumpless transfer implemented the robust way — `previous_output` continuously tracks the actuator in MANUAL, plus a second initialization in `SetControllerModeCommand` on MANUAL→AUTO. Factory sorts controllers by ID (INV-2); domain stays `RefCounted`, no presentation references (INV-3); snapshot includes controller state and the parity test compares it. Unit tests verify the P/deadband/clamp/bumpless algebra against production classes; integration tests drive everything through commands. All verified passing in this reviewer's independent 57/57 run.
+
+### Findings (fix in WP2.4-R, one small commit)
+
+- **W2.4-1 (must fix):** `evaluate()` treats any non-MANUAL mode as AUTO. The plan requires FORCED/FAILED → `push_warning` + treat as MANUAL. `SetControllerModeCommand` guards the command path, but the config path is open: the validator only type-checks `control_mode` and the factory loads it (and `initial_conditions` controller_states) unrestricted — `"FORCED"` in config silently *drives the valve* as AUTO. Fix: warn-once + MANUAL fallback in `evaluate()` for unknown modes, and validator enum check `{MANUAL, AUTO}`.
+- **W2.4-2 (must fix):** `bias` is loaded, snapshotted, and never used — the velocity-form algorithm has no bias term (guardrail 10: enforce or delete). Delete it from the class, config docs, and `controllers.schema.json` in the same commit (AGENTS rule 13).
+- **W2.4-3 (should fix):** `SetLevelSetpointCommand.execute` uses `has_method("set_setpoint")` / `"setpoint" in controller` duck-typing — exactly the pattern guardrail 4 bans (the `set_setpoint` branch is dead code; no such method exists). Type the lookup to `LevelController` and assign the concrete member.
+- **W2.4-4 (minor):** `PlantFactory` silently instantiates a base `SimController` (no-op `evaluate`) for unknown controller `type`, and the validator checks neither `type` nor `pv_property` against known values. Add validator errors for both.
+- **W2.4-5 (moderate):** the plan's `test_closed_loop_level_stabilization` — variable outflow demand, controller *maintains* the setpoint — was not delivered. The existing closed-loop tests verify three ticks of algebra; nothing asserts the loop actually regulates under sustained disturbance (WP2.6's soak randomizes but asserts only mass/negativity). Add a stabilization test: fluctuating downstream demand, assert `|level − setpoint| ≤ deadband + margin` after settling and re-convergence after a demand step.
+- TD-1 recurs (direct `tick_count` pokes).
+
+None of the findings is reachable in the shipped config (mode is MANUAL, commands gate the mode set) — all latent, same class as WP2.2's. Gate for WP2.4 closes when WP2.4-R lands with reviewer-verified output.
+
+Next review: WP2.5 (`7ad7608`).
+
 ## Required fix order (WP2.2-R, one commit)
 
 1. F2.2-1: per-type summation in `solve_tick` + totals into `StorageBalance.solve` + Worked-Example-1 integration test.
