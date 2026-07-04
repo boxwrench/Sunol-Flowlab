@@ -8,6 +8,11 @@ var current_tick: int = 0
 var units_list: Array = []
 var units_dict: Dictionary = {}
 
+# Topological order of ProcessUnits — computed once by PlantFactory via Kahn's
+# algorithm (lexicographic tie-breaking on unit_id).  Used by FlowSolver for
+# deterministic two-pass sweep.  Empty until build_plant() succeeds.
+var topological_units_list: Array = []
+
 var links_list: Array = []
 var links_dict: Dictionary = {}
 

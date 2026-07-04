@@ -122,5 +122,51 @@ static func build_plant(
 	for aid in sorted_act_ids:
 		context.actuators_list.append(actuators_map[aid])
 		context.actuators_dict[aid] = actuators_map[aid]
-		
+
+	# 6. Topological sort (Kahn's algorithm) — Edge Rule 1
+	# in-degree: how many upstream units feed this unit via FlowLink edges.
+	var in_degree: Dictionary = {}
+	# adjacency: unit_id -> array of downstream unit ids
+	var downstream: Dictionary = {}
+	for uid in units_map:
+		in_degree[uid] = 0
+		downstream[uid] = []
+
+	for link in links_map.values():
+		var src_unit: RefCounted = link.source_port.parent_unit if link.source_port != null else null
+		var dst_unit: RefCounted = link.destination_port.parent_unit if link.destination_port != null else null
+		if src_unit == null or dst_unit == null:
+			continue
+		# src_unit.unit_id is the StringName declared on ProcessUnit
+		var src_id: StringName = src_unit.unit_id
+		var dst_id: StringName = dst_unit.unit_id
+		if src_id == dst_id:
+			continue  # self-loop: not a valid edge for DAG purposes
+		in_degree[dst_id] = in_degree.get(dst_id, 0) + 1
+		downstream[src_id].append(dst_id)
+
+	# Seed ready queue with every unit whose in-degree is zero, sorted
+	# lexicographically so the tie-breaking rule is deterministic (guardrail 7).
+	var ready: Array = []
+	for uid in in_degree:
+		if in_degree[uid] == 0:
+			ready.append(uid)
+	ready.sort_custom(func(a, b) -> bool: return String(a) < String(b))
+
+	context.topological_units_list.clear()
+	while ready.size() > 0:
+		var uid: StringName = ready.pop_front()
+		context.topological_units_list.append(units_map[uid])
+		for next_id in downstream[uid]:
+			in_degree[next_id] -= 1
+			if in_degree[next_id] == 0:
+				ready.append(next_id)
+		# Re-sort after each insertion to maintain lex order across new entries
+		ready.sort_custom(func(a, b) -> bool: return String(a) < String(b))
+
+	# Cycle detection: if any unit was never emitted, the graph contains a cycle.
+	if context.topological_units_list.size() != units_map.size():
+		push_error("PlantFactory: topology graph contains a cycle — build_plant() failed.")
+		return false
+
 	return true
