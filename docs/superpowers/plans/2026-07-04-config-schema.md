@@ -441,6 +441,8 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 ### Task 3: initial_conditions schema
 
+> **✅ COMPLETE** (commit `b27eea1`, reviewed clean). `$id` omitted per Task 1 deviation.
+
 **Files:**
 - Create: `config/schema/initial_conditions.schema.json`, `tests/fixtures/schema_invalid/initial_conditions.json`
 
