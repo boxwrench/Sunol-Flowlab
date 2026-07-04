@@ -8,10 +8,12 @@ trains: two source reservoirs, inlet manifold, flash mix, distribution box, five
 and the applied channel. This introduces flow splitting across parallel trains and basin
 availability (in-service / out-of-service toggling at runtime).
 
-**Presentation scope (P3-A7)**: headworks and basin visuals are **deferred** — Phase 3 is
-simulation-domain and configuration only. A presentation WP (analogous to WP2.5) will be
-proposed in a future plan once the domain layer is reviewer-accepted. No scene files, no
-visual adapter scripts, and no `tscn` assets are created in any Phase 3 WP.
+**Presentation scope (P3-A7, resolved by orchestrator 2026-07-04)**: Phase 3 **includes**
+headworks visuals as its final work package, **WP3.8**, mirroring WP2.5's pattern
+(presentation_map-driven visual adapters, asset panel reuse, headless/visual parity test).
+WP3.0–WP3.7 remain simulation-domain and configuration only — no scene files, visual
+adapter scripts, or `tscn` assets before WP3.8. Phase 3's exit is a watchable plant:
+toggle a basin out of service and see flow redistribute across the remaining four.
 
 **Gate prerequisite**: WP2.2-R reviewed (G5 gate closed ✅). Reviews of WP2.3–2.6 must
 follow, one per cycle, in order. Phase 3 execution is gated on completion of all outstanding
@@ -128,6 +130,7 @@ This is the mandatory first deliverable.
 | **WP3.5** | Five LevelControllers for applied-channel level regulation | Automation / Commands | `level_controller.gd` ×5 instances, `controllers.json` | WP3.4 |
 | **WP3.6** | Config schema sync (all Phase 3 new fields) | Configuration / Schema | `config/schema/`, `plant_validator.gd` | WP3.4, WP3.5 |
 | **WP3.7** | Phase 3 Verification & Soak Suite | Verification / Tests | `tests/integration/phase3_headworks/` | WP3.6 |
+| **WP3.8** | Headworks Presentation & Parity | Presentation / UI | `scenes/plant/headworks.tscn`, `presentation_map.json`, parity test | WP3.7 |
 
 ---
 
@@ -540,9 +543,48 @@ New plant directory: `config/plants/phase3_headworks/`
 
 ---
 
-## 6. Final WP (WP3.7) — Verification & Soak Suite
+### WP3.8 — Headworks Presentation & Parity
 
-See §4 WP3.7 above. This mirrors WP2.6's structure and exit criteria exactly.
+**Goal**: Build the visual presentation for the full headworks train, mirroring WP2.5's
+pattern. Water levels move on all wet units (reservoirs, manifold, flash mix, distribution
+box, five basins, applied channel); the asset panel shows controller and availability state;
+an out-of-service basin is visually distinct. Simulation code is not modified (INV-3).
+
+**Files**:
+- `scenes/plant/headworks.tscn`
+- `config/plants/phase3_headworks/presentation_map.json` (extend — map every wet unit;
+  created in WP3.6)
+- `scripts/ui/controllers/asset_panel.gd` (extend — show `in_service` state and a
+  Set-In/Out-of-Service button issuing `SetBasinServiceCommand` via `CommandBus`)
+- `tests/integration/phase3_headworks/test_presentation_parity.gd`
+
+**Steps**:
+1. Build `headworks.tscn` reusing the WP2.5 visual adapters — new units are
+   `presentation_map.json` entries, not new adapter code. Any unit absent from the map gets
+   the default box (WP2.5 contract).
+2. Extend `asset_panel.gd`: display `in_service`, wire the service toggle through
+   `CommandBus` only (no direct domain writes — INV-3).
+3. `test_presentation_parity.gd`: drive the same command script (valve moves + basin
+   toggles) in visual and headless modes via `advance_frame`; assert identical state
+   trajectories.
+
+**Tests**:
+- `test_headworks_presentation_parity`
+
+**Done when**:
+- Visual scene runs at 1× and 60× with moving water; taking a basin out of service is
+  visible and flow redistribution can be observed.
+- Parity test passes headless (pasted GUT Run Summary including Scripts count). 0 failing.
+- Zero files under `scripts/simulation/` modified in this WP (INV-3 — verify with
+  `git diff --stat`).
+- `git status` clean. Commit message begins `WP3.8:`.
+
+---
+
+## 6. Final WPs — Verification (WP3.7) then Presentation (WP3.8)
+
+WP3.7 mirrors WP2.6's structure and exit criteria exactly. WP3.8 follows it and closes the
+phase with the visual product.
 
 ---
 
@@ -552,8 +594,10 @@ Phase 3 is complete when:
 1. WP3.7 soak, churn, and replay tests pass with reviewer-verified output.
 2. Mass balance ledger shows zero error across 100k-tick headworks soak.
 3. Basin availability toggling produces correct flow redistribution with no water creation.
-4. `git status` is clean; CHANGELOG.md has entries for all WP3.x deliverables.
-5. Reviewer confirms G-Phase3 gate closed.
+4. WP3.8 visual scene runs at 1× and 60×, basin-availability toggling is observable, and
+   the headless/visual parity test passes with reviewer-verified output.
+5. `git status` is clean; CHANGELOG.md has entries for all WP3.x deliverables.
+6. Reviewer confirms G-Phase3 gate closed.
 
 ---
 
