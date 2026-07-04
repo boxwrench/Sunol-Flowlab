@@ -46,6 +46,11 @@
           "description": "Domain class instantiated by plant_factory.gd."
         },
         "display_name": { "$ref": "defs.schema.json#/$defs/display_name" },
+        "in_service": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the unit is in-service (true) or out-of-service (false). Enforced in Phase 3."
+        },
         "maximum_volume_m3": {
           "$ref": "defs.schema.json#/$defs/positive_number",
           "description": "Physical storage capacity [m3]. StorageUnit only."

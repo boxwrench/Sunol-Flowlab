@@ -2,10 +2,20 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased] — WP2.4-R3 (remediation, pending reviewer verification)
+## [Unreleased]
+
+### Added
+- **WP3.0 / specs**: Added Basin Availability Semantics (specifying `in_service` inheritance, port link disabling, drain/spill exceptions, and static DAG persistence) and junction sizing rules (`surface_area_m2 <= 1.0`, `maximum_volume_m3 <= 10.0`, `min_operating_level_m = 0.0`) to `SIMULATION_RULES.md` and `PROCESS_UNIT_CONTRACTS.md`.
+- **WP3.1 / config**: Created configuration for the two source reservoirs (`RESERVOIR_01`, `RESERVOIR_02`) and the inlet manifold (`MANIFOLD_01`) under `config/plants/phase3_headworks/`. Added `in_service` optional property to `unit` definition in `topology.schema.json`.
+
+### Tests Added
+- **WP3.1**: Added `test_reservoir_manifold.gd` to verify dual-reservoir combining flow, single-reservoir starvation behavior, and mass conservation.
+
+## [1.2.0] — Phase 2 Finalized (G-Phase2 closed)
 
 ### Added
 - **W2.4-5 / docs**: Added a "Control loop characteristics" section to `CONTROL_LOGIC.md` explaining that velocity-form proportional control behaves as pure integral action, exhibiting zero steady-state droop, deadband limit cycles (undamped double integrator under lag), and loop gain scaling. Cites the 4.981m measurement.
+
 
 ### Fixed
 - **W2.4-1**: `LevelController.evaluate()` now warns once and falls back to MANUAL mode for unknown control modes (non-MANUAL, non-AUTO). `PlantValidator` enforces `control_mode` enum `{MANUAL, AUTO}`.

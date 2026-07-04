@@ -1,0 +1,8 @@
+{
+  "$schema": "../../schema/plant.schema.json",
+  "plant_id": "phase3_headworks",
+  "display_name": "Phase 3 Headworks & Parallel Trains",
+  "simulation_settings": {
+    "default_dt_s": 1.0
+  }
+}
