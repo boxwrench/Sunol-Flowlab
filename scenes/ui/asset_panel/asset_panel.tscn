@@ -111,3 +111,48 @@ layout_mode = 2
 [node name="DrainValueLabel" type="Label" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
 text = "0%"
+
+[node name="ControllerSeparator" type="HSeparator" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ControllerLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Level Controller"
+
+[node name="ControllerModeContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ModeLabel" type="Label" parent="PanelContainer/VBoxContainer/ControllerModeContainer"]
+layout_mode = 2
+text = "Mode: "
+
+[node name="ModeValueLabel" type="Label" parent="PanelContainer/VBoxContainer/ControllerModeContainer"]
+layout_mode = 2
+text = "MANUAL"
+
+[node name="ToggleModeButton" type="Button" parent="PanelContainer/VBoxContainer/ControllerModeContainer"]
+layout_mode = 2
+text = "Toggle"
+
+[node name="SetpointContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="SetpointLabel" type="Label" parent="PanelContainer/VBoxContainer/SetpointContainer"]
+layout_mode = 2
+text = "Setpoint: "
+
+[node name="SetpointValueLabel" type="Label" parent="PanelContainer/VBoxContainer/SetpointContainer"]
+layout_mode = 2
+text = "5.00 m"
+
+[node name="IncreaseSetpointButton" type="Button" parent="PanelContainer/VBoxContainer/SetpointContainer"]
+layout_mode = 2
+text = "+"
+
+[node name="DecreaseSetpointButton" type="Button" parent="PanelContainer/VBoxContainer/SetpointContainer"]
+layout_mode = 2
+text = "-"
+
+[node name="ControllerParamsLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Gain: 2.0  Deadband: 0.05m"

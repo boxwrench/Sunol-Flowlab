@@ -1,0 +1,65 @@
+[gd_scene load_steps=5 format=3 uid="uid://c1reservoirvisual"]
+
+[ext_resource type="Script" path="res://scripts/presentation/adapters/storage_visual_adapter.gd" id="1_adapter"]
+[ext_resource type="Script" path="res://scripts/presentation/adapters/valve_visual_adapter.gd" id="2_valve"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_water"]
+size = Vector3(9.6, 1.0, 9.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_water"]
+transparency = 1
+albedo_color = Color(0.1, 0.4, 0.8, 0.6)
+
+[node name="ReservoirVisual" type="Node3D"]
+script = ExtResource("1_adapter")
+
+[node name="Structure" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Outer" type="CSGBox3D" parent="Structure"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
+size = Vector3(10, 10, 10)
+
+[node name="Inner" type="CSGBox3D" parent="Structure/Outer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+operation = 2
+size = Vector3(9.6, 10, 9.6)
+
+[node name="WaterSurface" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_water")
+surface_material_override/0 = SubResource("StandardMaterial3D_water")
+
+[node name="AlarmIndicator" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10.5, 0)
+visible = false
+light_color = Color(1, 0.1, 0.1, 1)
+light_energy = 5.0
+omni_range = 10.0
+
+[node name="InletValve" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 1, 0)
+script = ExtResource("2_valve")
+
+[node name="Handle" type="CSGCylinder3D" parent="InletValve"]
+transform = Transform3D(1, 0, 0, 0, 0.2, 0, 0, 0, 1, 0, 0.5, 0)
+radius = 0.5
+height = 1.0
+
+[node name="OutletValve" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 1, 0)
+script = ExtResource("2_valve")
+
+[node name="Handle" type="CSGCylinder3D" parent="OutletValve"]
+transform = Transform3D(1, 0, 0, 0, 0.2, 0, 0, 0, 1, 0, 0.5, 0)
+radius = 0.5
+height = 1.0
+
+[node name="DrainValve" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -5.5)
+script = ExtResource("2_valve")
+
+[node name="Handle" type="CSGCylinder3D" parent="DrainValve"]
+transform = Transform3D(1, 0, 0, 0, 0.2, 0, 0, 0, 1, 0, 0.5, 0)
+radius = 0.5
+height = 1.0

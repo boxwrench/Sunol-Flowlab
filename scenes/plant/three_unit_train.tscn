@@ -1,0 +1,65 @@
+[gd_scene load_steps=8 format=3 uid="uid://c1threeunittrain"]
+
+[ext_resource type="Script" path="res://scripts/application/three_unit_bootstrap.gd" id="1_bootstrap"]
+[ext_resource type="Script" path="res://scripts/application/simulation_host.gd" id="2_host"]
+[ext_resource type="PackedScene" uid="uid://b7y2y2p2r3c4d" path="res://scenes/environment/placeholder_environment.tscn" id="3_env"]
+[ext_resource type="PackedScene" uid="uid://b8b8g2yv8p2k8" path="res://scenes/cameras/orbit_camera.tscn" id="4_camera"]
+[ext_resource type="PackedScene" uid="uid://d3x1k1v3j4c5t" path="res://scenes/ui/controls/time_controls.tscn" id="5_ui"]
+[ext_resource type="PackedScene" uid="uid://c1reservoirvisual" path="res://scenes/process_units/reservoirs/reservoir_visual.tscn" id="6_reservoir"]
+[ext_resource type="PackedScene" uid="uid://c1assetpanel" path="res://scenes/ui/asset_panel/asset_panel.tscn" id="7_panel"]
+
+[node name="ThreeUnitTrain" type="Node3D"]
+script = ExtResource("1_bootstrap")
+
+[node name="SimulationHost" type="Node" parent="."]
+script = ExtResource("2_host")
+
+[node name="PlaceholderEnvironment" parent="." instance=ExtResource("3_env")]
+
+[node name="OrbitCamera" parent="." instance=ExtResource("4_camera")]
+
+[node name="SourceReservoir" parent="." instance=ExtResource("6_reservoir")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 0, 0)
+unit_id = &"SOURCE_RESERVOIR"
+
+[node name="InletValve" parent="SourceReservoir"]
+actuator_id = &"VALVE_IN"
+
+[node name="OutletValve" parent="SourceReservoir"]
+actuator_id = &"VALVE_OUT_SRC"
+
+[node name="DrainValve" parent="SourceReservoir"]
+actuator_id = &"VALVE_DRAIN_SRC"
+
+[node name="TreatmentBasin" parent="." instance=ExtResource("6_reservoir")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+unit_id = &"BASIN"
+
+[node name="InletValve" parent="TreatmentBasin"]
+actuator_id = &"VALVE_OUT_SRC"
+
+[node name="OutletValve" parent="TreatmentBasin"]
+actuator_id = &"VALVE_OUT_BASIN"
+
+[node name="DrainValve" parent="TreatmentBasin"]
+actuator_id = &"VALVE_DRAIN_BASIN"
+
+[node name="ReceivingReservoir" parent="." instance=ExtResource("6_reservoir")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, 0)
+unit_id = &"RECEIVING_RESERVOIR"
+
+[node name="InletValve" parent="ReceivingReservoir"]
+actuator_id = &"VALVE_OUT_BASIN"
+
+[node name="OutletValve" parent="ReceivingReservoir"]
+actuator_id = &"VALVE_OUT_RCV"
+
+[node name="DrainValve" parent="ReceivingReservoir"]
+actuator_id = &"VALVE_DRAIN_RCV"
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="TimeControls" parent="CanvasLayer" instance=ExtResource("5_ui")]
+
+[node name="AssetPanel" parent="CanvasLayer" instance=ExtResource("7_panel")]
+selected_unit_id = &"BASIN"
