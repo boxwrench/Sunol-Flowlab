@@ -1,0 +1,32 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Godot
+        uses: firebelley/godot-default-setup-action@v2
+        with:
+          version: 4.3.0 # or standard 4.x stable
+
+      - name: Run GUT Tests
+        run: |
+          godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit
+
+      - name: Enforce G3 (No Node inheritance in domain)
+        run: |
+          if [ -d "scripts/simulation" ]; then
+            if grep -r -E "extends[[:space:]]+(Node|Node2D|Node3D|Control|CanvasItem|Window)" scripts/simulation/; then
+              echo "Error: Godot Node inheritance is forbidden under scripts/simulation/. Domain classes must extend RefCounted or be plain."
+              exit 1
+            fi
+          fi
