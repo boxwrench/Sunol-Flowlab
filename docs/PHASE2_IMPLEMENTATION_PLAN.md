@@ -7,13 +7,13 @@ The goal of Phase 2 is to connect a three-unit train (**Source Reservoir → Bas
 
 ## Phase 2 Architecture & Edge Rules Map
 
-To satisfy the **six Determinism and Edge Rules** defined in [docs/SIMULATION_RULES.md](file:///C:/Github/Sunol%20FlowLab/docs/SIMULATION_RULES.md) and the three core invariants (**INV-1/2/3**), the work packages below are structured around the following constraints:
+To satisfy the **six Determinism and Edge Rules** defined in [SIMULATION_RULES.md](SIMULATION_RULES.md) and the three core invariants (**INV-1/2/3**), the work packages below are structured around the following constraints:
 
 1. **Deterministic Topological Order (Edge Rule 1)**: Kahn's algorithm with a ready-set sorted lexicographically by unit ID is implemented at plant build. The resulting order is cached on the context and used for solver sweeps.
 2. **One Proration Authority (Edge Rule 2)**: Flow proration is calculated *only* in `FlowSolver.solve_flows()`. In debug builds, `StorageBalance.solve()` asserts if its internal proration is triggered.
 3. **Withdrawable vs Total Volume (Edge Rule 3)**: OUTLET ports draw only from volume above `min_operating_level_m`. DRAIN ports draw to zero volume. Both `FlowSolver` and `StorageBalance` share this exact calculation.
 4. **Boundary Flows Sum Across Links (Edge Rule 4)**: `ExternalBoundary.current_flow_m3s` is calculated as the sum of its connected links' actual flows (using `+=` instead of `=`). Total flow is capped and prorated by `flow_limit_m3s`.
-5. **Spill Routing is Per-Unit (Edge Rule 5)**: `StorageUnit` configures `spill_destination` (defaulting to the plant-wide spill boundary). Spill flows are routed to their designated destination boundaries, not broadcast to all spill boundaries.
+5. **Spill Routing is Per-Unit (Edge Rule 5)**: `StorageUnit` reads `spill_destination_id` from config; no default is injected in code. The plant validator errors if `spill_destination_id` does not resolve to a known boundary.
 6. **COMMANDED Mode warning (Edge Rule 6)**: Links configured as `COMMANDED` raise a warning using `push_warning()` and behave as `RESTRICTED` at full opening (1.0). Silent placeholder behavior is prohibited.
 
 ---
@@ -43,9 +43,9 @@ To satisfy the **six Determinism and Edge Rules** defined in [docs/SIMULATION_RU
 - `tests/unit/configuration/test_topological_sort.gd`
 
 **Steps**:
-1. Update [simulation_context.gd](file:///C:/Github/Sunol%20FlowLab/scripts/simulation/core/simulation_context.gd):
+1. Update [simulation_context.gd](../scripts/simulation/core/simulation_context.gd):
    - Add `var topological_units_list: Array = []` to store the sorted list of `ProcessUnit` objects.
-2. Update [plant_factory.gd](file:///C:/Github/Sunol%20FlowLab/scripts/configuration/plant_factory.gd):
+2. Update [plant_factory.gd](../scripts/configuration/plant_factory.gd):
    - In `build_plant`, implement Kahn's algorithm:
      - Compute the in-degree of all units based on `FlowLink` connections: `link.source_port.parent_unit` -> `link.destination_port.parent_unit`.
      - Find all units with in-degree = 0. Add their IDs to a `ready_set` array.
@@ -54,10 +54,10 @@ To satisfy the **six Determinism and Edge Rules** defined in [docs/SIMULATION_RU
      - For each outgoing link from the popped unit, decrement the in-degree of its destination unit. If the in-degree becomes 0, push its ID into the `ready_set` and re-sort `ready_set`.
      - Assert that `topological_units_list.size() == context.units_list.size()` to verify the graph is cycle-free (DAG check).
      - Store the sorted list in `context.topological_units_list`.
-3. Create `tests/unit/configuration/test_topological_sort.gd`:
-   - Write a test `test_topological_sort_order` using GUT to verify sorting for a simple chain.
-   - Write a test `test_topological_sort_permutation_invariance` to verify that permuted unit-declaration orders in the JSON topology file yield the identical topological order.
-   - Write a test asserting that cyclic topologies fail validation.
+3. Create [test_topological_sort.gd](../tests/unit/configuration/test_topological_sort.gd):
+   - Write `test_topological_sort_order` using GUT to verify sorting for a simple chain.
+   - Write `test_topological_sort_permutation_invariance` to verify that permuted unit-declaration orders in the JSON topology file yield the identical topological order.
+   - Write `test_topological_sort_cycle_detection` asserting that cyclic topologies fail validation.
 
 **Tests**:
 - `test_topological_sort_order`
@@ -65,8 +65,8 @@ To satisfy the **six Determinism and Edge Rules** defined in [docs/SIMULATION_RU
 - `test_topological_sort_cycle_detection`
 
 **Done when**:
-- `git status` shows `scripts/simulation/core/simulation_context.gd`, `scripts/configuration/plant_factory.gd`, and `tests/unit/configuration/test_topological_sort.gd` successfully modified/created.
-- Sorter unit tests pass (proving tie-breaking determinism and permutation invariance).
+- All three tests above pass headless (GUT runner output shows 3 collected, 3 passed, 0 failed).
+- Tests written but NOT executed in an environment without the `godot` executable are marked "unverified" per guardrail 1.
 
 ---
 
@@ -82,15 +82,19 @@ To satisfy the **six Determinism and Edge Rules** defined in [docs/SIMULATION_RU
 - `tests/unit/hydraulics/test_flow_solver.gd`
 
 **Steps**:
-1. Update [storage_unit.gd](file:///C:/Github/Sunol%20FlowLab/scripts/simulation/domain/storage_unit.gd):
-   - Add `var spill_destination_id: StringName = &"SPILL_SINK"` field (loaded from config, defaults to `"SPILL_SINK"`).
-   - Implement `available_withdrawal_m3(dt: float)` for specific port types:
-     - For `OUTLET` ports: return volume above `min_operating_level_m` (`max(0.0, volume_m3 - min_operating_level_m * surface_area_m2)`).
-     - For `DRAIN` ports: return total volume (`max(0.0, volume_m3)`).
-2. Update [storage_balance.gd](file:///C:/Github/Sunol%20FlowLab/scripts/simulation/hydraulics/storage_balance.gd):
-   - Redefine available volume checks for `requested_outflow_m3s` (OUTLET) and `requested_drain_flow_m3s` (DRAIN) using the same min-level cutoff.
+1. Update [storage_unit.gd](../scripts/simulation/domain/storage_unit.gd):
+   - Add `var spill_destination_id: StringName` field — **loaded from config only, no code default**.
+     The plant validator must emit an error if `spill_destination_id` is absent or does not resolve
+     to a known boundary in the topology (Edge Rule 5). Do not inject a `"SPILL_SINK"` fallback in
+     `StorageUnit.initialize()`.
+   - Add `available_outlet_withdrawal_m3(dt: float)` for OUTLET ports:
+     returns `max(0.0, volume_m3 - min_operating_level_m * surface_area_m2)`.
+   - `available_withdrawal_m3(dt)` (existing method) continues to serve DRAIN ports and returns
+     total volume `max(0.0, volume_m3)`.
+2. Update [storage_balance.gd](../scripts/simulation/hydraulics/storage_balance.gd):
+   - Redefine available volume checks for `requested_outflow_m3s` (OUTLET) and `requested_drain_flow_m3s` (DRAIN) using the same min-level cutoff as `available_outlet_withdrawal_m3`.
    - In `solve()`, add a debug assert: `assert(total_requested_withdrawal_volume <= available_volume + EPSILON, "StorageBalance proration triggered! This indicates a solver grant leak.")` (Edge Rule 2).
-3. Update [flow_solver.gd](file:///C:/Github/Sunol%20FlowLab/scripts/simulation/hydraulics/flow_solver.gd):
+3. Update [flow_solver.gd](../scripts/simulation/hydraulics/flow_solver.gd):
    - **Pass 1 (Downstream-to-Upstream Requests)**:
      - Iterate `context.topological_units_list` in **reverse order**.
      - For each incoming link to the unit, compute `requested_flow_m3s`.
@@ -105,8 +109,10 @@ To satisfy the **six Determinism and Edge Rules** defined in [docs/SIMULATION_RU
      - Prorate `DRAIN` links against `total_supply`.
      - If total grants (outlet + drain) exceed `total_supply`, prorate all outgoing links proportionally to fit the total supply limit.
      - If the source is an `ExternalBoundary` with `flow_limit_m3s >= 0.0`, prorate outgoing links to fit the boundary limit (Edge Rule 4).
-     - Set `link.granted_flow_m3s = link.actual_flow_m3s`.
-4. Update [simulation_engine.gd](file:///C:/Github/Sunol%20FlowLab/scripts/simulation/core/simulation_engine.gd):
+     - Set `link.granted_flow_m3s = link.requested_flow_m3s` (capped by proration). **Note**: the
+       assignment is `granted_flow_m3s = <prorated value>` — never `actual_flow_m3s = granted_flow_m3s`
+       at this stage; `actual_flow_m3s` is written only after `StorageBalance.solve()` in `solve_tick()`.
+4. Update [simulation_engine.gd](../scripts/simulation/core/simulation_engine.gd):
    - In `_step_calculate_levels_spills()`, set boundary flows using `+=` to sum flows across multiple links (Edge Rule 4).
    - Route `StorageUnit` spills to their configured `spill_destination_id` boundary instead of global summing (Edge Rule 5).
 5. Create `tests/unit/hydraulics/test_flow_solver.gd`:
@@ -122,8 +128,8 @@ To satisfy the **six Determinism and Edge Rules** defined in [docs/SIMULATION_RU
 - `test_flow_solver_defensive_assert`
 
 **Done when**:
-- G5 solver algorithm passes all unit test scenarios.
-- mass-balance integration tests run without triggering StorageBalance assertions.
+- G5 solver algorithm passes all four unit test scenarios.
+- Mass-balance integration tests run without triggering StorageBalance assertions.
 
 ---
 
@@ -141,11 +147,12 @@ To satisfy the **six Determinism and Edge Rules** defined in [docs/SIMULATION_RU
 
 **Steps**:
 1. Create config files in `config/plants/phase2_three_unit/`:
-   - **Topology**: Connect `EXTERNAL_SOURCE` -> `Source Reservoir` -> `Basin` -> `Receiving Reservoir` -> `EXTERNAL_SINK`. Add drain and spill sinks.
+   - **Topology**: Connect `EXTERNAL_SOURCE` -> `Source Reservoir` -> `Basin` -> `Receiving Reservoir` -> `EXTERNAL_SINK`. Add drain and spill sinks. Each `StorageUnit` must declare a `spill_destination_id` that resolves to a boundary in this topology.
    - **Initial Conditions**: Set non-zero initial volumes and default valve actuators.
-2. Update [config_loader.gd](file:///C:/Github/Sunol%20FlowLab/scripts/configuration/config_loader.gd) and [plant_validator.gd](file:///C:/Github/Sunol%20FlowLab/scripts/configuration/plant_validator.gd):
+2. Update [config_loader.gd](../scripts/configuration/config_loader.gd) and [plant_validator.gd](../scripts/configuration/plant_validator.gd):
    - Add loading and validation support for `controllers.json` and `alarms.json` if they exist (optionally default to empty).
    - Ensure the validator asserts cycle-free topology for the 3-unit train.
+   - Ensure the validator errors on any `StorageUnit` whose `spill_destination_id` is absent or does not resolve to a known boundary.
 3. Create `tests/integration/three_unit_train/test_flow_propagation.gd`:
    - Initialize the `phase2_three_unit` plant configuration.
    - Actuate valves manually using `SetValvePositionCommand`.
@@ -167,7 +174,9 @@ To satisfy the **six Determinism and Edge Rules** defined in [docs/SIMULATION_RU
 
 ### WP2.4 — Proportional Level Controller & Commands
 
-**Goal**: Implement the `SimController` base class and a proportional level controller that regulates a valve position based on level error, supporting bumpless transfer.
+**Goal**: Implement the `SimController` base class and a proportional level controller with deadband that regulates a valve position based on level error, supporting bumpless transfer.
+
+**Scope note**: FORCED and FAILED control modes are explicitly deferred to a later phase. This WP covers MANUAL and AUTO modes only.
 
 **Files**:
 - `scripts/simulation/domain/controller.gd`
@@ -181,34 +190,43 @@ To satisfy the **six Determinism and Edge Rules** defined in [docs/SIMULATION_RU
 - `tests/integration/three_unit_train/test_closed_loop_control.gd`
 
 **Steps**:
-1. Create `controller.gd` (`extends ProcessUnit`):
-   - Define fields: `target_actuator_id`, `pv_unit_id`, `pv_property`, `control_mode` (MANUAL, AUTO), `gain`, `bias`, `min_output`, `max_output`, `previous_output`.
-2. Create `level_controller.gd` (`extends SimController`):
+1. Create `controller.gd` (`extends RefCounted`):
+   - Define fields: `target_actuator_id`, `pv_unit_id`, `pv_property`, `control_mode` (MANUAL, AUTO),
+     `gain`, `bias`, `deadband_m`, `min_output`, `max_output`, `previous_output`.
+   - `deadband_m` is the half-width of the no-action zone around zero error (per CONTROL_LOGIC.md §Proportional control). Units: metres.
+2. Create `level_controller.gd` (`extends SimController` via `controller.gd`):
    - Implement `evaluate(context)` step:
      - In `AUTO` mode, calculate `error = setpoint - pv_value`.
-     - Compute output: `output = previous_output + gain * error`.
+     - If `abs(error) <= deadband_m`, skip output update (hold previous output).
+     - Otherwise compute output: `output = previous_output + gain * error`.
      - Clamp output to `[min_output, max_output]`.
      - Update target actuator commanded position: `actuator.commanded_position = output`.
      - Store `previous_output = output`.
      - Handle **Bumpless Transfer**: when switching from MANUAL to AUTO, initialize `previous_output` to the target actuator's current position to prevent jumps.
+   - In `MANUAL` mode, do nothing in `evaluate()`.
+   - FORCED and FAILED modes: not implemented. If encountered, emit `push_warning()` and treat as MANUAL.
 3. Create commands:
    - `SetControllerModeCommand`: changes controller between MANUAL and AUTO.
    - `SetLevelSetpointCommand`: changes level setpoint.
 4. Update `PlantFactory` & `PlantValidator`:
-   - Load controllers from `controllers.json` and validate fields (dangling actuator/unit IDs, positive gain, correct bounds).
+   - Load controllers from `controllers.json` and validate fields (dangling actuator/unit IDs, positive gain, valid bounds, `deadband_m >= 0`).
    - Wire controller evaluation in `SimulationEngine._step_evaluate_controllers()`.
 5. Create tests:
-   - **Unit Tests**: Test proportional error correction, output clamping, and manual mode bypass.
+   - **Unit Tests**:
+     - `test_controller_proportional_response`: verify output changes proportionally to error outside deadband.
+     - `test_controller_deadband`: verify output does NOT change when `|error| <= deadband_m`.
+     - `test_controller_bumpless_transfer`: verify no output jump on MANUAL→AUTO switch.
    - **Integration Tests**: Verify closed-loop control of Basin level. Subject the train to variable outflow demand and verify the controller modulates the upstream valve to maintain the level setpoint.
 
 **Tests**:
 - `test_controller_proportional_response`
+- `test_controller_deadband`
 - `test_controller_bumpless_transfer`
 - `test_closed_loop_level_stabilization`
 
 **Done when**:
 - Level controller is fully integrated into the simulation tick.
-- Closed-loop control tests pass without mass balance violations.
+- All four unit and integration tests pass without mass balance violations.
 
 ---
 
@@ -227,7 +245,7 @@ To satisfy the **six Determinism and Edge Rules** defined in [docs/SIMULATION_RU
    - Build 3D visual representations of the Source Reservoir, Basin, and Receiving Reservoir.
    - Instantiate visual adapters: water surface movement linked to `level_m` snapshots, and valve rotation linked to actuator positions.
 2. Update `asset_panel.gd`:
-   - Enhance the UI panel to show controller parameters (PV, setpoint, mode, gain) when a unit containing a controller is clicked.
+   - Enhance the UI panel to show controller parameters (PV, setpoint, mode, gain, deadband) when a unit containing a controller is clicked.
    - Provide buttons/inputs to switch controller modes and adjust setpoints via `CommandBus`.
 3. Create `test_presentation_parity.gd`:
    - Assert that driving the simulation in visual mode (via `SimulationHost` and visual scenes) produces identical numerical results to running the same sequence in headless mode.
