@@ -16,6 +16,7 @@ This index defines the authority order of the repository documentation. In the e
    - [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) — Work packages, gates, exit criteria, **Cold-Start Protocol**.
    - [ARCHITECTURE_REVIEW.md](ARCHITECTURE_REVIEW.md) — Invariants INV-1/2/3, gates G0–G5, design rationale.
    - [PHASE1_CODE_REVIEW.md](PHASE1_CODE_REVIEW.md) — Findings F1–F8 and remediation record.
+   - [PHASE2_CODE_REVIEW.md](PHASE2_CODE_REVIEW.md) — WP2.2 review, findings F2.2-1…5, WP2.2-R fix list.
    - [ROADMAP.md](ROADMAP.md) — Multi-phase milestones.
    - [DECISIONS/](DECISIONS/) — Architecture Decision Records (ADR 0001–0006).
 4. **Project metadata**
