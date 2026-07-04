@@ -111,21 +111,24 @@ To ensure consistent flow calculations and avoid ad-hoc solutions, the simulatio
    - Links in `RESTRICTED` mode request flow based on their actuator's effective opening:
      `requested_flow = max_flow_m3s * actuator.get_effective_opening()`
    - Incoming links propagate these requests upstream to their source ports.
+   - **Boundary Inflow Limit (Sink-side Proration)**: If the destination unit is an `ExternalBoundary` sink with a positive `flow_limit_m3s`, the sum of incoming requests is capped at `flow_limit_m3s`. Competing incoming requests are prorated proportionally if the limit is exceeded:
+     `factor = flow_limit_m3s / total_requested_inflow`
+     `link.requested_flow_m3s = link.requested_flow_m3s * factor`
 
 2. **Pass 2: Distribute Upstream Grants (Upstream to Downstream)**
    - The engine visits units in **topological order** (from sources to sinks).
    - For each unit, it determines the total available water supply for the tick:
-     `available_supply = current_volume / dt + total_upstream_inflows`
-   - It computes the sum of all downstream link requests connected to its outlet/drain ports:
-     `total_requested_withdrawal = sum(link.requested_flow)`
-   - **Proration Check**:
-     - If `total_requested_withdrawal <= available_supply`, all requests are granted in full:
-       `link.granted_flow_m3s = link.requested_flow_m3s`
-     - If `total_requested_withdrawal > available_supply`, the supply is over-committed. The solver prorates the available supply proportionally among all competing links:
-       `proration_factor = available_supply / total_requested_withdrawal`
-       `link.granted_flow_m3s = link.requested_flow_m3s * proration_factor`
-   - **Boundary Flow Limit Enforcement**: If a link connects to or from an `ExternalBoundary` unit with a positive `flow_limit_m3s`, the link's granted flow is capped at the boundary's limit:
-     `link.granted_flow_m3s = min(link.granted_flow_m3s, boundary.flow_limit_m3s)`
+     `total_supply = current_volume / dt + total_upstream_inflows`
+   - **Two-Tier Storage Proration (Outlet Priority)**: For `StorageUnit` sources, supply is distributed in two priority tiers (Edge Rule 3):
+     - **Tier 1 (OUTLET links)**: `OUTLET` ports draw only from volume above `min_operating_level_m`. Their available supply is:
+       `outlet_supply = max(0, volume - min_volume) / dt + inflows`
+       If the sum of `OUTLET` requests exceeds `outlet_supply`, the `OUTLET` links are prorated proportionally to fit `outlet_supply`.
+     - **Tier 2 (DRAIN links)**: `DRAIN` ports draw from the entire volume down to zero. They compete for the remaining total supply:
+       `drain_supply = total_supply - total_granted_outlet`
+       If the sum of `DRAIN` requests exceeds `drain_supply`, the `DRAIN` links are prorated proportionally to fit `drain_supply`.
+     - If the combined granted flows exceed `total_supply`, all outgoing links are rescaled proportionally to ensure mass conservation.
+   - **Boundary Flow Limit Enforcement**: If a source unit is an `ExternalBoundary` with a positive `flow_limit_m3s` (Edge Rule 4), the outgoing links' granted flows are prorated proportionally to fit the boundary limit:
+     `link.granted_flow_m3s = link.requested_flow_m3s * (flow_limit_m3s / total_outgoing_request)`
 
 3. **Final actual-flow sweep (after pass 2 completes).** After both passes are done, `FlowSolver` performs one final loop over **all** links in the context and writes:
    `link.actual_flow_m3s = link.granted_flow_m3s`

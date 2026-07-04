@@ -25,6 +25,7 @@ static func solve_flows(context: SimulationContext) -> void:
 		# For each port on this unit that is an INLET (flow comes in FROM upstream)
 		# we compute the request on the connected link.
 		var ports: Dictionary = unit.ports
+		var incoming_links: Array[FlowLink] = []
 		for port_id in ports:
 			var port: FlowPort = ports[port_id]
 			if port.port_type != &"INLET":
@@ -41,6 +42,17 @@ static func solve_flows(context: SimulationContext) -> void:
 				link.requested_flow_m3s = link.max_flow_m3s
 			else:
 				link.calculate_requested_flow()
+			incoming_links.append(link)
+			
+		# Enforce flow_limit_m3s on ExternalBoundary sink units (sink-side proration)
+		if unit is ExternalBoundary and unit.flow_limit_m3s >= 0.0:
+			var total_inflow_request: float = 0.0
+			for link in incoming_links:
+				total_inflow_request += link.requested_flow_m3s
+			if total_inflow_request > unit.flow_limit_m3s + EPSILON:
+				var factor: float = unit.flow_limit_m3s / total_inflow_request
+				for link in incoming_links:
+					link.requested_flow_m3s *= factor
 
 	# -----------------------------------------------------------------------
 	# PASS 2 — Upstream-to-Downstream: compute granted_flow_m3s.

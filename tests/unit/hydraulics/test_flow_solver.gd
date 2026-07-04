@@ -150,3 +150,24 @@ func test_flow_solver_defensive_assert() -> void:
 	)
 	
 	assert_eq(res.new_volume_m3, 0.0)
+
+func test_flow_solver_sink_limits() -> void:
+	var context := SimulationContext.new()
+	context.dt = 1.0
+	
+	var source_a := _create_boundary(&"SOURCE_A", &"SOURCE_INFLOW")
+	var source_b := _create_boundary(&"SOURCE_B", &"SOURCE_INFLOW")
+	var sink := _create_boundary(&"SINK", &"TREATED_DEMAND", 5.0)
+	
+	var link_a := _connect_units(source_a, sink, &"PORT_OUT_A", &"PORT_IN_A", &"OUTLET", 4.0, &"LINK_A")
+	var link_b := _connect_units(source_b, sink, &"PORT_OUT_B", &"PORT_IN_B", &"OUTLET", 6.0, &"LINK_B")
+	
+	context.topological_units_list = [source_a, source_b, sink]
+	context.links_list = [link_a, link_b]
+	
+	FlowSolver.solve_flows(context)
+	
+	assert_eq(link_a.granted_flow_m3s, 2.0)
+	assert_eq(link_b.granted_flow_m3s, 3.0)
+	assert_eq(link_a.actual_flow_m3s, 2.0)
+	assert_eq(link_b.actual_flow_m3s, 3.0)
