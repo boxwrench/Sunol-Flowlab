@@ -41,7 +41,7 @@ func test_topological_sort_permutation_invariance() -> void:
 	var permuted_units := original_units.duplicate()
 	permuted_units.reverse()
 	
-	var permuted_topology := res.topology_data.duplicate()
+	var permuted_topology: Dictionary = res.topology_data.duplicate()
 	permuted_topology["units"] = permuted_units
 	
 	var context1 := SimulationContext.new()
