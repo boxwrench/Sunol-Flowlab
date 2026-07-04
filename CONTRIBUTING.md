@@ -32,7 +32,7 @@ When opening a pull request:
 ## Testing requirements
 
 - All new or changed simulation logic must be covered by unit or integration tests.
-- Run the test suite (`godot --headless --script res://simulation/tests/test_runner.gd`) before submitting.
+- Run the test suite (`godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit`) before submitting.
 - If a bug is fixed, include a failing test that would have caught it.
 
 ## Documentation requirements

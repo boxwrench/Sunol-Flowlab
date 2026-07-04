@@ -4,38 +4,37 @@ This document lists the current limitations of the drinking water plant sandbox.
 
 ## Hydraulics
 
-- No pressure‑network hydraulic grade line calculations.
-- No computational fluid dynamics (CFD) or finite element modelling.
-- Simple gravity‑flow approximation; head losses and pump curves are ignored.
-- No detailed filter head‑loss model; filters are limited only by capacity.
+- Dynamic pressure networks and hydraulic grade line calculations are out of scope.
+- Computational fluid dynamics (CFD) and finite element modeling are out of scope.
+- Hydraulics use a simplified gravity-flow approximation; dynamic pipe friction and pump head curves are out of scope.
+- Filters are governed by capacity constraints; dynamic filter media head-loss and clogging calculations are out of scope.
 
 ## Water quality
 
-- No chemistry model for coagulation, flocculation or disinfection.
-- No simulation of turbidity, pH, alkalinity or chlorine residual.
-- No regulatory CT calculation for chlorine contact.
+- Water chemistry modeling (coagulation, flocculation, disinfection kinetics) is out of scope.
+- Tracking water quality parameters (turbidity, pH, alkalinity, chlorine residual) is out of scope.
+- Regulatory CT calculations for disinfection contact are out of scope.
 
 ## Equipment
 
-- Pumps and motors are not represented; flow is idealised.
-- Valves move instantly in the current implementation (will be improved).
-- Instruments (e.g., level transmitters) are perfect and never fail.
+- Physical pumps and motors are out of scope; flow links represent idealized, actuated pathways.
+- Valves operate with rate-limited travel by default, with instant movement restricted to a testing/debugging override.
+- Instruments (e.g., level transmitters) represent perfect measurements; sensor noise, drift, and calibration failures are out of scope.
 
 ## Control system
 
-- Simple proportional controllers with no integral or derivative terms.
-- No deadband or anti‑reset windup in level controllers.
-- No PLC or SCADA interfaces; all control logic runs inside the Godot simulation.
+- Control logic is limited to proportional controllers; integral/derivative terms, deadbands, and anti-reset windup are out of scope.
+- External PLC or SCADA communication interfaces are out of scope; all control logic is executed natively by the simulation clock.
 
 ## Process details
 
-- Sedimentation and filtration are modelled as storage units without removal efficiency.
-- Backwash sequences, filter‑to‑waste and media condition are not modelled.
-- Air scour and surface wash are not represented.
+- Sedimentation basins and filters are modeled as storage units; solids removal and filtration efficiency calculations are out of scope.
+- Backwash sequences, filter-to-waste cycles, and filter media conditions are out of scope.
+- Air scour and surface wash systems are out of scope.
 
 ## Visualisation
 
-- Low‑poly assets; water is shown as flat planes rather than dynamic surfaces.
-- No lighting or shading variation to indicate water turbidity or clarity.
+- Presentation uses low-poly assets; water surfaces are represented as flat, translation-based planes rather than dynamic liquid meshes.
+- Visual indications of water quality (such as turbidity, color, or clarity changes) are out of scope.
 
-These limitations reflect the proof‑of‑concept scope and may be addressed in future expansions.  Users should not rely on this simulator for engineering design or regulatory compliance.
+These scope definitions define the boundaries of the proof-of-concept simulation.  Users should not rely on this simulator for engineering design or regulatory compliance.

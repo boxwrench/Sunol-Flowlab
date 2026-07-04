@@ -11,11 +11,11 @@ The project is at the proof‑of‑concept stage.  Core simulation components ha
 1. Install Godot 4.x.
 2. Clone this repository.
 3. Open the project in Godot and run the **Main** scene.
-4. To run headless tests, execute `godot --headless --script res://simulation/tests/test_runner.gd`.
+4. To run headless tests, execute `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit`.
 
 ## Testing
 
-Automated tests are provided under `simulation/tests/`.  Run them with `godot --headless --script res://simulation/tests/test_runner.gd`.  Every change to simulation behaviour must be accompanied by new tests according to the [testing strategy](docs/TESTING_STRATEGY.md).
+Automated tests are provided under `tests/`.  Run them with `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit`.  Every change to simulation behaviour must be accompanied by new tests according to the [testing strategy](docs/TESTING_STRATEGY.md).
 
 ## Implemented units
 

@@ -14,11 +14,15 @@ Before making any changes, agents **must** read the following documents:
 - `docs/TAG_NAMING.md` – details naming conventions for tags and identifiers.
 - `docs/REPOSITORY_ARCHITECTURE.md` – explains how simulation code, configuration files and scenes are organised.
 
-Agents should treat these documents as the canonical specification.  If a required field or rule is missing, add it to the appropriate document.
+Agents should treat these documents as the canonical specification. On any structural conflict between docs, REPOSITORY_ARCHITECTURE.md wins. If a required field or rule is missing, add it to the appropriate document.
 
 ## Dependency rules
 
 Simulation code **must not** depend on presentation code.  The mass‑balance engine and controllers belong under `simulation/` and should be testable without loading any Godot scenes.  Controllers should not call UI functions, and scene scripts should not contain simulation logic.
+
+- **No Autoloads or Node inheritance in domain**: Domain classes must extend `RefCounted` only, never `Node`. Domain code must never reference autoloads (e.g., `CommandBus` or `EventBus`) directly.
+- **No External Signals**: Domain classes must not emit signals to external objects. Instead, events are appended to the `SimulationContext` and flushed to the application layer after invariant validation.
+- **Strict Scope Guard**: Do not create files for future phases or implement modules not required by the current phase's exit condition.
 
 ## Unit conventions
 

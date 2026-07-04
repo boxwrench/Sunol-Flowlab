@@ -44,11 +44,25 @@ On every update:
 
 ## Order of operations
 
-1. **Controller update** – compute commanded flows and valve positions for the current step.
-2. **Calculate actual flows** – apply constraints and modes to obtain actual flows.
-3. **Update volumes** – apply the mass balance equation to update storage volumes.
-4. **Calculate elevations** – compute water depth and elevation from updated volumes.
-5. **Generate alarms** – check levels against alarm setpoints and set alarm states.
+The simulation engine executes each fixed tick in a defined 14-step sequence:
+
+1. Receive queued commands
+2. Apply mode and setpoint changes
+3. Update actuator positions
+4. Evaluate controllers
+5. Resolve requested flows
+6. Apply source and destination constraints
+7. Transfer water through links
+8. Update storage volumes
+9. Calculate levels and spills
+10. Update process-unit state machines
+11. Evaluate alarms and interlocks
+12. Record telemetry
+13. Validate invariants
+14. Publish simulation snapshot
+
+> [!NOTE]
+> Actuators integrate before controllers evaluate; controller output therefore takes effect on the next tick (intended one-tick scan lag).
 
 ## External sources and sinks
 
@@ -72,3 +86,28 @@ Use gravity‑based flows only when modelling head differences matters.  Keep th
 - If a storage node is full (at spill elevation), additional inflow becomes spill_flow.
 
 These rules ensure conservation of mass.
+
+## Determinism Mechanics
+
+To guarantee identical results across runs and parity between headless and visual modes:
+1. **Tick-Stamped Commands**: Commands are queued and stamped with their target execution tick. They are applied at the absolute start of that tick (Step 1).
+2. **Speed Accumulator**: Simulation speed scales *accumulated simulated time*, never the step size `dt` itself. The clock runs as:
+   `accumulator_s += frame_delta_s * speed_multiplier`
+   Whole fixed-dt ticks are run while `accumulator_s >= dt_s` (capped at `MAX_TICKS_PER_FRAME`). Thus, at `dt = 1.0 s`, `1x` speed is approximately 1 tick per real second, and `60x` is approximately 60 ticks per real second.
+3. **Sorted Iteration**: All loops over process units, flow links, and ports iterate over explicitly ordered arrays sorted alphabetically by their unique `StringName` ID. This prevents non-deterministic iteration order from hashing or dictionary traversal.
+4. **No Domain RNG**: The domain simulation contains no unseeded random number generation. Any random behavior must use a seeded `RandomNumberGenerator` owned by the simulation context.
+5. **Replay Integrity**: A replay consists of the same initial configuration and the same sequence of (tick, command) inputs, yielding identical state trajectories.
+
+## Flow Resolution
+
+To ensure consistent flow calculations and avoid ad-hoc solutions, the simulation implements the following design:
+
+1. **Two-Pass Solver (Phase-2)**: Flow resolution is executed in two passes over a topologically ordered Directed Acyclic Graph (DAG):
+   - *Pass 1 (Requests)*: Each unit and link propagates flow requests from downstream to upstream.
+   - *Pass 2 (Grants)*: Flows are granted from upstream to downstream. If a source is over-committed, available flow is prorated proportionally among competing downstream requests.
+2. **Competing Withdrawals**: Competing withdrawals from a single storage unit (e.g., normal outflow and bottom drain) compete and prorate if the available volume is insufficient to satisfy both.
+3. **Passive Spill**: Spill is passive and computed after storage integration. It never competes with active withdrawals.
+4. **Hard Boundary — Single-Mutator Rule**: The `FlowSolver` (and related link/port request logic) is strictly read-only regarding stored volume. It calculates requests, applies capacities, and produces granted flows, but *never* modifies the volume of a `StorageUnit`. The `storage_balance.gd` component is the single and exclusive place where volume mutation occurs. It consumes granted flows, performs the integration, and returns the actual resulting outflow, drain, and spill.
+5. **Hard Boundary — DAG Constraint**: For Phases 1–5, the hydraulic topology must remain a Directed Acyclic Graph (DAG). Recirculation loops (such as backwash recovery, filter-to-waste returns, return activated sludge, or recycle streams) are explicitly out of scope until a formal cyclic-network resolution strategy is specified.
+
+

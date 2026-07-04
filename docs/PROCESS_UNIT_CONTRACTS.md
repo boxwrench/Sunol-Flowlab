@@ -2,6 +2,22 @@
 
 This document defines the required interface for every reusable unit in the simulation.  Adhering to these contracts allows units to be composed consistently.
 
+## Canonical Class Names
+
+The following table defines the canonical class names used across the domain codebase. All domain classes must use these exact names (which do not have a `Node` suffix, as `Node` is reserved for actual Godot Nodes in the presentation/UI layers) and extend `RefCounted`:
+
+| Concept | Canonical Class Name | Suffix Rule / Notes |
+|---------|----------------------|---------------------|
+| Process Unit Base | `ProcessUnit` | Base class for all domain units |
+| Storage Unit | `StorageUnit` | Replaces `StorageNode` |
+| Junction Unit | `JunctionUnit` | Replaces `JunctionNode` |
+| Flow Link | `FlowLink` | Connects flow ports |
+| Flow Port | `FlowPort` | Connection point on a unit |
+| Valve Actuator | `SimValve` | Actuator modeling valve travel |
+| Controller | `SimController` | Base for level/flow controllers |
+| Alarm | `SimAlarm` | Threshold or diagnostic alarm |
+| Instrument | `SimInstrument` | Level/flow transmitters |
+
 ## Common fields
 
 Every unit type must define:
@@ -24,7 +40,7 @@ Each unit defines its own state machine.  Common states include:
 - `HIGH_LEVEL` – water has reached a high‑level alarm.
 - `SPILLING` – excess water is being spilled.
 
-## StorageNode contract
+## StorageUnit contract
 
 Represents anything that stores water (reservoir, basin, channel, clearwell).
 
@@ -69,7 +85,7 @@ Represents anything that stores water (reservoir, basin, channel, clearwell).
 - `min_operating_level_m`
 - `max_flow_m3s`
 
-## JunctionNode contract
+## JunctionUnit contract
 
 Represents a location that combines or splits flows without storage (e.g., manifold, distribution box).
 
@@ -124,7 +140,7 @@ Connects a source port to a destination port.
 - `flow_mode` (commanded, restricted, gravity)
 - `flow_coefficient` (for gravity mode)
 
-## Valve contract
+## SimValve contract
 
 Represents an actuator controlling a flow path.
 
@@ -151,7 +167,7 @@ Represents an actuator controlling a flow path.
 - `closing_rate_percent_per_s`
 - `fail_state` (open, closed, last position)
 
-## Controller contract
+## SimController contract
 
 Automates adjustments to maintain process conditions.
 
@@ -182,7 +198,7 @@ Automates adjustments to maintain process conditions.
 - `max_output`
 - `initial_output`
 
-## Alarm contract
+## SimAlarm contract
 
 Defines an alarm associated with a process unit.
 

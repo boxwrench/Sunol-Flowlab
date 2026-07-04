@@ -3,8 +3,8 @@
 This guide provides a checklist for adding a new process unit (e.g., pump, additional basin) to the drinking water plant sandbox.  Following these steps ensures consistent integration with the simulation engine, configuration and UI.
 
 1. **Create the domain model**
-   - Decide which contract (StorageNode, JunctionNode, FlowLink, Valve, Controller) best fits the new unit.  If none fits, define a new contract in `docs/PROCESS_UNIT_CONTRACTS.md`.
-   - Implement the model under `simulation/components/` using GDScript.
+   - Decide which contract (StorageUnit, JunctionUnit, FlowLink, SimValve, SimController) best fits the new unit.  If none fits, define a new contract in `docs/PROCESS_UNIT_CONTRACTS.md`.
+   - Implement the model under `scripts/simulation/domain/` using GDScript.
    - Include inputs, outputs, stored state, commands and events as defined in the contract.
 
 2. **Define ports**
@@ -17,14 +17,14 @@ This guide provides a checklist for adding a new process unit (e.g., pump, addit
    - Document new fields in `docs/CONFIGURATION_REFERENCE.md`.
 
 4. **Register the factory**
-   - Implement a factory method in `simulation/core/plant_network.gd` to construct the unit from configuration.
+   - Register and construct the unit inside `scripts/simulation/domain/plant_model.gd` from configuration.
 
 5. **Write tests**
-   - Create unit tests under `simulation/tests/` to verify mass balance, flow constraints and state transitions.
-   - Add integration tests if the unit interacts with existing units.
+   - Create unit tests under `tests/` to verify mass balance, flow constraints and state transitions.
+   - Add integration tests if the unit interacts with existing units (with fixtures under `tests/fixtures/`).
 
 6. **Build the visual scene**
-   - Create a low‑poly 3D scene for the unit under `scenes/modules/`.
+   - Create a low‑poly 3D scene for the unit under `scenes/process_units/`.
    - Design the scene so that water level, flow direction and equipment state are clear.
 
 7. **Add the presentation adapter**

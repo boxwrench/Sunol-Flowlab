@@ -49,14 +49,14 @@ Define an epsilon for floating‑point comparisons.  Use `abs(actual - expected)
 
 ## Test fixtures
 
-Store JSON fixtures for plant configurations, initial conditions and controller settings under `simulation/tests/fixtures/`.  Tests should load these fixtures and avoid hard‑coding values.
+Store JSON fixtures for plant configurations, initial conditions and controller settings under `tests/fixtures/`.  Tests should load these fixtures and avoid hard‑coding values.
 
 ## Headless test command
 
 Run all tests from the command line:
 
 ```
-godot --headless --script res://simulation/tests/test_runner.gd
+godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit
 ```
 
 Include this command in continuous integration workflows.

@@ -23,7 +23,7 @@ This guide lists common issues that may arise during simulation development and 
 ## Simulation changes with frame rate
 
 - Use a fixed simulation time step independent of rendering.
-- Do not perform simulation updates in the `_process()` function; use `_physics_process()` with a fixed delta.
+- Do not perform simulation updates in Godot's built-in `_physics_process()`. Instead, `SimulationHost` must run N fixed-dt ticks per rendered frame in its own custom accumulator loop (e.g., `accumulator_s += delta; while accumulator_s >= dt: run_tick(dt)`). This decouples simulation time from Godot's physics step.
 
 ## Incorrect split flow
 
