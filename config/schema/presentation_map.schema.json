@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "presentation_map.json — optional visuals mapping",
+  "description": "OPTIONAL per plant. Maps unit_ids to custom scenes and placements. DEFAULT-BOX RULE (contract; implementation lands with presentation work, WP2.5+): any unit with no entry here is rendered as an auto-generated primitive sized from its simulation geometry (surface_area_m2, spill_level_m, bottom_elevation_m). A plant defined purely by simulation fields is therefore renderable in 3D by construction; custom models are progressive enhancement. Visual adapters remain read-only over snapshots (INV-3) — nothing in this file affects simulation results.",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string", "description": "Editor hint; ignored by the engine." },
+    "units": {
+      "type": "array",
+      "description": "Per-unit visual overrides; any unit absent here gets the default box.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "unit_id": { "$ref": "defs.schema.json#/$defs/tag_id" },
+          "scene": {
+            "type": "string",
+            "pattern": "^res://.+\\.tscn$",
+            "description": "Godot scene rendered for this unit. Omit to get the default box."
+          },
+          "position_m": {
+            "$ref": "defs.schema.json#/$defs/vector3",
+            "description": "World position [m], Godot axes (Y up)."
+          },
+          "rotation_deg": {
+            "$ref": "defs.schema.json#/$defs/vector3",
+            "description": "Euler rotation [degrees] around X, Y, Z."
+          }
+        },
+        "required": ["unit_id"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["units"],
+  "additionalProperties": false
+}
