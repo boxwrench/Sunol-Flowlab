@@ -183,8 +183,7 @@ func test_factory_build_precedence_topology_inactive_ic_omitted() -> void:
 				"ports": [
 					{
 						"port_id": "PORT_IN_BASIN",
-						"port_type": "INLET",
-						"elevation_m": 0.0
+						"port_type": "INLET"
 					}
 				]
 			},
@@ -199,12 +198,11 @@ func test_factory_build_precedence_topology_inactive_ic_omitted() -> void:
 				"unit_id": "TEST_SOURCE",
 				"type": "ExternalBoundary",
 				"display_name": "Test Source",
-				"boundary_type": "SOURCE",
+				"boundary_type": "SOURCE_INFLOW",
 				"ports": [
 					{
 						"port_id": "PORT_OUT_SRC",
-						"port_type": "OUTLET",
-						"elevation_m": 0.0
+						"port_type": "OUTLET"
 					}
 				]
 			}
@@ -214,6 +212,7 @@ func test_factory_build_precedence_topology_inactive_ic_omitted() -> void:
 			{
 				"link_id": "LINK_IN_BASIN",
 				"display_name": "Inlet Link",
+				"max_flow_m3s": 1.0,
 				"source_port_id": "PORT_OUT_SRC",
 				"destination_port_id": "PORT_IN_BASIN"
 			}
@@ -231,6 +230,16 @@ func test_factory_build_precedence_topology_inactive_ic_omitted() -> void:
 		"actuator_states": []
 	}
 	
+	var validation = PlantValidator.validate_config(
+		{},
+		topology,
+		initial_conditions,
+		1.0,
+		{},
+		{}
+	)
+	assert_eq(validation.errors.size(), 0, "Topology configuration should have 0 validation errors")
+
 	var build_ok = PlantFactory.build_plant(engine.context, topology, initial_conditions, {"controllers": []})
 	assert_true(build_ok, "Factory build should succeed")
 	
@@ -259,8 +268,7 @@ func test_factory_build_precedence_ic_overrides_topology() -> void:
 				"ports": [
 					{
 						"port_id": "PORT_IN_B1",
-						"port_type": "INLET",
-						"elevation_m": 0.0
+						"port_type": "INLET"
 					}
 				]
 			},
@@ -279,8 +287,7 @@ func test_factory_build_precedence_ic_overrides_topology() -> void:
 				"ports": [
 					{
 						"port_id": "PORT_IN_B2",
-						"port_type": "INLET",
-						"elevation_m": 0.0
+						"port_type": "INLET"
 					}
 				]
 			},
@@ -295,12 +302,15 @@ func test_factory_build_precedence_ic_overrides_topology() -> void:
 				"unit_id": "TEST_SOURCE",
 				"type": "ExternalBoundary",
 				"display_name": "Test Source",
-				"boundary_type": "SOURCE",
+				"boundary_type": "SOURCE_INFLOW",
 				"ports": [
 					{
-						"port_id": "PORT_OUT_SRC",
-						"port_type": "OUTLET",
-						"elevation_m": 0.0
+						"port_id": "PORT_OUT_SRC_1",
+						"port_type": "OUTLET"
+					},
+					{
+						"port_id": "PORT_OUT_SRC_2",
+						"port_type": "OUTLET"
 					}
 				]
 			}
@@ -310,13 +320,15 @@ func test_factory_build_precedence_ic_overrides_topology() -> void:
 			{
 				"link_id": "LINK_IN_B1",
 				"display_name": "Inlet Link 1",
-				"source_port_id": "PORT_OUT_SRC",
+				"max_flow_m3s": 1.0,
+				"source_port_id": "PORT_OUT_SRC_1",
 				"destination_port_id": "PORT_IN_B1"
 			},
 			{
 				"link_id": "LINK_IN_B2",
 				"display_name": "Inlet Link 2",
-				"source_port_id": "PORT_OUT_SRC",
+				"max_flow_m3s": 1.0,
+				"source_port_id": "PORT_OUT_SRC_2",
 				"destination_port_id": "PORT_IN_B2"
 			}
 		]
@@ -336,6 +348,16 @@ func test_factory_build_precedence_ic_overrides_topology() -> void:
 		"actuator_states": []
 	}
 	
+	var validation = PlantValidator.validate_config(
+		{},
+		topology,
+		initial_conditions,
+		1.0,
+		{},
+		{}
+	)
+	assert_eq(validation.errors.size(), 0, "Overridden configuration should have 0 validation errors")
+
 	var build_ok = PlantFactory.build_plant(engine.context, topology, initial_conditions, {"controllers": []})
 	assert_true(build_ok, "Factory build should succeed")
 	
