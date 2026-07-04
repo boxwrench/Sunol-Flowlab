@@ -827,6 +827,8 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 ### Task 6: `$schema` keys in shipped configs + engine regression
 
+> **✅ COMPLETE** (commit `c6f9075`, reviewed clean). Engine accepts the keys — GUT 21 scripts / 52 tests / 0 failures; no .vscode fallback needed.
+
 **Files:**
 - Modify: all 8 shipped config files — `config/plants/phase1_single_basin/{plant,topology,initial_conditions}.json`, `config/plants/phase2_three_unit/{plant,topology,initial_conditions,controllers,alarms}.json`
 
