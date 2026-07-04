@@ -164,5 +164,19 @@ To preserve the pure Directed Acyclic Graph (DAG) and the single-mutator 1D Eule
 - In the next tick, the modified volume adjusts the head/elevation and influences the downstream request, naturally stabilizing the system.
 - This dynamic buffering decouples the algebraic equations across space, allowing the engine to solve the entire plant topology in a single, non-iterative, deterministic two-pass sweep per tick.
 
+### Determinism and Edge Rules (binding)
+
+1. **Deterministic topological order.** A topological sort is not unique. The solver's order must be computed with Kahn's algorithm using a ready-set **sorted by unit ID**, so ties always break identically (INV-2). The order is computed once at plant build by the factory, cached on the context, and recomputed only when topology changes. A test must assert the order is identical under permuted unit-declaration order.
+
+2. **One proration authority.** The FlowSolver's grant pass is the *only* place proration is expected to occur. `StorageBalance.solve` retains its proration arithmetic strictly as a defensive backstop: if it ever triggers after a correct solver pass, that is a solver bug — debug builds must `assert` when StorageBalance proration activates while the full solver is in use.
+
+3. **Withdrawable vs total volume.** For OUTLET ports, `available_supply` uses only the volume **above `min_operating_level_m`** (the low-low cutoff); DRAIN ports may draw down to zero. The solver and `StorageBalance` must use the same definition, or granted flows will exceed what integration allows.
+
+4. **Boundary flows sum across links.** An `ExternalBoundary` connected to multiple links accumulates `current_flow_m3s` as the **sum** of its links' actual flows — never overwrite. `flow_limit_m3s` caps that *total*, not each link independently; when the total must be limited, the constraint prorates across the boundary's links like any other over-committed source.
+
+5. **Spill routing is per-unit.** Each `StorageUnit`'s spill is routed to a configured spill destination (default: the plant-wide spill boundary). A spill boundary receives only the spill routed to it — never the plant total. The current engine behavior (every SPILL boundary receives total plant spill) is correct only while exactly one spill boundary exists and must be replaced when the second one appears.
+
+6. **COMMANDED mode is unimplemented.** Until Phase 2 controllers land, a link configured as `COMMANDED` must `push_warning` and behave as `RESTRICTED` at full opening. Silent placeholder behavior is prohibited (AGENTS.md guardrail 10).
+
 
 
