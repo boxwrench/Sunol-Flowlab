@@ -184,5 +184,20 @@ To preserve the pure Directed Acyclic Graph (DAG) and the single-mutator 1D Eule
 
 6. **COMMANDED mode is unimplemented.** Until Phase 2 controllers land, a link configured as `COMMANDED` must `push_warning` and behave as `RESTRICTED` at full opening. Silent placeholder behavior is prohibited (AGENTS.md guardrail 10).
 
+### Basin Availability Semantics (Phase 3 Spec)
+
+A floc/sed basin's availability (in-service / out-of-service status) is controlled by the operator at runtime:
+1. **Inherited service state**: The `in_service: bool` field is inherited from `ProcessUnit` (loaded since Phase 1, but unenforced; Phase 3 wires its enforcement with no redeclaration in subclasses).
+2. **Out-of-service precondition**: Taking a basin out of service sets `in_service = false` on the unit, and sets `is_enabled = false` on all of its connected `INLET` and `OUTLET` ports/links.
+3. **DRAIN exception**: All `DRAIN` links connected to the unit must remain `is_enabled = true` so the basin can be completely drained while offline.
+4. **Spill behavior**: Spill is not a link — it is passive gravity-driven flow routed directly by the engine via `spill_destination_id`. Spill cannot be disabled and continues to route normally if the water level exceeds the spill elevation.
+5. **Tick behavior**: Disabled `INLET` and `OUTLET` links are bypassed by the `FlowSolver` and carry zero flow. The basin's volume changes only via active `DRAIN` links or passive spill.
+6. **Topological persistence**: Taking a basin out of service does not alter the plant topology or remove the unit from the topological execution list. The DAG remains completely static.
+7. **Junction sizing rules**: Manifolds, flash mixes, and distribution boxes are modeled as small `StorageUnit`s to prevent algebraic loops. To keep scan lag minimal and avoid numerical instability, they must be configured with:
+   - `surface_area_m2` $\le 1.0\text{ m}^2$
+   - `maximum_volume_m3` $\le 10.0\text{ m}^3$
+   - `min_operating_level_m` $= 0.0\text{ m}$
+
+
 
 

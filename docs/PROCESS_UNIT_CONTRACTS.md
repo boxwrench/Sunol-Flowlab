@@ -61,8 +61,12 @@ Represents anything that stores water (reservoir, basin, channel, clearwell).
 
 **Commands**:
 
-- `set_in_service(bool)` – place the unit in or out of service.
+- `set_in_service(bool)` – place the unit in or out of service (Note: `in_service` is **inherited from `ProcessUnit`**; it was loaded-but-unenforced in Phase 1 and 2, and is wired in Phase 3).
 - `open_drain(position)` – adjust the drain valve position (0–100%).
+
+**Simulation Commands**:
+- `SetBasinServiceCommand(target_unit_id: StringName, put_in_service: bool)`: Toggles the basin's `in_service` flag and sets `is_enabled = put_in_service` on all connected `INLET` and `OUTLET` links. Connected `DRAIN` links remain enabled. This command does not modify the topological structure; the unit is not removed from `topological_units_list`.
+
 
 **Events**:
 
