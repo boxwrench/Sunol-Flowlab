@@ -1,0 +1,75 @@
+{
+  "$schema": "../../schema/controllers.schema.json",
+  "controllers": [
+    {
+      "controller_id": "LC_BASIN_01",
+      "type": "LevelController",
+      "display_name": "Basin 1 Inlet Gate Controller",
+      "target_actuator_id": "VALVE_OUT_DB_01",
+      "pv_unit_id": "APPLIED_CHANNEL_01",
+      "pv_property": "level_m",
+      "control_mode": "AUTO",
+      "setpoint": 2.0,
+      "gain": 2.0,
+      "deadband_m": 0.05,
+      "min_output": 0.0,
+      "max_output": 100.0
+    },
+    {
+      "controller_id": "LC_BASIN_02",
+      "type": "LevelController",
+      "display_name": "Basin 2 Inlet Gate Controller",
+      "target_actuator_id": "VALVE_OUT_DB_02",
+      "pv_unit_id": "APPLIED_CHANNEL_01",
+      "pv_property": "level_m",
+      "control_mode": "AUTO",
+      "setpoint": 2.0,
+      "gain": 2.0,
+      "deadband_m": 0.05,
+      "min_output": 0.0,
+      "max_output": 100.0
+    },
+    {
+      "controller_id": "LC_BASIN_03",
+      "type": "LevelController",
+      "display_name": "Basin 3 Inlet Gate Controller",
+      "target_actuator_id": "VALVE_OUT_DB_03",
+      "pv_unit_id": "APPLIED_CHANNEL_01",
+      "pv_property": "level_m",
+      "control_mode": "AUTO",
+      "setpoint": 2.0,
+      "gain": 2.0,
+      "deadband_m": 0.05,
+      "min_output": 0.0,
+      "max_output": 100.0
+    },
+    {
+      "controller_id": "LC_BASIN_04",
+      "type": "LevelController",
+      "display_name": "Basin 4 Inlet Gate Controller",
+      "target_actuator_id": "VALVE_OUT_DB_04",
+      "pv_unit_id": "APPLIED_CHANNEL_01",
+      "pv_property": "level_m",
+      "control_mode": "AUTO",
+      "setpoint": 2.0,
+      "gain": 2.0,
+      "deadband_m": 0.05,
+      "min_output": 0.0,
+      "max_output": 100.0
+    },
+    {
+      "controller_id": "LC_BASIN_05",
+      "type": "LevelController",
+      "display_name": "Basin 5 Inlet Gate Controller",
+      "target_actuator_id": "VALVE_OUT_DB_05",
+      "pv_unit_id": "APPLIED_CHANNEL_01",
+      "pv_property": "level_m",
+      "control_mode": "AUTO",
+      "setpoint": 2.0,
+      "gain": 2.0,
+      "deadband_m": 0.05,
+      "min_output": 0.0,
+      "max_output": 100.0
+    }
+  ]
+}

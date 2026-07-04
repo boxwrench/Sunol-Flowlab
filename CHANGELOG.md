@@ -11,12 +11,14 @@ All notable changes to this project will be documented in this file. The format 
 - **WP3.3 / core**: Implemented `SetBasinServiceCommand` to toggle unit `in_service` and enable/disable `INLET`/`OUTLET` links while leaving `DRAIN` links active. Registered command in `PlantFactory` (docs) and added `in_service` boolean type validation in `PlantValidator`. Replaced placeholder sinks with five full-size `StorageUnit` basins (`BASIN_01`...`BASIN_05`) in `config/plants/phase3_headworks/topology.json`.
 - **WP3.1-WP3.3 Remediation**: Fixed integration test parsing errors by passing system storage to `MassBalanceTracker.report()`. Corrected starvation test same-tick inflow leakage. Corrected basin service restoration unit test to run across two ticks. Enforced initial `in_service = false` on ports/links during factory build and initial conditions loading. Added validation checks for `in_service` types.
 - **WP3.4 / config**: Promoted the applied channel placeholder sink to a full `StorageUnit` (`APPLIED_CHANNEL_01`) and added the filter feed external boundary (`FILTER_FEED_01`) and the passive `LINK_OUT_AC_01` link. Added high-level and low-level threshold alarms for the applied channel in `alarms.json` under `config/plants/phase3_headworks/`.
+- **WP3.5 / config**: Added controllers configuration `controllers.json` under `config/plants/phase3_headworks/` defining five `LevelController` instances targeting basin inlet gates and regulating `APPLIED_CHANNEL_01` level.
 
 ### Tests Added
 - **WP3.1**: Added `test_reservoir_manifold.gd` to verify dual-reservoir combining flow, single-reservoir starvation behavior, and mass conservation.
 - **WP3.2**: Added `test_distribution_box.gd` to verify equal flow splitting among five outlets, proportional proration, and mass conservation.
 - **WP3.3**: Added `test_basin_availability.gd` (unit tests verifying link flow zeroing, service restoration, and drain status) and `test_basin_availability_integration.gd` (integration tests verifying four-basin proration redistribution and availability churn mass conservation). Added validation unit tests to `test_plant_validator.gd`.
 - **WP3.4**: Added `test_applied_channel.gd` to verify applied channel inflow matching the sum of basin outflows, the high-level alarm activation, and mass conservation over 1000 ticks.
+- **WP3.5**: Added `test_headworks_controller.gd` to verify level stabilization in AUTO mode and automatic proration/redistribution when a basin goes out of service.
 
 
 
