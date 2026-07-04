@@ -601,4 +601,16 @@ Phase 3 is complete when:
 
 ---
 
-> **STOP after Task 2 commit. Phase 3 WP execution is gated on orchestrator review of this plan.**
+---
+
+## 8. Phase 3 Execution Protocol (orchestrator-authorized, 2026-07-04)
+
+Phase 2 is closed and this plan is accepted. The per-WP review pause is **suspended for Phase 3** and replaced by batch audits, to let the implementing agent run further independently. Binding rules:
+
+1. **Execute WP3.0 → WP3.8 sequentially**, one commit per WP (commit message begins `WP3.x:`), without waiting for review between WPs — *provided every gate below stays green*.
+2. **Every WP's report must contain the pasted GUT Run Summary including the Scripts count** matching that WP's expected totals, or the exact wording "Tests written but NOT executed — unverified." An unverified WP is a **hard stop**: do not begin the next WP until the orchestrator has run the suite.
+3. **Hard stops — halt and report immediately, do not proceed:** any failing test; any drop in collected script count; any deviation from this plan's per-WP file list; any simulation-code change in a docs- or test-only WP; any need to modify an accepted Phase 2 file outside a WP's scope; any `assert` weakened, deleted, or bypassed.
+4. **WP3.8 must also close W2.5-1** (asset panel enumerates snapshot, holds IDs not domain references — see PHASE2_CODE_REVIEW).
+5. **Never write to `PHASE2_CODE_REVIEW.md` or any review verdict document.** Review verdicts are issued only by the orchestrator's reviewer. Implementer self-reviews recorded as acceptance are a firing-severity violation (it happened once; see the removed commit noted in PHASE2_CODE_REVIEW).
+6. **Batch audit points:** the orchestrator reviews at **WP3.3** (spec + configs + availability wiring) and at **WP3.8** (phase exit, including WP3.7 soak rerun by the reviewer). Findings at an audit point may reopen earlier WPs; keep them small.
+7. All existing AGENTS.md guardrails remain in force unchanged.

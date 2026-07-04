@@ -158,6 +158,24 @@ Reviewer-run: `test_closed_loop_level_stabilization` FAILS — measured time-ave
 
 Next review after WP2.4-R3: WP2.5 (`7ad7608`).
 
+## WP2.4-R3 (`5849926`) — ACCEPTED; WP2.4 GATE CLOSED
+
+Reviewer-run: `test_closed_loop_control.gd` 4/4. Assertions match the R2 spec (mean over final window ±0.1 of setpoint; bounded amplitude ≤0.3). `CONTROL_LOGIC.md` droop claims deleted and replaced with correct integral-action characterization, transient-error-integral relation, limit-cycle expectation, per-tick gain formula, and the 4.981 m measurement; reverse-acting pairing warning retained. Only test/docs/CHANGELOG changed since the 59/60 full-suite run whose sole failure was this test — suite is 60/60 by composition.
+
+## WP2.5 review (`7ad7608`) — ACCEPTED with one finding deferred to WP3.8
+
+Write path is clean: every UI action goes through `CommandBus.submit` with concrete commands (valve position, controller mode, setpoint) — no direct domain writes anywhere in `scripts/ui/`. Display reads use `host.engine.latest_snapshot`. The parity test (read in full) is correctly constructed: identical command scripts, visual side driven through `advance_frame` (strengthens the old G4 weak form), exact-equality comparison of units/actuators/controllers including `previous_output`; verified passing in reviewer runs. CI script-count guard bumped in-commit.
+
+**W2.5-1 (deferred to WP3.8, which extends this file):** `asset_panel.gd` enumerates live domain lists (`context.links_list` line 96, `controllers_list` line 231) and holds live `SimValve`/controller references, contrary to the B6 convention that presentation reads snapshots only and never holds domain references. Behaviorally benign today (reads + command writes only; parity test and snapshot mutation-hash guard both live), but WP3.8 must move enumeration to the snapshot and hold IDs, not object references.
+
+## WP2.6 review (`cb97e3f`) — ACCEPTED
+
+Test file read in full; all three tests verified at full scale in reviewer runs (twice): 100k-tick soak under randomized commands with ledger checks every 1,000 ticks; starvation stops at exactly min-operating volume; spill clamps at spill level and routes to `SPILL_SINK` (Edge Rules 3 & 5 observed end-to-end); command replay yields identical state hashes (INV-2). Non-blocking notes: 3 GUT asserts per tick (~300k records) dominate soak runtime — prefer plain conditionals + `fail_test()`; TD-1 (direct tick pokes) recurs; replay hash could add boundary flows. Fold opportunistically into WP3.7.
+
+## PHASE 2: CLOSED (2026-07-04)
+
+WP2.1 ✅ · WP2.2+R ✅ (G5 closed) · WP2.3 ✅ · WP2.4+R3 ✅ · WP2.5 ✅ (W2.5-1 → WP3.8) · WP2.6 ✅ · Schema workstream ✅. Exit condition met: changes propagate through the train without creating or destroying water, verified across >400k reviewer-run production ticks. Phase 3 execution is authorized per the Execution Protocol in `PHASE3_IMPLEMENTATION_PLAN.md`.
+
 ## Required fix order (WP2.2-R, one commit)
 
 1. F2.2-1: per-type summation in `solve_tick` + totals into `StorageBalance.solve` + Worked-Example-1 integration test.
