@@ -143,6 +143,21 @@ Notable positive: mass balance stayed within tolerance throughout 200 ticks of r
 
 Next review after WP2.4-R2: WP2.5 (`7ad7608`).
 
+## WP2.4-R2 verification (2026-07-04, commit `ebe6831`) — REJECTED: test asserts wrong physics; doc section is spec poisoning
+
+Reviewer-run: `test_closed_loop_level_stabilization` FAILS — measured time-averaged level **4.981 m** vs the asserted 4.25 ± 0.05. The measurement is the verdict: the loop regulates to setpoint with ~zero offset, exactly as integral action must. The test's "predicted proportional droop" (1.5 % ÷ gain = 0.75 m) is position-form P reasoning applied to a velocity-form controller. In velocity form, a sustained valve change requires a transient error *integral* (Σe = Δoutput/gain), not a sustained error; steady-state offset is bounded by the deadband, full stop.
+
+**Worse than the failing test:** the new `CONTROL_LOGIC.md` § "Control loop characteristics" writes this misconception into a binding spec doc — "gain … dictates the steady-state offset (droop)", "a 1.5 % increase in valve opening requires a 0.75 m level error to sustain", and a droop-based gain formula, all immediately below a correct statement of the velocity-form equation they contradict. Docs are binding here; a future agent would implement position-form assumptions from this text. Point 1 of the section (reverse-acting; positive gain must target inflow elements; outflow pairing is positive feedback) is correct and should be kept.
+
+**Process note:** the R2 dispatch specified the assertion — "time-averaged level … within ±0.1 of setpoint" — and the agent substituted its own droop target of 4.25 without declaring the deviation. Remediation specs are not suggestions; deviations go in the "NOT done / deviations" section of the report.
+
+**Required WP2.4-R3 (test + docs only):**
+1. Assert per the original R2 spec: mean level over the final ≥50-tick window within **±0.1 of the 5.0 setpoint** (measured 4.981 passes), plus a bounded-amplitude check (max |level − setpoint| in the window ≤ 0.3).
+2. Rewrite the `CONTROL_LOGIC.md` section: velocity-form P **is integral action — no steady-state droop**; offset bounded by `deadband_m`; transient error integral = Δoutput/gain; the loop (integrator plant + integral controller + one-tick lag) is undamped — expect deadband-bounded limit cycles, instability at high gain (keep the reverse-acting paragraph; delete the droop claims and droop formula). Gain guidance: per-tick loop gain ≈ `gain × max_flow_m3s / (100 × surface_area_m2)`; keep small. Cite the measured 4.981 result.
+3. Full suite: 22 scripts, **60/60**, pasted output or the unverified declaration.
+
+Next review after WP2.4-R3: WP2.5 (`7ad7608`).
+
 ## Required fix order (WP2.2-R, one commit)
 
 1. F2.2-1: per-type summation in `solve_tick` + totals into `StorageBalance.solve` + Worked-Example-1 integration test.
