@@ -85,29 +85,16 @@ Represents anything that stores water (reservoir, basin, channel, clearwell).
 - `min_operating_level_m`
 - `max_flow_m3s`
 
-## JunctionUnit contract
+## JunctionUnit Contract (Abstract / Realized as StorageUnit)
 
-Represents a location that combines or splits flows without storage (e.g., manifold, distribution box).
+Physical junctions, manifolds, splitter boxes, and distribution boxes combine or split flows. To maintain a pure Directed Acyclic Graph (DAG) and decouple spatial algebraic loops across the plant network (avoiding simultaneous multi-variable solving), **the simulation models all junctions as small `StorageUnit`s**. 
 
-**Inputs**:
+For configuration purposes, they use the canonical structure of a `StorageUnit` but are parameterized with a small surface area (e.g., $1.0\text{ m}^2$) and capacity.
 
-- `inflows` (m³/s) – list of flows from upstream connections.
+### Inlet Manifold & Distribution Box Realization
+- **Inlet Manifold**: Modeled as a small `StorageUnit` combining inflows from the reservoirs and passing them to the Flash Mix.
+- **Distribution Box**: Modeled as a small `StorageUnit` with multiple outlet ports. Flow split rules are implemented by adjusting the commanded positions of the downstream outlet gates or valves to target proportional splits (e.g. equal split or operator-specified percentage).
 
-**Outputs**:
-
-- `outflows` (list of m³/s) – flows assigned to downstream connections.
-
-**Commands**:
-
-- `set_distribution_rule(rule)` – choose how incoming flow is split (equal, percentage, priority).
-
-**Events**:
-
-- `on_capacity_exceeded` – fired when inflow exceeds maximum throughput.
-
-**Configuration fields**:
-
-- `max_throughput_m3s`
 - Distribution parameters (percentages, max per outlet).
 
 ## FlowLink contract

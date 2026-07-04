@@ -52,15 +52,15 @@ Two raw‑water storage reservoirs provide supply to the plant.  Each has its ow
 
 ### Inlet manifold
 
-A junction node that combines reservoir outflows and sends total plant influent to the flash mix.  It enforces a maximum throughput and reports low‑flow and high‑flow alarms.
+Modelled in the simulation as a small `StorageUnit` (e.g. surface area $1.0\text{ m}^2$) to avoid algebraic coupling. It combines reservoir outflows and sends total plant influent to the flash mix. It enforces throughput limits and reports low‑flow and high‑flow alarms.
 
 ### Flash mix
 
-A small mixing chamber for chemical addition.  It has limited storage and can enable or disable coagulant injection.  For the proof of concept, no chemistry model is implemented.
+A small mixing chamber for chemical addition. It has limited storage and can enable or disable coagulant injection. For the proof of concept, no chemistry model is implemented.
 
 ### Distribution box
 
-Splits the flash mix effluent among five parallel sedimentation/flocculation basins.  It can split flow evenly or according to operator‑specified percentages.  The distribution box enforces per‑basin capacity and raises alarms when flow cannot be delivered.
+Modelled in the simulation as a small `StorageUnit` (e.g. surface area $1.0\text{ m}^2$) to avoid algebraic coupling. It splits the flash mix effluent among five parallel sedimentation/flocculation basins. It can split flow evenly or according to operator‑specified percentages. The distribution box enforces per‑basin capacity and raises alarms when flow cannot be delivered.
 
 ### Flocculation/sedimentation basins
 

@@ -98,16 +98,71 @@ To guarantee identical results across runs and parity between headless and visua
 4. **No Domain RNG**: The domain simulation contains no unseeded random number generation. Any random behavior must use a seeded `RandomNumberGenerator` owned by the simulation context.
 5. **Replay Integrity**: A replay consists of the same initial configuration and the same sequence of (tick, command) inputs, yielding identical state trajectories.
 
-## Flow Resolution
+## Flow Resolution and Proration (Phase 2 Spec)
 
-To ensure consistent flow calculations and avoid ad-hoc solutions, the simulation implements the following design:
+To ensure consistent flow calculations and avoid ad-hoc solutions, the simulation implements a Directed Acyclic Graph (DAG) topological flow solver. The `FlowSolver` runs a two-pass calculation (downstream-to-upstream requests, upstream-to-downstream grants) to resolve flow allocations deterministically.
 
-1. **Two-Pass Solver (Phase-2)**: Flow resolution is executed in two passes over a topologically ordered Directed Acyclic Graph (DAG):
-   - *Pass 1 (Requests)*: Each unit and link propagates flow requests from downstream to upstream.
-   - *Pass 2 (Grants)*: Flows are granted from upstream to downstream. If a source is over-committed, available flow is prorated proportionally among competing downstream requests.
-2. **Competing Withdrawals**: Competing withdrawals from a single storage unit (e.g., normal outflow and bottom drain) compete and prorate if the available volume is insufficient to satisfy both.
-3. **Passive Spill**: Spill is passive and computed after storage integration. It never competes with active withdrawals.
-4. **Hard Boundary — Single-Mutator Rule**: The `FlowSolver` (and related link/port request logic) is strictly read-only regarding stored volume. It calculates requests, applies capacities, and produces granted flows, but *never* modifies the volume of a `StorageUnit`. The `storage_balance.gd` component is the single and exclusive place where volume mutation occurs. It consumes granted flows, performs the integration, and returns the actual resulting outflow, drain, and spill.
-5. **Hard Boundary — DAG Constraint**: For Phases 1–5, the hydraulic topology must remain a Directed Acyclic Graph (DAG). Recirculation loops (such as backwash recovery, filter-to-waste returns, return activated sludge, or recycle streams) are explicitly out of scope until a formal cyclic-network resolution strategy is specified.
+### The Two-Pass DAG Solver Algorithm
+
+1. **Pass 1: Propagate Downstream Requests (Downstream to Upstream)**
+   - The engine visits units in **reverse topological order** (from sinks to sources).
+   - For each unit, it calculates the combined withdrawal request.
+   - For each incoming flow link, it calculates the link's requested flow `requested_flow_m3s`.
+   - Links in `RESTRICTED` mode request flow based on their actuator's effective opening:
+     `requested_flow = max_flow_m3s * actuator.get_effective_opening()`
+   - Incoming links propagate these requests upstream to their source ports.
+
+2. **Pass 2: Distribute Upstream Grants (Upstream to Downstream)**
+   - The engine visits units in **topological order** (from sources to sinks).
+   - For each unit, it determines the total available water supply for the tick:
+     `available_supply = current_volume / dt + total_upstream_inflows`
+   - It computes the sum of all downstream link requests connected to its outlet/drain ports:
+     `total_requested_withdrawal = sum(link.requested_flow)`
+   - **Proration Check**:
+     - If `total_requested_withdrawal <= available_supply`, all requests are granted in full:
+       `link.granted_flow_m3s = link.requested_flow_m3s`
+     - If `total_requested_withdrawal > available_supply`, the supply is over-committed. The solver prorates the available supply proportionally among all competing links:
+       `proration_factor = available_supply / total_requested_withdrawal`
+       `link.granted_flow_m3s = link.requested_flow_m3s * proration_factor`
+   - Once all links are resolved, `link.actual_flow_m3s = link.granted_flow_m3s`.
+   - **Boundary Flow Limit Enforcement**: If a link connects to or from an `ExternalBoundary` unit with a positive `flow_limit_m3s`, the link's granted flow is capped at the boundary's limit:
+     `link.granted_flow_m3s = min(link.granted_flow_m3s, boundary.flow_limit_m3s)`
+
+---
+
+### Worked Examples
+
+#### Example 1: Two Links Competing on a Single Source (Proration)
+Suppose we have a single `StorageUnit` (Basin A) with an initial volume of $3.0\text{ m}^3$, and a tick size $\Delta t = 1.0\text{ s}$.
+- Basin A has no upstream inflows this tick.
+- Total available water for withdrawal is:
+  $$V_{\text{avail}} = \frac{3.0\text{ m}^3}{1.0\text{ s}} = 3.0\text{ m}^3/\text{s}$$
+- Basin A has two outlet links:
+  1. `LINK_OUT_1` (max capacity $4.0\text{ m}^3/\text{s}$, valve is $100\%$ open). Requested flow = $4.0\text{ m}^3/\text{s}$.
+  2. `LINK_OUT_2` (max capacity $2.0\text{ m}^3/\text{s}$, valve is $100\%$ open). Requested flow = $2.0\text{ m}^3/\text{s}$.
+- The total requested withdrawal is:
+  $$Q_{\text{req}} = 4.0 + 2.0 = 6.0\text{ m}^3/\text{s}$$
+- Since $Q_{\text{req}} (6.0) > V_{\text{avail}} (3.0)$, proration is triggered.
+- The proration factor is:
+  $$f_{\text{prorate}} = \frac{V_{\text{avail}}}{Q_{\text{req}}} = \frac{3.0}{6.0} = 0.5$$
+- The granted flows are:
+  - `LINK_OUT_1.granted_flow_m3s` = $4.0 \times 0.5 = 2.0\text{ m}^3/\text{s}$
+  - `LINK_OUT_2.granted_flow_m3s` = $2.0 \times 0.5 = 1.0\text{ m}^3/\text{s}$
+- The mass balance integration for Basin A in this tick computes:
+  - Total actual withdrawal = $2.0 + 1.0 = 3.0\text{ m}^3/\text{s}$.
+  - New volume = $3.0\text{ m}^3 + (0.0 - 3.0\text{ m}^3/\text{s}) \times 1.0\text{ s} = 0.0\text{ m}^3$.
+  - Water is perfectly conserved, and no negative storage occurs.
+
+#### Example 2: Junction-as-Small-Storage (Decoupling Algebraic Loops)
+In plant hydraulics, splitter boxes or pipe junctions combine or split flows instantly. Representing them as zero-volume algebraic junctions creates algebraic loops (simultaneous equations) when downstream capacities depend on upstream heads, which requires complex iterative solvers and breaks clean DAG execution.
+
+To preserve the pure Directed Acyclic Graph (DAG) and the single-mutator 1D Euler integration design:
+- Every physical junction, splitter box, and manifold is modeled as a small `StorageUnit`.
+- For example, the `Inlet Manifold` and `Distribution Box` are configured with a very small surface area (e.g., $1.0\text{ m}^2$) and low capacity (e.g., $10.0\text{ m}^3$).
+- During each tick, these units integrate their volume using 1D Euler.
+- Because they store a small amount of water, any flow mismatch between their inlets and outlets is temporarily buffered as a tiny volume change.
+- In the next tick, the modified volume adjusts the head/elevation and influences the downstream request, naturally stabilizing the system.
+- This dynamic buffering decouples the algebraic equations across space, allowing the engine to solve the entire plant topology in a single, non-iterative, deterministic two-pass sweep per tick.
+
 
 
