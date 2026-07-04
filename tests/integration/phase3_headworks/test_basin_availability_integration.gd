@@ -61,8 +61,8 @@ func test_four_basin_proration() -> void:
 		v.set_commanded_position(100.0)
 		v.position = 100.0
 		
-	# Start with all 5 basins in service. Run 5 ticks to reach steady state
-	for tick in range(1, 6):
+	# Start with all 5 basins in service. Run 50 ticks to reach steady state
+	for tick in range(1, 51):
 		engine.clock.tick_count = tick
 		engine.context.current_tick = tick
 		engine.run_tick(1.0)
@@ -83,8 +83,8 @@ func test_four_basin_proration() -> void:
 	# Now take BASIN_01 out of service
 	engine.enqueue(SetBasinServiceCommand.new(&"BASIN_01", false))
 	
-	# Run 5 more ticks to adapt and propagate
-	for tick in range(6, 11):
+	# Run 50 more ticks to adapt and propagate
+	for tick in range(51, 101):
 		engine.clock.tick_count = tick
 		engine.context.current_tick = tick
 		engine.run_tick(1.0)
@@ -174,5 +174,5 @@ func test_availability_churn_mass_conservation() -> void:
 			current_storage += unit.volume_m3
 			
 	var report = engine.mass_balance_tracker.report(current_storage)
-	assert_true(report.mass_balance_error_m3 <= 1e-4, "Mass balance error should be within tolerance after service churn")
+	assert_true(abs(report.mass_balance_error_m3) <= 1e-4, "Mass balance error should be within tolerance after service churn")
 

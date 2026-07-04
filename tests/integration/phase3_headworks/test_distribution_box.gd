@@ -206,4 +206,4 @@ func test_dist_box_mass_conservation_1k_ticks() -> void:
 			current_storage += unit.volume_m3
 			
 	var report = engine.mass_balance_tracker.report(current_storage)
-	assert_true(report.mass_balance_error_m3 <= 1e-4, "Mass balance error should be within tolerance")
+	assert_true(abs(report.mass_balance_error_m3) <= 1e-4, "Mass balance error should be within tolerance")

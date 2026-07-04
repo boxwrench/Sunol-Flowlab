@@ -37,6 +37,14 @@ func initialize(config: Dictionary) -> void:
 	volume_m3 = float(config.get("initial_volume_m3", 0.0))
 	update_level()
 
+func set_in_service(p_in_service: bool) -> void:
+	super.set_in_service(p_in_service)
+	for port in ports.values():
+		if port.connected_link != null:
+			var port_type: StringName = port.port_type
+			if port_type == &"INLET" or port_type == &"OUTLET":
+				port.connected_link.is_enabled = p_in_service
+
 func update_level() -> void:
 	if surface_area_m2 > 0.0:
 		level_m = volume_m3 / surface_area_m2

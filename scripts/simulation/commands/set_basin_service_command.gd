@@ -23,12 +23,4 @@ func execute(context: RefCounted) -> void:
 	var unit: StorageUnit = context.units_dict.get(target_unit_id) as StorageUnit
 	assert(unit != null, "SetBasinServiceCommand: resolved unit cannot be null")
 	
-	unit.in_service = put_in_service
-	
-	for port in unit.ports.values():
-		if port.connected_link != null:
-			var port_type: StringName = port.port_type
-			if port_type == &"INLET" or port_type == &"OUTLET":
-				port.connected_link.is_enabled = put_in_service
-			# DRAIN links remain enabled (P3-A2)
-			# Spill is not a link (P3-A3)
+	unit.set_in_service(put_in_service)

@@ -163,3 +163,191 @@ func test_drain_stays_enabled_when_out_of_service() -> void:
 	engine.run_tick(1.0)
 	
 	assert_true(drain_link.is_enabled, "Drain link must remain enabled when basin is out of service")
+
+func test_factory_build_precedence_topology_inactive_ic_omitted() -> void:
+	var engine := SimulationEngine.new()
+	var topology := {
+		"units": [
+			{
+				"unit_id": "TEST_BASIN",
+				"type": "StorageUnit",
+				"display_name": "Test Basin",
+				"in_service": false, # Topology sets out-of-service
+				"maximum_volume_m3": 100.0,
+				"surface_area_m2": 10.0,
+				"bottom_elevation_m": 0.0,
+				"high_level_m": 9.0,
+				"spill_level_m": 10.0,
+				"min_operating_level_m": 0.5,
+				"spill_destination_id": "SPILL_SINK",
+				"ports": [
+					{
+						"port_id": "PORT_IN_BASIN",
+						"port_type": "INLET",
+						"elevation_m": 0.0
+					}
+				]
+			},
+			{
+				"unit_id": "SPILL_SINK",
+				"type": "ExternalBoundary",
+				"display_name": "Spill Sink",
+				"boundary_type": "SPILL",
+				"ports": []
+			},
+			{
+				"unit_id": "TEST_SOURCE",
+				"type": "ExternalBoundary",
+				"display_name": "Test Source",
+				"boundary_type": "INFLOW",
+				"ports": [
+					{
+						"port_id": "PORT_OUT_SRC",
+						"port_type": "OUTLET",
+						"elevation_m": 0.0
+					}
+				]
+			}
+		],
+		"actuators": [],
+		"links": [
+			{
+				"link_id": "LINK_IN_BASIN",
+				"display_name": "Inlet Link",
+				"upstream_port_id": "PORT_OUT_SRC",
+				"downstream_port_id": "PORT_IN_BASIN"
+			}
+		]
+	}
+	
+	var initial_conditions := {
+		"unit_states": [
+			{
+				"unit_id": "TEST_BASIN",
+				"volume_m3": 50.0
+				# in_service is omitted here!
+			}
+		],
+		"actuator_states": []
+	}
+	
+	var build_ok = PlantFactory.build_plant(engine.context, topology, initial_conditions, {"controllers": []})
+	assert_true(build_ok, "Factory build should succeed")
+	
+	var unit: StorageUnit = engine.context.units_dict[&"TEST_BASIN"]
+	assert_false(unit.in_service, "Unit in_service should remain false from topology when omitted in IC")
+	
+	var link = engine.context.links_dict[&"LINK_IN_BASIN"]
+	assert_false(link.is_enabled, "Connected link should be disabled")
+
+func test_factory_build_precedence_ic_overrides_topology() -> void:
+	var engine := SimulationEngine.new()
+	var topology := {
+		"units": [
+			{
+				"unit_id": "BASIN_1",
+				"type": "StorageUnit",
+				"display_name": "Basin 1",
+				"in_service": true, # Topology has true
+				"maximum_volume_m3": 100.0,
+				"surface_area_m2": 10.0,
+				"bottom_elevation_m": 0.0,
+				"high_level_m": 9.0,
+				"spill_level_m": 10.0,
+				"min_operating_level_m": 0.5,
+				"spill_destination_id": "SPILL_SINK",
+				"ports": [
+					{
+						"port_id": "PORT_IN_B1",
+						"port_type": "INLET",
+						"elevation_m": 0.0
+					}
+				]
+			},
+			{
+				"unit_id": "BASIN_2",
+				"type": "StorageUnit",
+				"display_name": "Basin 2",
+				"in_service": false, # Topology has false
+				"maximum_volume_m3": 100.0,
+				"surface_area_m2": 10.0,
+				"bottom_elevation_m": 0.0,
+				"high_level_m": 9.0,
+				"spill_level_m": 10.0,
+				"min_operating_level_m": 0.5,
+				"spill_destination_id": "SPILL_SINK",
+				"ports": [
+					{
+						"port_id": "PORT_IN_B2",
+						"port_type": "INLET",
+						"elevation_m": 0.0
+					}
+				]
+			},
+			{
+				"unit_id": "SPILL_SINK",
+				"type": "ExternalBoundary",
+				"display_name": "Spill Sink",
+				"boundary_type": "SPILL",
+				"ports": []
+			},
+			{
+				"unit_id": "TEST_SOURCE",
+				"type": "ExternalBoundary",
+				"display_name": "Test Source",
+				"boundary_type": "INFLOW",
+				"ports": [
+					{
+						"port_id": "PORT_OUT_SRC",
+						"port_type": "OUTLET",
+						"elevation_m": 0.0
+					}
+				]
+			}
+		],
+		"actuators": [],
+		"links": [
+			{
+				"link_id": "LINK_IN_B1",
+				"display_name": "Inlet Link 1",
+				"upstream_port_id": "PORT_OUT_SRC",
+				"downstream_port_id": "PORT_IN_B1"
+			},
+			{
+				"link_id": "LINK_IN_B2",
+				"display_name": "Inlet Link 2",
+				"upstream_port_id": "PORT_OUT_SRC",
+				"downstream_port_id": "PORT_IN_B2"
+			}
+		]
+	}
+	
+	var initial_conditions := {
+		"unit_states": [
+			{
+				"unit_id": "BASIN_1",
+				"in_service": false # Override true -> false
+			},
+			{
+				"unit_id": "BASIN_2",
+				"in_service": true # Override false -> true
+			}
+		],
+		"actuator_states": []
+	}
+	
+	var build_ok = PlantFactory.build_plant(engine.context, topology, initial_conditions, {"controllers": []})
+	assert_true(build_ok, "Factory build should succeed")
+	
+	var b1: StorageUnit = engine.context.units_dict[&"BASIN_1"]
+	var b2: StorageUnit = engine.context.units_dict[&"BASIN_2"]
+	
+	assert_false(b1.in_service, "Basin 1 in_service should be overridden to false")
+	assert_true(b2.in_service, "Basin 2 in_service should be overridden to true")
+	
+	var link1 = engine.context.links_dict[&"LINK_IN_B1"]
+	var link2 = engine.context.links_dict[&"LINK_IN_B2"]
+	
+	assert_false(link1.is_enabled, "Link 1 should be disabled")
+	assert_true(link2.is_enabled, "Link 2 should be enabled")
+

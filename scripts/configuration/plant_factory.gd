@@ -76,11 +76,7 @@ static func build_plant(
 	# 3a. Enforce initial topology in_service on connected links
 	for unit in units_map.values():
 		if not unit.in_service:
-			for port in unit.ports.values():
-				if port.connected_link != null:
-					var port_type: StringName = port.port_type
-					if port_type == &"INLET" or port_type == &"OUTLET":
-						port.connected_link.is_enabled = false
+			unit.set_in_service(false)
 
 	# 3b. Instantiate Controllers
 	var controllers_array: Array = controllers_data.get("controllers", [])
@@ -104,12 +100,7 @@ static func build_plant(
 		var uid: StringName = StringName(ustate.get("unit_id", ""))
 		if units_map.has(uid):
 			var unit = units_map[uid]
-			unit.in_service = bool(ustate.get("in_service", true))
-			for port in unit.ports.values():
-				if port.connected_link != null:
-					var port_type: StringName = port.port_type
-					if port_type == &"INLET" or port_type == &"OUTLET":
-						port.connected_link.is_enabled = unit.in_service
+			unit.set_in_service(bool(ustate.get("in_service", unit.in_service)))
 			if unit is StorageUnit and ustate.has("volume_m3"):
 				unit.volume_m3 = float(ustate["volume_m3"])
 				unit.update_level()

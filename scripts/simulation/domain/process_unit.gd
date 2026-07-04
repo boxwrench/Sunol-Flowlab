@@ -14,6 +14,9 @@ func initialize(config: Dictionary) -> void:
 	in_service = config.get("in_service", true)
 	operating_state = StringName(config.get("operating_state", "IN_SERVICE"))
 
+func set_in_service(p_in_service: bool) -> void:
+	in_service = p_in_service
+
 func pre_tick(_context: RefCounted) -> void:
 	pass
 
