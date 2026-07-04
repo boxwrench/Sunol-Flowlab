@@ -1,0 +1,18 @@
+# Godot
+.godot/
+.import/
+
+# Build outputs and runtime data
+builds/
+data/runtime/
+data/saves/
+data/exports/
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
