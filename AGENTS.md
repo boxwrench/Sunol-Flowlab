@@ -54,6 +54,8 @@ Each rule below exists because the failure it names actually occurred in this re
 
 11. **Clean handoff.** End every task with `git status` clean: commit or revert everything. After any bulk file write, verify the last line of each written file is intact — truncated writes have corrupted this repository before. Never hand off mid-write.
 
+12. **All deliverables live inside the repository.** Never write plans, specs, reports, or any referenced file to a scratch, brain, artifact, or tool-internal folder (e.g., `~/.gemini/.../brain/...`). Those locations are invisible to the orchestrator, to git, to other agents, and to future sessions. Every file you mention in a report must exist at a repo-relative path and be committed. If your tooling drafts in a scratch location, copying it into the repo and committing it IS the deliverable step — a report referencing an uncommitted scratch file counts as work not done. *(Occurred: a Phase 2 plan was reported as delivered but existed only in an agent's brain folder.)*
+
 ## Development checklist
 
 Before completing a task, an agent should:
