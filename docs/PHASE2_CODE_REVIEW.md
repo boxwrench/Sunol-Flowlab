@@ -126,6 +126,23 @@ None of the findings is reachable in the shipped config (mode is MANUAL, command
 
 Next review: WP2.5 (`7ad7608`).
 
+## WP2.4-R verification (2026-07-04, commit `e39f078`) — REJECTED AS-IS: 1 test failing (59/60); W2.4-1..4 fixes accepted, W2.4-5 remains open
+
+Reviewer-run suite: **22 scripts, 60 tests, 59 passed, 1 FAILED.** The agent's "Tests written but NOT executed — unverified" declaration was honest, and the failure it concealed is real.
+
+W2.4-1 through W2.4-4 are correctly fixed and verified in the diff and in passing tests: warn-once + MANUAL fallback for unknown modes, validator enums for `control_mode`/`type`/`pv_property`, `bias` deleted (the schema never declared it, so no schema change was required), duck-typing replaced with a typed `is LevelController` cast.
+
+**W2.4-5's new test fails — and the diagnosis matters.** `test_closed_loop_level_stabilization` overrides gain to 25 and asserts the level equals setpoint ±0.2 at one instant (tick 400). Reviewer instrumentation shows the loop oscillating rail-to-rail (valve 0%↔99%) with **growing** amplitude ±0.09→±0.33, bounded only by actuator saturation; the assert samples an arbitrary phase of that oscillation. Root cause is structural, not a code bug: the velocity-form algorithm is **pure integral action**, the basin level is itself an integrator, and with one-tick scan lag the closed loop is an undamped double integrator — unstable at high gain, limit-cycling at any gain. The controller implements the plan exactly; a loop of this structure cannot asymptotically settle, so the test's premise ("small droop", instantaneous sample) is wrong on both counts (integral action has no droop; oscillatory loops can't be sampled at one tick).
+
+Notable positive: mass balance stayed within tolerance throughout 200 ticks of rail-to-rail valve slamming — the solver/ledger path is robust under actuator abuse.
+
+**Required WP2.4-R2 (test + docs only — no simulation-code changes permitted):**
+1. Rewrite the stabilization test: shipped-scale gain (≈2), assert the **time-averaged** level over the final ~100 ticks is within ±0.1 of setpoint AND max deviation over that window is bounded (e.g. ≤ 0.3), after the demand step.
+2. Add a short "Control loop characteristics" note to `CONTROL_LOGIC.md`: velocity-form P is integral action; storage-level loops are undamped double integrators with one-tick lag; expect deadband-bounded limit cycles; high gain destabilizes; PID with damping is a roadmap item. Include gain-scaling guidance (loop gain per tick ≈ `gain × max_flow / (100 × surface_area)`).
+3. Full suite: 22 scripts, 60/60, 0 failing, with pasted runner output (or the unverified declaration).
+
+Next review after WP2.4-R2: WP2.5 (`7ad7608`).
+
 ## Required fix order (WP2.2-R, one commit)
 
 1. F2.2-1: per-type summation in `solve_tick` + totals into `StorageBalance.solve` + Worked-Example-1 integration test.
