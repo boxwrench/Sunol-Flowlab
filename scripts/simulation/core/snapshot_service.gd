@@ -8,6 +8,7 @@ static func take_snapshot(context: SimulationContext, engine: RefCounted) -> Dic
 		"units": {},
 		"links": {},
 		"actuators": {},
+		"controllers": {},
 		"alarms": {},
 		"plant_totals": {
 			"initial_storage_m3": 0.0,
@@ -29,6 +30,9 @@ static func take_snapshot(context: SimulationContext, engine: RefCounted) -> Dic
 		
 	for act in context.actuators_list:
 		snap["actuators"][act.actuator_id] = act.get_snapshot()
+		
+	for ctrl in context.controllers_list:
+		snap["controllers"][ctrl.controller_id] = ctrl.get_snapshot()
 		
 	if engine != null and engine.get("alarm_engine") != null:
 		var alarm_engine = engine.alarm_engine

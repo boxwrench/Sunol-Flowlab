@@ -80,7 +80,8 @@ func _step_update_actuators() -> void:
 		actuator.update(dt)
 
 func _step_evaluate_controllers() -> void:
-	pass
+	for controller in context.controllers_list:
+		controller.evaluate(context)
 
 func _step_resolve_requested_flows() -> void:
 	FlowSolver.solve_flows(context)

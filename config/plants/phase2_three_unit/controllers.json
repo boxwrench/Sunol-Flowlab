@@ -1,0 +1,18 @@
+{
+  "controllers": [
+    {
+      "controller_id": "LC_BASIN",
+      "type": "LevelController",
+      "display_name": "Basin Level Controller",
+      "target_actuator_id": "VALVE_OUT_BASIN",
+      "pv_unit_id": "BASIN",
+      "pv_property": "level_m",
+      "control_mode": "MANUAL",
+      "setpoint": 5.0,
+      "gain": 2.0,
+      "deadband_m": 0.05,
+      "min_output": 0.0,
+      "max_output": 100.0
+    }
+  ]
+}

@@ -19,6 +19,9 @@ var links_dict: Dictionary = {}
 var actuators_list: Array = []
 var actuators_dict: Dictionary = {}
 
+var controllers_list: Array = []
+var controllers_dict: Dictionary = {}
+
 # Pending events accumulated during tick execution
 var pending_events: Array[SimulationEvent] = []
 

@@ -4,7 +4,8 @@ extends RefCounted
 static func build_plant(
 	context: SimulationContext,
 	topology_data: Dictionary,
-	initial_conditions_data: Dictionary
+	initial_conditions_data: Dictionary,
+	controllers_data: Dictionary = {}
 ) -> bool:
 	# 1. Instantiate Units
 	var units_array: Array = topology_data.get("units", [])
@@ -69,6 +70,22 @@ static func build_plant(
 				
 		links_map[link_id] = link
 
+	# 3b. Instantiate Controllers
+	var controllers_array: Array = controllers_data.get("controllers", [])
+	var controllers_map: Dictionary = {}
+	
+	for ctrl_config in controllers_array:
+		var ctrl_id: StringName = StringName(ctrl_config.get("controller_id", ""))
+		var type: String = ctrl_config.get("type", "")
+		var ctrl: SimController = null
+		if type == "LevelController":
+			ctrl = LevelController.new()
+		else:
+			ctrl = SimController.new()
+			
+		ctrl.initialize(ctrl_config)
+		controllers_map[ctrl_id] = ctrl
+
 	# 4. Apply initial conditions
 	var unit_states: Array = initial_conditions_data.get("unit_states", [])
 	for ustate in unit_states:
@@ -88,6 +105,16 @@ static func build_plant(
 			valve.is_manual = bool(astate.get("is_manual", true))
 			valve.commanded_position = float(astate.get("commanded_position", 0.0))
 			valve.position = float(astate.get("position", 0.0))
+
+	var controller_states: Array = initial_conditions_data.get("controller_states", [])
+	for cstate in controller_states:
+		var ctrl_id: StringName = StringName(cstate.get("controller_id", ""))
+		var ctrl = controllers_map.get(ctrl_id)
+		if ctrl != null:
+			if cstate.has("control_mode"):
+				ctrl.control_mode = StringName(cstate["control_mode"])
+			if cstate.has("setpoint") and "setpoint" in ctrl:
+				ctrl.setpoint = float(cstate["setpoint"])
 
 	# 5. Sort alphabetically by ID to ensure determinism
 	var sorted_unit_ids: Array = units_map.keys()
@@ -122,6 +149,17 @@ static func build_plant(
 	for aid in sorted_act_ids:
 		context.actuators_list.append(actuators_map[aid])
 		context.actuators_dict[aid] = actuators_map[aid]
+
+	var sorted_ctrl_ids: Array = controllers_map.keys()
+	sorted_ctrl_ids.sort_custom(func(a, b) -> bool:
+		return String(a) < String(b)
+	)
+	
+	context.controllers_list.clear()
+	context.controllers_dict.clear()
+	for cid in sorted_ctrl_ids:
+		context.controllers_list.append(controllers_map[cid])
+		context.controllers_dict[cid] = controllers_map[cid]
 
 	# 6. Topological sort (Kahn's algorithm) — Edge Rule 1
 	# in-degree: how many upstream units feed this unit via FlowLink edges.
