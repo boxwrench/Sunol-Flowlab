@@ -96,24 +96,51 @@ func _step_update_volumes() -> void:
 		unit.solve_tick(context)
 
 func _step_calculate_levels_spills() -> void:
+	# Reset all boundary flow accumulators to zero before summing (Edge Rule 4)
 	for unit in context.units_list:
 		if unit is ExternalBoundary:
 			unit.current_flow_m3s = 0.0
-			
+
+	# Accumulate actual flows across all links using += so multi-link
+	# boundaries sum correctly (Edge Rule 4)
 	for link in context.links_list:
 		if link.source_port != null and link.source_port.parent_unit is ExternalBoundary:
-			link.source_port.parent_unit.current_flow_m3s = link.actual_flow_m3s
+			link.source_port.parent_unit.current_flow_m3s += link.actual_flow_m3s
 		if link.destination_port != null and link.destination_port.parent_unit is ExternalBoundary:
-			link.destination_port.parent_unit.current_flow_m3s = link.actual_flow_m3s
-			
-	var total_spill_m3s: float = 0.0
+			link.destination_port.parent_unit.current_flow_m3s += link.actual_flow_m3s
+
+	# Apply flow_limit_m3s cap to each boundary's accumulated total (Edge Rule 4).
+	# When the total exceeds the limit, clamp — the FlowSolver has already prorated
+	# individual links; this cap handles any floating-point residual.
 	for unit in context.units_list:
-		if unit is StorageUnit:
-			total_spill_m3s += unit.spill_flow_m3s
-			
+		if unit is ExternalBoundary and unit.flow_limit_m3s >= 0.0:
+			if unit.current_flow_m3s > unit.flow_limit_m3s + 1e-9:
+				unit.current_flow_m3s = unit.flow_limit_m3s
+
+	# Route spill from each StorageUnit to its configured spill boundary (Edge Rule 5).
+	# spill_destination_id must resolve to a unit in units_dict; if it doesn't
+	# (e.g. config missing or validator skipped) we emit a warning and skip.
 	for unit in context.units_list:
-		if unit is ExternalBoundary and unit.boundary_type == &"SPILL":
-			unit.current_flow_m3s = total_spill_m3s
+		if not (unit is StorageUnit):
+			continue
+		if unit.spill_flow_m3s <= 0.0:
+			continue
+		var dest_id: StringName = unit.spill_destination_id
+		if dest_id == &"":
+			push_warning(
+				"StorageUnit '%s': spill_destination_id is empty — spill of %f m³/s not routed." \
+				% [unit.unit_id, unit.spill_flow_m3s]
+			)
+			continue
+		var dest = context.units_dict.get(dest_id)
+		if dest == null or not (dest is ExternalBoundary):
+			push_warning(
+				"StorageUnit '%s': spill_destination_id '%s' does not resolve to an ExternalBoundary — spill not routed." \
+				% [unit.unit_id, dest_id]
+			)
+			continue
+		dest.current_flow_m3s += unit.spill_flow_m3s
+
 
 func _step_update_state_machines() -> void:
 	for unit in context.units_list:

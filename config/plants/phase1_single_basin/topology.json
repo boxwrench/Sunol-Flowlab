@@ -23,6 +23,7 @@
       "high_level_m": 9.0,
       "spill_level_m": 9.5,
       "min_operating_level_m": 0.5,
+      "spill_destination_id": "SPILL_SINK",
       "ports": [
         {
           "port_id": "PORT_BASIN_IN",
@@ -38,6 +39,7 @@
         }
       ]
     },
+
     {
       "unit_id": "SINK",
       "type": "ExternalBoundary",
