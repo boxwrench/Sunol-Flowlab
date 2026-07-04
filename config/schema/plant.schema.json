@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "plant.schema.json",
+  "title": "plant.json — global plant settings",
+  "description": "Global plant identity and simulation settings. Shape only; relational checks live in plant_validator.gd.",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string", "description": "Editor hint; ignored by the engine." },
+    "plant_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$",
+      "description": "Snake-case ID matching the directory name under config/plants/."
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable name shown in the UI."
+    },
+    "simulation_settings": {
+      "type": "object",
+      "properties": {
+        "default_dt_s": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Fixed simulation tick duration [s]. Defaults to 1.0 when absent. Speed multipliers scale accumulated time, never dt."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["plant_id", "display_name"],
+  "additionalProperties": false
+}

@@ -1,0 +1,6 @@
+{
+  "plant_id": "Bad Plant ID With Spaces",
+  "display_name": "",
+  "simulation_settings": { "default_dt_s": 0 },
+  "not_a_real_key": true
+}
