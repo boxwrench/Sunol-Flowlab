@@ -7,9 +7,12 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - **WP3.0 / specs**: Added Basin Availability Semantics (specifying `in_service` inheritance, port link disabling, drain/spill exceptions, and static DAG persistence) and junction sizing rules (`surface_area_m2 <= 1.0`, `maximum_volume_m3 <= 10.0`, `min_operating_level_m = 0.0`) to `SIMULATION_RULES.md` and `PROCESS_UNIT_CONTRACTS.md`.
 - **WP3.1 / config**: Created configuration for the two source reservoirs (`RESERVOIR_01`, `RESERVOIR_02`) and the inlet manifold (`MANIFOLD_01`) under `config/plants/phase3_headworks/`. Added `in_service` optional property to `unit` definition in `topology.schema.json`.
+- **WP3.2 / config**: Extended configuration for `FLASH_MIX_01` and `DIST_BOX_01` (both modeled as small storage units) and five placeholder basin sink boundaries under `config/plants/phase3_headworks/topology.json`.
 
 ### Tests Added
 - **WP3.1**: Added `test_reservoir_manifold.gd` to verify dual-reservoir combining flow, single-reservoir starvation behavior, and mass conservation.
+- **WP3.2**: Added `test_distribution_box.gd` to verify equal flow splitting among five outlets, proportional proration, and mass conservation.
+
 
 ## [1.2.0] — Phase 2 Finalized (G-Phase2 closed)
 

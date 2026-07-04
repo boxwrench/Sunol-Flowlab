@@ -26,6 +26,32 @@
     },
     {
       "unit_id": "FLASH_MIX_01",
+      "in_service": true,
+      "volume_m3": 5.0
+    },
+    {
+      "unit_id": "DIST_BOX_01",
+      "in_service": true,
+      "volume_m3": 5.0
+    },
+    {
+      "unit_id": "BASIN_01_SINK",
+      "in_service": true
+    },
+    {
+      "unit_id": "BASIN_02_SINK",
+      "in_service": true
+    },
+    {
+      "unit_id": "BASIN_03_SINK",
+      "in_service": true
+    },
+    {
+      "unit_id": "BASIN_04_SINK",
+      "in_service": true
+    },
+    {
+      "unit_id": "BASIN_05_SINK",
       "in_service": true
     },
     {
@@ -76,6 +102,42 @@
     },
     {
       "actuator_id": "VALVE_OUT_MAN_01",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_FM_01",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_DB_01",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_DB_02",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_DB_03",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_DB_04",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_DB_05",
       "is_manual": true,
       "commanded_position": 0.0,
       "position": 0.0

@@ -107,12 +107,120 @@
     },
     {
       "unit_id": "FLASH_MIX_01",
-      "type": "ExternalBoundary",
-      "display_name": "Flash Mix Placeholder",
-      "boundary_type": "TREATED_DEMAND",
+      "type": "StorageUnit",
+      "display_name": "Flash Mix",
+      "maximum_volume_m3": 10.0,
+      "surface_area_m2": 1.0,
+      "bottom_elevation_m": 0.0,
+      "high_level_m": 9.0,
+      "spill_level_m": 10.0,
+      "min_operating_level_m": 0.0,
+      "spill_destination_id": "SPILL_SINK",
       "ports": [
         {
           "port_id": "PORT_FM_01_IN",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_FM_01_OUT",
+          "port_type": "OUTLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "DIST_BOX_01",
+      "type": "StorageUnit",
+      "display_name": "Distribution Box",
+      "maximum_volume_m3": 10.0,
+      "surface_area_m2": 1.0,
+      "bottom_elevation_m": 0.0,
+      "high_level_m": 9.0,
+      "spill_level_m": 10.0,
+      "min_operating_level_m": 0.0,
+      "spill_destination_id": "SPILL_SINK",
+      "ports": [
+        {
+          "port_id": "PORT_DB_01_IN",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_BASIN_01",
+          "port_type": "OUTLET"
+        },
+        {
+          "port_id": "PORT_BASIN_02",
+          "port_type": "OUTLET"
+        },
+        {
+          "port_id": "PORT_BASIN_03",
+          "port_type": "OUTLET"
+        },
+        {
+          "port_id": "PORT_BASIN_04",
+          "port_type": "OUTLET"
+        },
+        {
+          "port_id": "PORT_BASIN_05",
+          "port_type": "OUTLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "BASIN_01_SINK",
+      "type": "ExternalBoundary",
+      "display_name": "Basin 1 Placeholder Sink",
+      "boundary_type": "TREATED_DEMAND",
+      "ports": [
+        {
+          "port_id": "PORT_BASIN_01_IN",
+          "port_type": "INLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "BASIN_02_SINK",
+      "type": "ExternalBoundary",
+      "display_name": "Basin 2 Placeholder Sink",
+      "boundary_type": "TREATED_DEMAND",
+      "ports": [
+        {
+          "port_id": "PORT_BASIN_02_IN",
+          "port_type": "INLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "BASIN_03_SINK",
+      "type": "ExternalBoundary",
+      "display_name": "Basin 3 Placeholder Sink",
+      "boundary_type": "TREATED_DEMAND",
+      "ports": [
+        {
+          "port_id": "PORT_BASIN_03_IN",
+          "port_type": "INLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "BASIN_04_SINK",
+      "type": "ExternalBoundary",
+      "display_name": "Basin 4 Placeholder Sink",
+      "boundary_type": "TREATED_DEMAND",
+      "ports": [
+        {
+          "port_id": "PORT_BASIN_04_IN",
+          "port_type": "INLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "BASIN_05_SINK",
+      "type": "ExternalBoundary",
+      "display_name": "Basin 5 Placeholder Sink",
+      "boundary_type": "TREATED_DEMAND",
+      "ports": [
+        {
+          "port_id": "PORT_BASIN_05_IN",
           "port_type": "INLET"
         }
       ]
@@ -149,6 +257,14 @@
         },
         {
           "port_id": "PORT_SPILL_SINK_IN_MAN_01",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_SPILL_SINK_IN_FM_01",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_SPILL_SINK_IN_DB_01",
           "port_type": "INLET"
         }
       ]
@@ -194,6 +310,42 @@
     {
       "actuator_id": "VALVE_OUT_MAN_01",
       "display_name": "Manifold 1 Outlet Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_FM_01",
+      "display_name": "Flash Mix 1 Outlet Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_DB_01",
+      "display_name": "Dist Box Outlet 1 Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_DB_02",
+      "display_name": "Dist Box Outlet 2 Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_DB_03",
+      "display_name": "Dist Box Outlet 3 Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_DB_04",
+      "display_name": "Dist Box Outlet 4 Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_DB_05",
+      "display_name": "Dist Box Outlet 5 Valve",
       "opening_rate_percent_per_s": 5.0,
       "closing_rate_percent_per_s": 5.0
     }
@@ -261,6 +413,60 @@
       "source_port_id": "PORT_MAN_01_OUT",
       "destination_port_id": "PORT_FM_01_IN",
       "actuator_id": "VALVE_OUT_MAN_01"
+    },
+    {
+      "link_id": "LINK_OUT_FM_01",
+      "display_name": "Flash Mix to Dist Box Link",
+      "max_flow_m3s": 12.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_FM_01_OUT",
+      "destination_port_id": "PORT_DB_01_IN",
+      "actuator_id": "VALVE_OUT_FM_01"
+    },
+    {
+      "link_id": "LINK_OUT_DB_01",
+      "display_name": "Dist Box to Basin 1 Link",
+      "max_flow_m3s": 3.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_01",
+      "destination_port_id": "PORT_BASIN_01_IN",
+      "actuator_id": "VALVE_OUT_DB_01"
+    },
+    {
+      "link_id": "LINK_OUT_DB_02",
+      "display_name": "Dist Box to Basin 2 Link",
+      "max_flow_m3s": 3.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_02",
+      "destination_port_id": "PORT_BASIN_02_IN",
+      "actuator_id": "VALVE_OUT_DB_02"
+    },
+    {
+      "link_id": "LINK_OUT_DB_03",
+      "display_name": "Dist Box to Basin 3 Link",
+      "max_flow_m3s": 3.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_03",
+      "destination_port_id": "PORT_BASIN_03_IN",
+      "actuator_id": "VALVE_OUT_DB_03"
+    },
+    {
+      "link_id": "LINK_OUT_DB_04",
+      "display_name": "Dist Box to Basin 4 Link",
+      "max_flow_m3s": 3.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_04",
+      "destination_port_id": "PORT_BASIN_04_IN",
+      "actuator_id": "VALVE_OUT_DB_04"
+    },
+    {
+      "link_id": "LINK_OUT_DB_05",
+      "display_name": "Dist Box to Basin 5 Link",
+      "max_flow_m3s": 3.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_05",
+      "destination_port_id": "PORT_BASIN_05_IN",
+      "actuator_id": "VALVE_OUT_DB_05"
     }
   ]
 }
