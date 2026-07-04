@@ -13,3 +13,8 @@ enabled=PackedStringArray("res://addons/gut/plugin.cfg")
 [debug]
 
 gdscript/warnings/untyped_declaration=1
+
+[autoload]
+
+CommandBus="*res://scripts/application/command_bus.gd"
+EventBus="*res://scripts/application/event_bus.gd"
