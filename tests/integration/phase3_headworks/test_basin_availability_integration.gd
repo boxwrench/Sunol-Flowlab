@@ -168,5 +168,11 @@ func test_availability_churn_mass_conservation() -> void:
 			var unit: StorageUnit = engine.context.units_dict[uid]
 			assert_true(unit.volume_m3 >= 0.0, "Volume of %s must not be negative" % uid)
 			
-	var report = engine.mass_balance_tracker.report()
+	var current_storage: float = 0.0
+	for unit in engine.context.units_list:
+		if unit is StorageUnit:
+			current_storage += unit.volume_m3
+			
+	var report = engine.mass_balance_tracker.report(current_storage)
 	assert_true(report.mass_balance_error_m3 <= 1e-4, "Mass balance error should be within tolerance after service churn")
+

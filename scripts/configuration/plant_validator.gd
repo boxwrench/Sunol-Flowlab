@@ -215,6 +215,8 @@ static func validate_config(
 						if not unit_id in unit_ids:
 							errors.append("%s: references unknown unit_id '%s'" % [ustate_prefix, unit_id])
 						else:
+							if ustate.has("in_service") and typeof(ustate["in_service"]) != TYPE_BOOL:
+								errors.append("%s: in_service must be a boolean" % ustate_prefix)
 							var init_vol = ustate.get("volume_m3")
 							if init_vol != null:
 								for u in units_array:

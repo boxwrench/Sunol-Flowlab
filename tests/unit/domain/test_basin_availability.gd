@@ -122,9 +122,8 @@ func test_in_service_restore_flows() -> void:
 		v.set_commanded_position(100.0)
 		v.position = 100.0
 		
-	# First put out of service, then restore in service
+	# First put out of service on tick 1
 	engine.enqueue(SetBasinServiceCommand.new(&"BASIN_01", false))
-	engine.enqueue(SetBasinServiceCommand.new(&"BASIN_01", true))
 	
 	engine.clock.tick_count = 1
 	engine.context.current_tick = 1
@@ -133,10 +132,22 @@ func test_in_service_restore_flows() -> void:
 	var inlet_link = engine.context.links_dict[&"LINK_OUT_DB_01"]
 	var outlet_link = engine.context.links_dict[&"LINK_OUT_BASIN_01"]
 	
+	assert_false(inlet_link.is_enabled, "Inlet link must be disabled on tick 1")
+	assert_false(outlet_link.is_enabled, "Outlet link must be disabled on tick 1")
+	assert_eq(inlet_link.actual_flow_m3s, 0.0, "Inlet flow should be zero on tick 1")
+	assert_eq(outlet_link.actual_flow_m3s, 0.0, "Outlet flow should be zero on tick 1")
+	
+	# Restore in service on tick 2
+	engine.enqueue(SetBasinServiceCommand.new(&"BASIN_01", true))
+	
+	engine.clock.tick_count = 2
+	engine.context.current_tick = 2
+	engine.run_tick(1.0)
+	
 	assert_true(inlet_link.is_enabled, "Inlet link must be restored to enabled")
 	assert_true(outlet_link.is_enabled, "Outlet link must be restored to enabled")
-	assert_true(inlet_link.actual_flow_m3s > 0.0, "Inlet flow should be active")
-	assert_true(outlet_link.actual_flow_m3s > 0.0, "Outlet flow should be active")
+	assert_true(inlet_link.actual_flow_m3s > 0.0, "Inlet flow should be active on tick 2")
+	assert_true(outlet_link.actual_flow_m3s > 0.0, "Outlet flow should be active on tick 2")
 
 func test_drain_stays_enabled_when_out_of_service() -> void:
 	var engine := _setup_engine()

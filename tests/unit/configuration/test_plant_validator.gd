@@ -127,3 +127,87 @@ func test_invalid_controller_config() -> void:
 	assert_true(found_mode, "Should catch invalid control mode")
 	assert_true(found_prop, "Should catch invalid pv_property")
 
+func test_invalid_in_service_config() -> void:
+	var plant_data := {}
+	var topology_invalid_in_service := {
+		"units": [
+			{
+				"unit_id": "BASIN",
+				"type": "StorageUnit",
+				"display_name": "Basin",
+				"in_service": "not_a_boolean", # invalid type
+				"maximum_volume_m3": 100.0,
+				"surface_area_m2": 10.0,
+				"bottom_elevation_m": 0.0,
+				"high_level_m": 9.0,
+				"spill_level_m": 10.0,
+				"min_operating_level_m": 0.5,
+				"spill_destination_id": "SPILL_SINK",
+				"ports": []
+			},
+			{
+				"unit_id": "SPILL_SINK",
+				"type": "ExternalBoundary",
+				"display_name": "Spill Sink",
+				"boundary_type": "SPILL",
+				"ports": []
+			}
+		],
+		"actuators": [],
+		"links": []
+	}
+	
+	var res1 := PlantValidator.validate_config(plant_data, topology_invalid_in_service, {}, 1.0, {}, {})
+	assert_gt(res1.errors.size(), 0, "Should reject non-boolean in_service in topology")
+	var found_topo_err := false
+	for err in res1.errors:
+		if "in_service must be a boolean" in err:
+			found_topo_err = true
+	assert_true(found_topo_err, "Should report in_service type error in topology")
+	
+	var topology_valid := {
+		"units": [
+			{
+				"unit_id": "BASIN",
+				"type": "StorageUnit",
+				"display_name": "Basin",
+				"in_service": true,
+				"maximum_volume_m3": 100.0,
+				"surface_area_m2": 10.0,
+				"bottom_elevation_m": 0.0,
+				"high_level_m": 9.0,
+				"spill_level_m": 10.0,
+				"min_operating_level_m": 0.5,
+				"spill_destination_id": "SPILL_SINK",
+				"ports": []
+			},
+			{
+				"unit_id": "SPILL_SINK",
+				"type": "ExternalBoundary",
+				"display_name": "Spill Sink",
+				"boundary_type": "SPILL",
+				"ports": []
+			}
+		],
+		"actuators": [],
+		"links": []
+	}
+	
+	var init_conditions_invalid_in_service := {
+		"unit_states": [
+			{
+				"unit_id": "BASIN",
+				"in_service": "not_a_boolean_either" # invalid type
+			}
+		]
+	}
+	
+	var res2 := PlantValidator.validate_config(plant_data, topology_valid, init_conditions_invalid_in_service, 1.0, {}, {})
+	assert_gt(res2.errors.size(), 0, "Should reject non-boolean in_service in initial conditions")
+	var found_init_err := false
+	for err in res2.errors:
+		if "in_service must be a boolean" in err:
+			found_init_err = true
+	assert_true(found_init_err, "Should report in_service type error in initial conditions")
+
+
