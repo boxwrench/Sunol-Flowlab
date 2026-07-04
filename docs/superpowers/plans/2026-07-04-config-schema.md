@@ -538,6 +538,8 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 ### Task 4: controllers + alarms schemas
 
+> **✅ COMPLETE** (commits `9e45d97`+`7250895`, reviewed). Harness first full green (exit 0). Second sweep added `description` to all array-container properties across schemas (plan template gap); Task 5's `units` property must carry one too.
+
 **Files:**
 - Create: `config/schema/controllers.schema.json`, `config/schema/alarms.schema.json`, `tests/fixtures/schema_invalid/controllers.json`, `tests/fixtures/schema_invalid/alarms.json`
 
