@@ -16,18 +16,42 @@ jobs:
       - name: Setup Godot
         uses: firebelley/godot-default-setup-action@v2
         with:
-          version: 4.3.0 # or standard 4.x stable
+          version: 4.5.0
 
       - name: Run GUT Tests
         run: |
           godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit > gut_output.log 2>&1
           cat gut_output.log
-          if grep -q "Failing Tests" gut_output.log || grep -q "SCRIPT ERROR" gut_output.log || grep -q "Parse Error" gut_output.log; then
-            echo "GUT tests failed or encountered errors!"
+
+          # Fail on any test failures or engine errors
+          if grep -qiE "Failing Tests|SCRIPT ERROR" gut_output.log; then
+            echo "ERROR: GUT reported test failures or script errors."
             exit 1
           fi
+
+          # Fail if GUT silently skipped a file due to a parse error or bad base class.
+          # GUT loads each file and emits these strings when a script cannot be used.
+          if grep -qiE "Parse error|does not extend GutTest|does not extend gut_test" gut_output.log; then
+            echo "ERROR: One or more test scripts failed to load (parse error or wrong base class)."
+            echo "       GUT silently skips unparseable files — this step ensures they fail loudly."
+            exit 1
+          fi
+
+          # Fail if zero tests were collected (catches empty runner or wrong path).
           if ! grep -qE "Tests[[:space:]]+[1-9]" gut_output.log; then
-            echo "Error: Zero tests were collected or run!"
+            echo "ERROR: Zero tests were collected or run. Check -gdir path and GUT version."
+            exit 1
+          fi
+
+          # Assert expected script count so a silently skipped file fails the build.
+          # Update this number whenever a test script is added or removed.
+          EXPECTED_SCRIPTS=16
+          ACTUAL_SCRIPTS=$(grep -oE "Script[s]?:?[[:space:]]+[0-9]+" gut_output.log | grep -oE "[0-9]+$" | head -1)
+          if [ -z "$ACTUAL_SCRIPTS" ]; then
+            echo "WARNING: Could not parse script count from GUT output — skipping count assertion."
+          elif [ "$ACTUAL_SCRIPTS" -ne "$EXPECTED_SCRIPTS" ]; then
+            echo "ERROR: Expected $EXPECTED_SCRIPTS test scripts but GUT loaded $ACTUAL_SCRIPTS."
+            echo "       Add/remove scripts from the expected count when the test suite changes."
             exit 1
           fi
 
