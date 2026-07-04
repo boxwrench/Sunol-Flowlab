@@ -224,6 +224,8 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 ### Task 2: topology schema
 
+> **✅ COMPLETE** (commit `f6791dc`, reviewed clean). `$id` omitted per Task 1 deviation.
+
 **Files:**
 - Create: `config/schema/topology.schema.json`, `tests/fixtures/schema_invalid/topology.json`
 
