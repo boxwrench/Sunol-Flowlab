@@ -166,61 +166,159 @@
       ]
     },
     {
-      "unit_id": "BASIN_01_SINK",
-      "type": "ExternalBoundary",
-      "display_name": "Basin 1 Placeholder Sink",
-      "boundary_type": "TREATED_DEMAND",
+      "unit_id": "BASIN_01",
+      "type": "StorageUnit",
+      "display_name": "Flocculation/Sedimentation Basin 1",
+      "maximum_volume_m3": 500.0,
+      "surface_area_m2": 100.0,
+      "bottom_elevation_m": 0.0,
+      "high_level_m": 4.5,
+      "spill_level_m": 5.0,
+      "min_operating_level_m": 0.5,
+      "spill_destination_id": "SPILL_SINK",
       "ports": [
         {
           "port_id": "PORT_BASIN_01_IN",
           "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_BASIN_01_OUT",
+          "port_type": "OUTLET"
+        },
+        {
+          "port_id": "PORT_BASIN_01_DRAIN",
+          "port_type": "DRAIN"
         }
       ]
     },
     {
-      "unit_id": "BASIN_02_SINK",
-      "type": "ExternalBoundary",
-      "display_name": "Basin 2 Placeholder Sink",
-      "boundary_type": "TREATED_DEMAND",
+      "unit_id": "BASIN_02",
+      "type": "StorageUnit",
+      "display_name": "Flocculation/Sedimentation Basin 2",
+      "maximum_volume_m3": 500.0,
+      "surface_area_m2": 100.0,
+      "bottom_elevation_m": 0.0,
+      "high_level_m": 4.5,
+      "spill_level_m": 5.0,
+      "min_operating_level_m": 0.5,
+      "spill_destination_id": "SPILL_SINK",
       "ports": [
         {
           "port_id": "PORT_BASIN_02_IN",
           "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_BASIN_02_OUT",
+          "port_type": "OUTLET"
+        },
+        {
+          "port_id": "PORT_BASIN_02_DRAIN",
+          "port_type": "DRAIN"
         }
       ]
     },
     {
-      "unit_id": "BASIN_03_SINK",
-      "type": "ExternalBoundary",
-      "display_name": "Basin 3 Placeholder Sink",
-      "boundary_type": "TREATED_DEMAND",
+      "unit_id": "BASIN_03",
+      "type": "StorageUnit",
+      "display_name": "Flocculation/Sedimentation Basin 3",
+      "maximum_volume_m3": 500.0,
+      "surface_area_m2": 100.0,
+      "bottom_elevation_m": 0.0,
+      "high_level_m": 4.5,
+      "spill_level_m": 5.0,
+      "min_operating_level_m": 0.5,
+      "spill_destination_id": "SPILL_SINK",
       "ports": [
         {
           "port_id": "PORT_BASIN_03_IN",
           "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_BASIN_03_OUT",
+          "port_type": "OUTLET"
+        },
+        {
+          "port_id": "PORT_BASIN_03_DRAIN",
+          "port_type": "DRAIN"
         }
       ]
     },
     {
-      "unit_id": "BASIN_04_SINK",
-      "type": "ExternalBoundary",
-      "display_name": "Basin 4 Placeholder Sink",
-      "boundary_type": "TREATED_DEMAND",
+      "unit_id": "BASIN_04",
+      "type": "StorageUnit",
+      "display_name": "Flocculation/Sedimentation Basin 4",
+      "maximum_volume_m3": 500.0,
+      "surface_area_m2": 100.0,
+      "bottom_elevation_m": 0.0,
+      "high_level_m": 4.5,
+      "spill_level_m": 5.0,
+      "min_operating_level_m": 0.5,
+      "spill_destination_id": "SPILL_SINK",
       "ports": [
         {
           "port_id": "PORT_BASIN_04_IN",
           "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_BASIN_04_OUT",
+          "port_type": "OUTLET"
+        },
+        {
+          "port_id": "PORT_BASIN_04_DRAIN",
+          "port_type": "DRAIN"
         }
       ]
     },
     {
-      "unit_id": "BASIN_05_SINK",
-      "type": "ExternalBoundary",
-      "display_name": "Basin 5 Placeholder Sink",
-      "boundary_type": "TREATED_DEMAND",
+      "unit_id": "BASIN_05",
+      "type": "StorageUnit",
+      "display_name": "Flocculation/Sedimentation Basin 5",
+      "maximum_volume_m3": 500.0,
+      "surface_area_m2": 100.0,
+      "bottom_elevation_m": 0.0,
+      "high_level_m": 4.5,
+      "spill_level_m": 5.0,
+      "min_operating_level_m": 0.5,
+      "spill_destination_id": "SPILL_SINK",
       "ports": [
         {
           "port_id": "PORT_BASIN_05_IN",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_BASIN_05_OUT",
+          "port_type": "OUTLET"
+        },
+        {
+          "port_id": "PORT_BASIN_05_DRAIN",
+          "port_type": "DRAIN"
+        }
+      ]
+    },
+    {
+      "unit_id": "APPLIED_CHANNEL_PLACEHOLDER",
+      "type": "ExternalBoundary",
+      "display_name": "Applied Channel Placeholder Sink",
+      "boundary_type": "TREATED_DEMAND",
+      "ports": [
+        {
+          "port_id": "PORT_AC_PH_IN_01",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_AC_PH_IN_02",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_AC_PH_IN_03",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_AC_PH_IN_04",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_AC_PH_IN_05",
           "port_type": "INLET"
         }
       ]
@@ -237,6 +335,26 @@
         },
         {
           "port_id": "PORT_DRAIN_SINK_IN_RES_02",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_DRAIN_SINK_IN_BASIN_01",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_DRAIN_SINK_IN_BASIN_02",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_DRAIN_SINK_IN_BASIN_03",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_DRAIN_SINK_IN_BASIN_04",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_DRAIN_SINK_IN_BASIN_05",
           "port_type": "INLET"
         }
       ]
@@ -265,6 +383,26 @@
         },
         {
           "port_id": "PORT_SPILL_SINK_IN_DB_01",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_SPILL_SINK_IN_BASIN_01",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_SPILL_SINK_IN_BASIN_02",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_SPILL_SINK_IN_BASIN_03",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_SPILL_SINK_IN_BASIN_04",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_SPILL_SINK_IN_BASIN_05",
           "port_type": "INLET"
         }
       ]
@@ -346,6 +484,66 @@
     {
       "actuator_id": "VALVE_OUT_DB_05",
       "display_name": "Dist Box Outlet 5 Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_BASIN_01",
+      "display_name": "Basin 1 Outlet Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_BASIN_02",
+      "display_name": "Basin 2 Outlet Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_BASIN_03",
+      "display_name": "Basin 3 Outlet Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_BASIN_04",
+      "display_name": "Basin 4 Outlet Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_BASIN_05",
+      "display_name": "Basin 5 Outlet Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_BASIN_01",
+      "display_name": "Basin 1 Drain Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_BASIN_02",
+      "display_name": "Basin 2 Drain Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_BASIN_03",
+      "display_name": "Basin 3 Drain Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_BASIN_04",
+      "display_name": "Basin 4 Drain Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_BASIN_05",
+      "display_name": "Basin 5 Drain Valve",
       "opening_rate_percent_per_s": 5.0,
       "closing_rate_percent_per_s": 5.0
     }
@@ -467,6 +665,96 @@
       "source_port_id": "PORT_BASIN_05",
       "destination_port_id": "PORT_BASIN_05_IN",
       "actuator_id": "VALVE_OUT_DB_05"
+    },
+    {
+      "link_id": "LINK_OUT_BASIN_01",
+      "display_name": "Basin 1 to Applied Channel Link",
+      "max_flow_m3s": 4.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_01_OUT",
+      "destination_port_id": "PORT_AC_PH_IN_01",
+      "actuator_id": "VALVE_OUT_BASIN_01"
+    },
+    {
+      "link_id": "LINK_OUT_BASIN_02",
+      "display_name": "Basin 2 to Applied Channel Link",
+      "max_flow_m3s": 4.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_02_OUT",
+      "destination_port_id": "PORT_AC_PH_IN_02",
+      "actuator_id": "VALVE_OUT_BASIN_02"
+    },
+    {
+      "link_id": "LINK_OUT_BASIN_03",
+      "display_name": "Basin 3 to Applied Channel Link",
+      "max_flow_m3s": 4.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_03_OUT",
+      "destination_port_id": "PORT_AC_PH_IN_03",
+      "actuator_id": "VALVE_OUT_BASIN_03"
+    },
+    {
+      "link_id": "LINK_OUT_BASIN_04",
+      "display_name": "Basin 4 to Applied Channel Link",
+      "max_flow_m3s": 4.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_04_OUT",
+      "destination_port_id": "PORT_AC_PH_IN_04",
+      "actuator_id": "VALVE_OUT_BASIN_04"
+    },
+    {
+      "link_id": "LINK_OUT_BASIN_05",
+      "display_name": "Basin 5 to Applied Channel Link",
+      "max_flow_m3s": 4.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_05_OUT",
+      "destination_port_id": "PORT_AC_PH_IN_05",
+      "actuator_id": "VALVE_OUT_BASIN_05"
+    },
+    {
+      "link_id": "LINK_DRAIN_BASIN_01",
+      "display_name": "Basin 1 Drain Link",
+      "max_flow_m3s": 2.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_01_DRAIN",
+      "destination_port_id": "PORT_DRAIN_SINK_IN_BASIN_01",
+      "actuator_id": "VALVE_DRAIN_BASIN_01"
+    },
+    {
+      "link_id": "LINK_DRAIN_BASIN_02",
+      "display_name": "Basin 2 Drain Link",
+      "max_flow_m3s": 2.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_02_DRAIN",
+      "destination_port_id": "PORT_DRAIN_SINK_IN_BASIN_02",
+      "actuator_id": "VALVE_DRAIN_BASIN_02"
+    },
+    {
+      "link_id": "LINK_DRAIN_BASIN_03",
+      "display_name": "Basin 3 Drain Link",
+      "max_flow_m3s": 2.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_03_DRAIN",
+      "destination_port_id": "PORT_DRAIN_SINK_IN_BASIN_03",
+      "actuator_id": "VALVE_DRAIN_BASIN_03"
+    },
+    {
+      "link_id": "LINK_DRAIN_BASIN_04",
+      "display_name": "Basin 4 Drain Link",
+      "max_flow_m3s": 2.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_04_DRAIN",
+      "destination_port_id": "PORT_DRAIN_SINK_IN_BASIN_04",
+      "actuator_id": "VALVE_DRAIN_BASIN_04"
+    },
+    {
+      "link_id": "LINK_DRAIN_BASIN_05",
+      "display_name": "Basin 5 Drain Link",
+      "max_flow_m3s": 2.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_05_DRAIN",
+      "destination_port_id": "PORT_DRAIN_SINK_IN_BASIN_05",
+      "actuator_id": "VALVE_DRAIN_BASIN_05"
     }
   ]
 }

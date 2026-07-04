@@ -1,6 +1,9 @@
 class_name PlantFactory
 extends RefCounted
 
+# Note: SimulationCommands like SetBasinServiceCommand do not require explicit factory 
+# registration because Godot automatically registers all class_name declarations globally.
+
 static func build_plant(
 	context: SimulationContext,
 	topology_data: Dictionary,

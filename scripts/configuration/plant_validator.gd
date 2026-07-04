@@ -58,6 +58,9 @@ static func validate_config(
 		check_key.call(unit_dict, "type", TYPE_STRING, unit_prefix)
 		check_key.call(unit_dict, "display_name", TYPE_STRING, unit_prefix)
 		
+		if unit_dict.has("in_service") and typeof(unit_dict["in_service"]) != TYPE_BOOL:
+			errors.append("%s: in_service must be a boolean" % unit_prefix)
+			
 		var type_str: String = unit_dict.get("type", "")
 		if type_str == "StorageUnit":
 			check_key.call(unit_dict, "maximum_volume_m3", TYPE_FLOAT, unit_prefix)

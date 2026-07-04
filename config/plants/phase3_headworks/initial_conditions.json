@@ -35,23 +35,32 @@
       "volume_m3": 5.0
     },
     {
-      "unit_id": "BASIN_01_SINK",
-      "in_service": true
+      "unit_id": "BASIN_01",
+      "in_service": true,
+      "volume_m3": 200.0
     },
     {
-      "unit_id": "BASIN_02_SINK",
-      "in_service": true
+      "unit_id": "BASIN_02",
+      "in_service": true,
+      "volume_m3": 200.0
     },
     {
-      "unit_id": "BASIN_03_SINK",
-      "in_service": true
+      "unit_id": "BASIN_03",
+      "in_service": true,
+      "volume_m3": 200.0
     },
     {
-      "unit_id": "BASIN_04_SINK",
-      "in_service": true
+      "unit_id": "BASIN_04",
+      "in_service": true,
+      "volume_m3": 200.0
     },
     {
-      "unit_id": "BASIN_05_SINK",
+      "unit_id": "BASIN_05",
+      "in_service": true,
+      "volume_m3": 200.0
+    },
+    {
+      "unit_id": "APPLIED_CHANNEL_PLACEHOLDER",
       "in_service": true
     },
     {
@@ -115,29 +124,89 @@
     {
       "actuator_id": "VALVE_OUT_DB_01",
       "is_manual": true,
-      "commanded_position": 0.0,
-      "position": 0.0
+      "commanded_position": 50.0,
+      "position": 50.0
     },
     {
       "actuator_id": "VALVE_OUT_DB_02",
       "is_manual": true,
-      "commanded_position": 0.0,
-      "position": 0.0
+      "commanded_position": 50.0,
+      "position": 50.0
     },
     {
       "actuator_id": "VALVE_OUT_DB_03",
       "is_manual": true,
-      "commanded_position": 0.0,
-      "position": 0.0
+      "commanded_position": 50.0,
+      "position": 50.0
     },
     {
       "actuator_id": "VALVE_OUT_DB_04",
+      "is_manual": true,
+      "commanded_position": 50.0,
+      "position": 50.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_DB_05",
+      "is_manual": true,
+      "commanded_position": 50.0,
+      "position": 50.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_BASIN_01",
+      "is_manual": true,
+      "commanded_position": 50.0,
+      "position": 50.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_BASIN_02",
+      "is_manual": true,
+      "commanded_position": 50.0,
+      "position": 50.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_BASIN_03",
+      "is_manual": true,
+      "commanded_position": 50.0,
+      "position": 50.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_BASIN_04",
+      "is_manual": true,
+      "commanded_position": 50.0,
+      "position": 50.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_BASIN_05",
+      "is_manual": true,
+      "commanded_position": 50.0,
+      "position": 50.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_BASIN_01",
       "is_manual": true,
       "commanded_position": 0.0,
       "position": 0.0
     },
     {
-      "actuator_id": "VALVE_OUT_DB_05",
+      "actuator_id": "VALVE_DRAIN_BASIN_02",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_BASIN_03",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_BASIN_04",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_BASIN_05",
       "is_manual": true,
       "commanded_position": 0.0,
       "position": 0.0
