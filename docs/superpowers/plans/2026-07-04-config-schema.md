@@ -744,6 +744,8 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 ### Task 5: presentation_map schema (default-box contract)
 
+> **✅ COMPLETE** (commit `fdd26cb`, reviewed clean). Both deviations applied ($id omitted; units description added).
+
 **Files:**
 - Create: `config/schema/presentation_map.schema.json`, `tests/fixtures/schema_invalid/presentation_map.json`
 
