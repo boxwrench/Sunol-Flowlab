@@ -1,0 +1,8 @@
+{
+  "unit_states": [
+    { "unit_id": "BASIN_01", "in_service": true, "volume_m3": -10.0 }
+  ],
+  "actuator_states": [
+    { "actuator_id": "VALVE_IN", "is_manual": true, "commanded_position": 150.0, "position": 50.0 }
+  ]
+}

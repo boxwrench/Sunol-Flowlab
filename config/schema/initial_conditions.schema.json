@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "initial_conditions.json — starting volumes and actuator states",
+  "description": "Initial state applied at plant build. plant_validator.gd additionally enforces: every unit_id/actuator_id resolves to the topology, and initial volume <= maximum_volume_m3.",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string", "description": "Editor hint; ignored by the engine." },
+    "unit_states": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "unit_id": { "$ref": "defs.schema.json#/$defs/tag_id" },
+          "in_service": { "type": "boolean", "description": "Whether the unit participates in the simulation at t=0." },
+          "volume_m3": {
+            "$ref": "defs.schema.json#/$defs/non_negative_number",
+            "description": "Starting stored volume [m3]. StorageUnit only; must not exceed maximum_volume_m3 (runtime cross-check)."
+          }
+        },
+        "required": ["unit_id"],
+        "additionalProperties": false
+      }
+    },
+    "actuator_states": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "actuator_id": { "$ref": "defs.schema.json#/$defs/tag_id" },
+          "is_manual": { "type": "boolean", "description": "True when the valve starts under manual control." },
+          "commanded_position": {
+            "$ref": "defs.schema.json#/$defs/percent",
+            "description": "Target valve position [%]."
+          },
+          "position": {
+            "$ref": "defs.schema.json#/$defs/percent",
+            "description": "Actual valve position at t=0 [%]."
+          }
+        },
+        "required": ["actuator_id"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["unit_states"],
+  "additionalProperties": false
+}
