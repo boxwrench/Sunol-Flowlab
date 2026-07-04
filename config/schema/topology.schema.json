@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "topology.json — units, ports, actuators, links",
+  "description": "Hydraulic topology. Shape only. plant_validator.gd additionally enforces: unique IDs, dangling port/actuator references, DAG (cycle-free) topology, spill_destination_id resolving to an ExternalBoundary, and geometry consistency (maximum_volume_m3 vs spill_level_m * surface_area_m2).",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string", "description": "Editor hint; ignored by the engine." },
+    "units": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/unit" }
+    },
+    "actuators": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/actuator" }
+    },
+    "links": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/link" }
+    }
+  },
+  "required": ["units"],
+  "additionalProperties": false,
+  "$defs": {
+    "port": {
+      "type": "object",
+      "properties": {
+        "port_id": { "$ref": "defs.schema.json#/$defs/tag_id" },
+        "port_type": {
+          "enum": ["INLET", "OUTLET", "DRAIN"],
+          "description": "INLET receives flow. OUTLET withdraws only above min_operating_level_m (low-low cutoff). DRAIN withdraws down to zero volume."
+        }
+      },
+      "required": ["port_id", "port_type"],
+      "additionalProperties": false
+    },
+    "unit": {
+      "type": "object",
+      "properties": {
+        "unit_id": { "$ref": "defs.schema.json#/$defs/tag_id" },
+        "type": {
+          "enum": ["StorageUnit", "ExternalBoundary"],
+          "description": "Domain class instantiated by plant_factory.gd."
+        },
+        "display_name": { "$ref": "defs.schema.json#/$defs/display_name" },
+        "maximum_volume_m3": {
+          "$ref": "defs.schema.json#/$defs/positive_number",
+          "description": "Physical storage capacity [m3]. StorageUnit only."
+        },
+        "surface_area_m2": {
+          "$ref": "defs.schema.json#/$defs/positive_number",
+          "description": "Footprint [m2] used to derive level_m = volume_m3 / surface_area_m2. StorageUnit only."
+        },
+        "bottom_elevation_m": {
+          "type": "number",
+          "description": "Bottom elevation [m] relative to the plant datum. StorageUnit only."
+        },
+        "high_level_m": {
+          "$ref": "defs.schema.json#/$defs/non_negative_number",
+          "description": "Level [m above bottom] for high-level alarming. StorageUnit only."
+        },
+        "spill_level_m": {
+          "$ref": "defs.schema.json#/$defs/non_negative_number",
+          "description": "Level [m above bottom] where passive spill begins; must be >= high_level_m (cross-checked at runtime). StorageUnit only."
+        },
+        "min_operating_level_m": {
+          "$ref": "defs.schema.json#/$defs/non_negative_number",
+          "description": "Low-low cutoff [m above bottom]; OUTLET ports cannot draw below it (DRAIN ports can). StorageUnit only."
+        },
+        "spill_destination_id": {
+          "$ref": "defs.schema.json#/$defs/tag_id",
+          "description": "unit_id of the ExternalBoundary receiving this unit's spill. Required for StorageUnit; no code default exists (Edge Rule 5)."
+        },
+        "boundary_type": {
+          "enum": ["SOURCE_INFLOW", "TREATED_DEMAND", "PROCESS_WASTE", "DRAIN", "SPILL"],
+          "description": "Mutually exclusive mass-balance ledger category (INV-1). ExternalBoundary only."
+        },
+        "flow_limit_m3s": {
+          "type": "number",
+          "description": "Cap [m3/s] on the boundary's TOTAL flow across all its links; the solver prorates to fit. Negative or absent = unlimited. ExternalBoundary only."
+        },
+        "ports": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/port" }
+        }
+      },
+      "required": ["unit_id", "type", "display_name"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "StorageUnit" } } },
+          "then": {
+            "required": [
+              "maximum_volume_m3",
+              "surface_area_m2",
+              "bottom_elevation_m",
+              "high_level_m",
+              "spill_level_m",
+              "min_operating_level_m",
+              "spill_destination_id"
+            ]
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "ExternalBoundary" } } },
+          "then": { "required": ["boundary_type"] }
+        }
+      ]
+    },
+    "actuator": {
+      "type": "object",
+      "properties": {
+        "actuator_id": { "$ref": "defs.schema.json#/$defs/tag_id" },
+        "display_name": { "$ref": "defs.schema.json#/$defs/display_name" },
+        "opening_rate_percent_per_s": {
+          "$ref": "defs.schema.json#/$defs/positive_number",
+          "description": "Valve travel rate opening [%/s]; e.g. 5.0 means 0->100% takes 20 s."
+        },
+        "closing_rate_percent_per_s": {
+          "$ref": "defs.schema.json#/$defs/positive_number",
+          "description": "Valve travel rate closing [%/s]."
+        }
+      },
+      "required": ["actuator_id"],
+      "additionalProperties": false
+    },
+    "link": {
+      "type": "object",
+      "properties": {
+        "link_id": { "$ref": "defs.schema.json#/$defs/tag_id" },
+        "display_name": { "$ref": "defs.schema.json#/$defs/display_name" },
+        "max_flow_m3s": {
+          "$ref": "defs.schema.json#/$defs/non_negative_number",
+          "description": "Hydraulic capacity [m3/s]. RESTRICTED mode requests max_flow_m3s * actuator opening."
+        },
+        "flow_mode": {
+          "enum": ["RESTRICTED", "COMMANDED"],
+          "description": "RESTRICTED: flow = capacity x valve opening. COMMANDED: unimplemented — warns at runtime and behaves as RESTRICTED fully open (Edge Rule 6)."
+        },
+        "source_port_id": { "$ref": "defs.schema.json#/$defs/tag_id" },
+        "destination_port_id": { "$ref": "defs.schema.json#/$defs/tag_id" },
+        "actuator_id": {
+          "$ref": "defs.schema.json#/$defs/tag_id",
+          "description": "Valve governing this link. Omit for passive links."
+        }
+      },
+      "required": ["link_id", "max_flow_m3s", "source_port_id", "destination_port_id"],
+      "additionalProperties": false
+    }
+  }
+}
