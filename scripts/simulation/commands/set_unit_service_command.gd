@@ -18,4 +18,4 @@ func validate(context: RefCounted) -> Array[String]:
 func execute(context: RefCounted) -> void:
 	var unit: ProcessUnit = context.units_dict.get(unit_id)
 	if unit != null:
-		unit.in_service = in_service
+		unit.set_in_service(in_service)

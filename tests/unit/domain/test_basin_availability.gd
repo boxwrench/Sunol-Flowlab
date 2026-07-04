@@ -199,7 +199,7 @@ func test_factory_build_precedence_topology_inactive_ic_omitted() -> void:
 				"unit_id": "TEST_SOURCE",
 				"type": "ExternalBoundary",
 				"display_name": "Test Source",
-				"boundary_type": "INFLOW",
+				"boundary_type": "SOURCE",
 				"ports": [
 					{
 						"port_id": "PORT_OUT_SRC",
@@ -214,8 +214,8 @@ func test_factory_build_precedence_topology_inactive_ic_omitted() -> void:
 			{
 				"link_id": "LINK_IN_BASIN",
 				"display_name": "Inlet Link",
-				"upstream_port_id": "PORT_OUT_SRC",
-				"downstream_port_id": "PORT_IN_BASIN"
+				"source_port_id": "PORT_OUT_SRC",
+				"destination_port_id": "PORT_IN_BASIN"
 			}
 		]
 	}
@@ -295,7 +295,7 @@ func test_factory_build_precedence_ic_overrides_topology() -> void:
 				"unit_id": "TEST_SOURCE",
 				"type": "ExternalBoundary",
 				"display_name": "Test Source",
-				"boundary_type": "INFLOW",
+				"boundary_type": "SOURCE",
 				"ports": [
 					{
 						"port_id": "PORT_OUT_SRC",
@@ -310,14 +310,14 @@ func test_factory_build_precedence_ic_overrides_topology() -> void:
 			{
 				"link_id": "LINK_IN_B1",
 				"display_name": "Inlet Link 1",
-				"upstream_port_id": "PORT_OUT_SRC",
-				"downstream_port_id": "PORT_IN_B1"
+				"source_port_id": "PORT_OUT_SRC",
+				"destination_port_id": "PORT_IN_B1"
 			},
 			{
 				"link_id": "LINK_IN_B2",
 				"display_name": "Inlet Link 2",
-				"upstream_port_id": "PORT_OUT_SRC",
-				"downstream_port_id": "PORT_IN_B2"
+				"source_port_id": "PORT_OUT_SRC",
+				"destination_port_id": "PORT_IN_B2"
 			}
 		]
 	}
