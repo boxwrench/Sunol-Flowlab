@@ -69,3 +69,24 @@ If a controller fails or its measured input is invalid, default to a safe state:
 - Or stop the flow and raise an alarm.
 
 Document the chosen fallback for each controller.
+
+## Control loop characteristics
+
+### Proportional control gain scaling
+
+The proportional control loop uses a velocity-form algorithm:
+```
+error = setpoint - measured_level
+output = previous_output + gain × error
+```
+Because `gain` is defined in units of `[% valve opening / m error]`, its magnitude dictates the steady-state offset (droop) of the process variable under load. 
+
+When configuring or tuning the controller:
+1. **Reverse-acting vs. Direct-acting**: With a positive gain, this formula is reverse-acting (output increases when PV is below setpoint). It must only target inflow control elements (e.g., inflow valves) to be stable. Targeting an outflow control element with a positive gain results in positive feedback and loop instability.
+2. **Gain magnitude**: A low gain (e.g., the default `gain = 2.0`) is highly stable but results in significant steady-state droop under sustained demand changes. For example, a 1.5% increase in valve opening requires a 0.75m level error to sustain.
+3. **Scaling guidance**: To minimize droop without causing actuator wear, the gain should be scaled based on the target storage unit's surface area and flow capacities:
+   ```
+   gain ≈ (required_valve_change_percent) / (acceptable_steady_state_offset_m)
+   ```
+   Where tighter level tolerance is required, the gain should be increased (e.g., `gain = 20.0` or higher), or the control structure should be upgraded to a PI/PID controller in a future phase.
+
