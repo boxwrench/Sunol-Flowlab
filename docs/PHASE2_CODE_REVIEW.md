@@ -97,6 +97,16 @@ The plan's architecture section is sound (spec-first WP3.0, FlowSolver-as-only-s
 - **P3-A6 (API drift):** WP3.7 references `MassBalanceTracker.total_error_m3` (no such member — use `report().mass_balance_error_m3`) and a linear `EPSILON × tick_count` tolerance (use the established `1e-9 × scale × sqrt(ticks)` form).
 - **P3-A7 (scope statement):** add one line stating whether headworks presentation/visuals are in Phase 3 or deferred, and to where — implementation-state drift in docs is a known failure mode here.
 
+## WP2.3 review (2026-07-04, commit `3b751fa`) — ACCEPTED
+
+Scope matches the plan exactly. Topology is a clean DAG (source → three storages → sink, three drain links into a shared DRAIN boundary, per-unit spill to SPILL_SINK); DRAIN port types used throughout (no F8 regression); every storage declares a resolving `spill_destination_id`; `EXTERNAL_SOURCE.flow_limit_m3s = 10.0` is now enforced by the solver (retires the F6 "declared but never enforced" debt); all links RESTRICTED with rate-limited actuators. Loader makes controllers/alarms optional and passes them to the validator; validator gained the Edge-Rule-5 spill checks plus controller/alarm validation (dangling IDs, positive gain, `deadband_m ≥ 0`, `min < max` — WP2.4's requirements delivered a WP early, acceptable per plan step 2). The CI script-count guard was bumped 17→18 in the same commit. Initial conditions are non-zero as required.
+
+Tests are the right shape: production `SimulationEngine` + `ConfigLoader` + `PlantFactory`, actuation exclusively via `engine.enqueue(SetValvePositionCommand)` (the F4 pattern is gone), 1,000-tick conservation with per-tick tracker validation plus a final ≤1e-8 ledger check, drain-to-exactly-zero, and outlet cutoff at exactly the min-operating volume with zero outflow (Edge Rule 3 observed end-to-end). All four verified passing in this reviewer's independent runs (part of the 57/57 HEAD verification).
+
+One recurring non-blocking item, now logged as tech debt: **TD-1** — integration tests drive ticks by poking `clock.tick_count`/`context.current_tick` directly instead of an engine-provided `step_n(n)` test API (Phase 1 minor finding, now replicated in every Phase 2 integration file). Fold into a future WP; do not fix ad hoc.
+
+Next review: WP2.4 (`a65c39e`).
+
 ## Required fix order (WP2.2-R, one commit)
 
 1. F2.2-1: per-type summation in `solve_tick` + totals into `StorageBalance.solve` + Worked-Example-1 integration test.
