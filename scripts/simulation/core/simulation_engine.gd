@@ -5,12 +5,14 @@ var clock: SimulationClock
 var context: SimulationContext
 var command_queue: Array[SimulationCommand] = []
 var mass_balance_tracker: MassBalanceTracker = null
+var alarm_engine: AlarmEngine = null
 
 func _init() -> void:
 	clock = SimulationClock.new()
 	context = SimulationContext.new()
 	context.dt = clock.dt_s
 	mass_balance_tracker = MassBalanceTracker.new()
+	alarm_engine = AlarmEngine.new()
 
 func enqueue(cmd: SimulationCommand) -> void:
 	if cmd.apply_tick <= context.current_tick:
@@ -84,10 +86,13 @@ func _step_evaluate_controllers() -> void:
 			unit.evaluate_controllers(context)
 
 func _step_resolve_requested_flows() -> void:
-	pass
+	for link in context.links_list:
+		link.calculate_requested_flow()
 
 func _step_apply_constraints() -> void:
-	pass
+	for link in context.links_list:
+		link.granted_flow_m3s = link.requested_flow_m3s
+		link.actual_flow_m3s = link.granted_flow_m3s
 
 func _step_transfer_water() -> void:
 	pass
@@ -107,7 +112,8 @@ func _step_update_state_machines() -> void:
 			unit.post_tick(context)
 
 func _step_evaluate_alarms() -> void:
-	pass
+	if alarm_engine != null:
+		alarm_engine.evaluate_alarms(context)
 
 func _step_record_telemetry() -> void:
 	pass

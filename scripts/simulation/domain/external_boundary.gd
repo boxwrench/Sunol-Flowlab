@@ -29,6 +29,18 @@ func get_snapshot() -> Dictionary:
 	})
 	return snap
 
+func solve_tick(context: RefCounted) -> void:
+	if boundary_type == &"SPILL":
+		return
+		
+	current_flow_m3s = 0.0
+	for port_id in ports:
+		var port: FlowPort = ports[port_id]
+		var link: FlowLink = port.connected_link
+		if link != null:
+			current_flow_m3s = link.actual_flow_m3s
+			break
+
 func validate(context: RefCounted) -> Array[String]:
 	var errors: Array[String] = super.validate(context)
 	var valid_types: Array[StringName] = [&"SOURCE_INFLOW", &"TREATED_DEMAND", &"PROCESS_WASTE", &"DRAIN", &"SPILL"]

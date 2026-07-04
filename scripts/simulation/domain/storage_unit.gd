@@ -58,6 +58,61 @@ func get_snapshot() -> Dictionary:
 	})
 	return snap
 
+func solve_tick(context: RefCounted) -> void:
+	var dt: float = context.dt
+	
+	var inflows_arr: Array[float] = []
+	var requested_outflow: float = 0.0
+	var requested_drain: float = 0.0
+	
+	var outlet_link: FlowLink = null
+	var drain_link: FlowLink = null
+	
+	for port_id in ports:
+		var port: FlowPort = ports[port_id]
+		var link: FlowLink = port.connected_link
+		if link == null:
+			continue
+			
+		if port.port_type == &"INLET":
+			inflows_arr.append(link.granted_flow_m3s)
+		elif port.port_type == &"OUTLET":
+			if "drain" in String(port_id).to_lower() or "drain" in String(link.link_id).to_lower():
+				requested_drain = link.granted_flow_m3s
+				drain_link = link
+			else:
+				requested_outflow = link.granted_flow_m3s
+				outlet_link = link
+				
+	var spill_vol: float = spill_level_m * surface_area_m2
+	
+	var balance: Dictionary = StorageBalance.solve(
+		volume_m3,
+		inflows_arr,
+		requested_outflow,
+		requested_drain,
+		maximum_volume_m3,
+		spill_vol,
+		dt
+	)
+	
+	volume_m3 = balance.new_volume_m3
+	update_level()
+	
+	inflow_m3s = balance.actual_inflow_m3s
+	outflow_m3s = balance.actual_outflow_m3s
+	drain_flow_m3s = balance.actual_drain_flow_m3s
+	spill_flow_m3s = balance.actual_spill_flow_m3s
+	
+	if outlet_link != null:
+		outlet_link.actual_flow_m3s = balance.actual_outflow_m3s
+	if drain_link != null:
+		drain_link.actual_flow_m3s = balance.actual_drain_flow_m3s
+		
+	for unit in context.units_list:
+		if unit is ExternalBoundary and unit.boundary_type == &"SPILL":
+			unit.current_flow_m3s = spill_flow_m3s
+
 func validate(context: RefCounted) -> Array[String]:
 	var errors: Array[String] = super.validate(context)
 	if maximum_volume_m3 <= 0.0:
