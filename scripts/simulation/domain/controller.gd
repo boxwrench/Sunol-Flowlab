@@ -10,7 +10,6 @@ var pv_property: String = "level_m"
 var control_mode: StringName = &"MANUAL" # MANUAL, AUTO
 
 var gain: float = 1.0
-var bias: float = 0.0
 var deadband_m: float = 0.0
 var min_output: float = 0.0
 var max_output: float = 100.0
@@ -26,7 +25,6 @@ func initialize(config: Dictionary) -> void:
 	control_mode = StringName(config.get("control_mode", "MANUAL"))
 	
 	gain = float(config.get("gain", 1.0))
-	bias = float(config.get("bias", 0.0))
 	deadband_m = float(config.get("deadband_m", 0.0))
 	min_output = float(config.get("min_output", 0.0))
 	max_output = float(config.get("max_output", 100.0))
@@ -45,9 +43,9 @@ func get_snapshot() -> Dictionary:
 		"pv_property": pv_property,
 		"control_mode": control_mode,
 		"gain": gain,
-		"bias": bias,
 		"deadband_m": deadband_m,
 		"min_output": min_output,
 		"max_output": max_output,
 		"previous_output": previous_output
 	}
+

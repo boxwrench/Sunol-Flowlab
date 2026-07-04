@@ -17,7 +17,6 @@ func validate(context: RefCounted) -> Array[String]:
 
 func execute(context: RefCounted) -> void:
 	var controller: SimController = context.controllers_dict.get(controller_id)
-	if controller != null and controller.has_method("set_setpoint"):
-		controller.set_setpoint(setpoint)
-	elif controller != null and "setpoint" in controller:
-		controller.setpoint = setpoint
+	if controller is LevelController:
+		(controller as LevelController).setpoint = setpoint
+

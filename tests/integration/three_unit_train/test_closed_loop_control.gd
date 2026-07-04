@@ -139,3 +139,80 @@ func test_bumpless_transfer() -> void:
 	
 	assert_eq(lc.control_mode, &"AUTO")
 	assert_eq(valve.commanded_position, 77.0, "Should transition smoothly from 75.0 without jump")
+
+func test_closed_loop_level_stabilization() -> void:
+	var engine := _setup_engine()
+	
+	var src_res: StorageUnit = engine.context.units_dict[&"SOURCE_RESERVOIR"]
+	var basin: StorageUnit = engine.context.units_dict[&"BASIN"]
+	var rcv_res: StorageUnit = engine.context.units_dict[&"RECEIVING_RESERVOIR"]
+	
+	var valve_in: SimValve = engine.context.actuators_dict[&"VALVE_IN"]
+	var valve_out_src: SimValve = engine.context.actuators_dict[&"VALVE_OUT_SRC"]
+	var valve_out_basin: SimValve = engine.context.actuators_dict[&"VALVE_OUT_BASIN"]
+	var valve_out_rcv: SimValve = engine.context.actuators_dict[&"VALVE_OUT_RCV"]
+	var lc: SimController = engine.context.controllers_dict[&"LC_BASIN"]
+	
+	# Configure valves: gradual travel for source valve, instant for others
+	for act in engine.context.actuators_list:
+		act.instant_mode = true
+	valve_out_src.instant_mode = false # gradual travel on the control valve
+	
+	# Stabilizing configuration:
+	# Let the level controller regulate the INFLOW to the Basin (VALVE_OUT_SRC)
+	lc.target_actuator_id = &"VALVE_OUT_SRC"
+	lc.gain = 25.0
+	lc.deadband_m = 0.01
+	
+	# Keep reservoir levels replenished
+	valve_in.set_commanded_position(100.0)
+	valve_in.position = 100.0
+	
+	# Set downstream valves to constant positions
+	valve_out_basin.set_commanded_position(50.0)
+	valve_out_basin.position = 50.0
+	valve_out_rcv.set_commanded_position(50.0)
+	valve_out_rcv.position = 50.0
+	
+	# Set source reservoir volume high
+	src_res.volume_m3 = 800.0
+	src_res.update_level()
+	
+	# Set setpoint and put controller in AUTO
+	engine.enqueue(SetLevelSetpointCommand.new(&"LC_BASIN", 5.0))
+	engine.enqueue(SetControllerModeCommand.new(&"LC_BASIN", &"AUTO"))
+	
+	# Initial conditions: Basin starts at setpoint
+	basin.volume_m3 = 500.0 # level = 5.0m
+	basin.update_level()
+	
+	# Initialize control valve position to match steady state
+	valve_out_src.set_commanded_position(37.5) # 37.5% of 8.0 = 3.0 m3s, matches 50% of 6.0 m3s
+	valve_out_src.position = 37.5
+	lc.previous_output = 37.5
+	
+	engine.mass_balance_tracker.is_initialized = false
+	
+	# Run 200 ticks to settle
+	for tick in range(1, 201):
+		engine.clock.tick_count = tick
+		engine.context.current_tick = tick
+		engine.run_tick(1.0)
+		
+	# Level should be stable near setpoint (5.0m)
+	assert_almost_eq(basin.level_m, 5.0, 0.05, "Level should settle near 5.0m setpoint")
+	
+	# Now introduce a sustained disturbance: increase downstream demand
+	# by opening VALVE_OUT_BASIN to 70%
+	valve_out_basin.set_commanded_position(70.0)
+	valve_out_basin.position = 70.0
+	
+	# Run 200 ticks for the controller to adapt and level to re-stabilize
+	for tick in range(201, 401):
+		engine.clock.tick_count = tick
+		engine.context.current_tick = tick
+		engine.run_tick(1.0)
+		
+	# Level should re-stabilize near 5.0m setpoint (with small droop)
+	assert_almost_eq(basin.level_m, 5.0, 0.20, "Level should re-stabilize near 5.0m setpoint after disturbance")
+

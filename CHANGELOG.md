@@ -2,7 +2,22 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased] — WP2.2-R (remediation, pending reviewer verification)
+## [Unreleased] — WP2.4-R (remediation, pending reviewer verification)
+
+### Fixed
+- **W2.4-1**: `LevelController.evaluate()` now warns once and falls back to MANUAL mode for unknown control modes (non-MANUAL, non-AUTO). `PlantValidator` enforces `control_mode` enum `{MANUAL, AUTO}`.
+- **W2.4-2**: Deleted `bias` field from `SimController` base class, config loading, and snapshots.
+- **W2.4-3**: Replaced duck-typed check (`has_method`/`in`) in `SetLevelSetpointCommand.execute` with concrete static type-casting to `LevelController`.
+- **W2.4-4**: `PlantValidator` now raises validation errors for unknown controller types and invalid `pv_property` values (must be `"level_m"` for `LevelController`).
+
+### Tests Added
+- `test_level_controller_unknown_mode_fallback` — verifies warn-once and fallback to MANUAL for unknown starting control modes.
+- `test_invalid_controller_config` — validates validator rejection of unknown types, invalid modes, and invalid properties.
+- `test_closed_loop_level_stabilization` — integration test verifying closed-loop level regulation of Basin under downstream demand step disturbance using `LevelController`.
+
+---
+
+## [1.1.0] — WP2.2-R Remediation (G5 gate closed)
 
 ### Fixed
 - **F2.2-1**: `StorageUnit.solve_tick()` replaced scalar `=` overwrite with per-type `+=` summation for OUTLET and DRAIN links so units with multiple outlet ports integrate all granted flows. Iteration now uses sorted port_id order for determinism.
@@ -20,6 +35,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Tests Added
 - `test_multi_outlet_worked_example_1` — end-to-end reproduction of SIMULATION_RULES Worked Example 1 (FlowSolver + StorageUnit.solve_tick). Addresses the gap that hid F2.2-1.
 - `test_disabled_link_zeroes_flows` — asserts all three flow fields (requested, granted, actual) are zero after `is_enabled = false`.
+
 
 ---
 

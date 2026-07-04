@@ -249,17 +249,32 @@ static func validate_config(
 					errors.append("%s: duplicate controller_id '%s'" % [ctrl_prefix, ctrl_id])
 				all_ids[ctrl_id] = "Controller"
 				
-				check_key.call(ctrl_dict, "type", TYPE_STRING, ctrl_prefix)
+				var type_ok = check_key.call(ctrl_dict, "type", TYPE_STRING, ctrl_prefix)
 				check_key.call(ctrl_dict, "display_name", TYPE_STRING, ctrl_prefix)
 				check_key.call(ctrl_dict, "target_actuator_id", TYPE_STRING, ctrl_prefix)
 				check_key.call(ctrl_dict, "pv_unit_id", TYPE_STRING, ctrl_prefix)
-				check_key.call(ctrl_dict, "pv_property", TYPE_STRING, ctrl_prefix)
-				check_key.call(ctrl_dict, "control_mode", TYPE_STRING, ctrl_prefix)
+				var prop_ok = check_key.call(ctrl_dict, "pv_property", TYPE_STRING, ctrl_prefix)
+				var mode_ok = check_key.call(ctrl_dict, "control_mode", TYPE_STRING, ctrl_prefix)
 				check_key.call(ctrl_dict, "gain", TYPE_FLOAT, ctrl_prefix)
 				check_key.call(ctrl_dict, "deadband_m", TYPE_FLOAT, ctrl_prefix)
 				check_key.call(ctrl_dict, "min_output", TYPE_FLOAT, ctrl_prefix)
 				check_key.call(ctrl_dict, "max_output", TYPE_FLOAT, ctrl_prefix)
 				
+				if type_ok:
+					var ctrl_type: String = ctrl_dict["type"]
+					if ctrl_type != "LevelController":
+						errors.append("%s: unknown controller type '%s' (only 'LevelController' is supported)" % [ctrl_prefix, ctrl_type])
+				
+				if mode_ok:
+					var ctrl_mode: String = ctrl_dict["control_mode"]
+					if ctrl_mode != "MANUAL" and ctrl_mode != "AUTO":
+						errors.append("%s: control_mode must be 'MANUAL' or 'AUTO', but was '%s'" % [ctrl_prefix, ctrl_mode])
+
+				if prop_ok:
+					var pv_prop: String = ctrl_dict["pv_property"]
+					if pv_prop != "level_m":
+						errors.append("%s: pv_property must be 'level_m' for LevelController, but was '%s'" % [ctrl_prefix, pv_prop])
+						
 				var target_act_id: StringName = StringName(ctrl_dict.get("target_actuator_id", ""))
 				if target_act_id != &"" and not target_act_id in actuator_ids:
 					errors.append("%s: target_actuator_id '%s' is dangling (not defined in actuators)" % [ctrl_prefix, target_act_id])
@@ -280,6 +295,7 @@ static func validate_config(
 				var max_out: float = float(ctrl_dict.get("max_output", 0.0))
 				if min_out >= max_out:
 					errors.append("%s: min_output (%f) must be < max_output (%f)" % [ctrl_prefix, min_out, max_out])
+
 
 	# 5. Validate alarms_data if present
 	if not alarms_data.is_empty():
