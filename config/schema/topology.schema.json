@@ -8,15 +8,18 @@
     "units": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/unit" }
+      "items": { "$ref": "#/$defs/unit" },
+      "description": "All process units (StorageUnit, ExternalBoundary) in the plant."
     },
     "actuators": {
       "type": "array",
-      "items": { "$ref": "#/$defs/actuator" }
+      "items": { "$ref": "#/$defs/actuator" },
+      "description": "All valves; referenced from links by actuator_id."
     },
     "links": {
       "type": "array",
-      "items": { "$ref": "#/$defs/link" }
+      "items": { "$ref": "#/$defs/link" },
+      "description": "Directed flow connections between unit ports; must form a DAG."
     }
   },
   "required": ["units"],

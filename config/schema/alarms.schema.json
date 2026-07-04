@@ -7,6 +7,7 @@
     "$schema": { "type": "string", "description": "Editor hint; ignored by the engine." },
     "alarms": {
       "type": "array",
+      "description": "All threshold alarms; empty array = none.",
       "items": {
         "type": "object",
         "properties": {
