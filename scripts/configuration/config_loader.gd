@@ -7,10 +7,11 @@ static func load_plant_config(plant_id: String) -> Dictionary:
 	
 	var base_path: String = "res://config/plants/".path_join(plant_id)
 	
-	var load_file: Callable = func(file_name: String) -> Dictionary:
+	var load_file: Callable = func(file_name: String, is_optional: bool = false) -> Dictionary:
 		var file_path: String = base_path.path_join(file_name)
 		if not FileAccess.file_exists(file_path):
-			errors.append("ConfigLoader: File not found: '%s'" % file_path)
+			if not is_optional:
+				errors.append("ConfigLoader: File not found: '%s'" % file_path)
 			return {}
 			
 		var file: FileAccess = FileAccess.open(file_path, FileAccess.READ)
@@ -35,6 +36,8 @@ static func load_plant_config(plant_id: String) -> Dictionary:
 	var plant_data: Dictionary = load_file.call("plant.json")
 	var topology_data: Dictionary = load_file.call("topology.json")
 	var initial_conditions_data: Dictionary = load_file.call("initial_conditions.json")
+	var controllers_data: Dictionary = load_file.call("controllers.json", true)
+	var alarms_data: Dictionary = load_file.call("alarms.json", true)
 	
 	if not errors.is_empty():
 		return {
@@ -43,14 +46,23 @@ static func load_plant_config(plant_id: String) -> Dictionary:
 			"warnings": warnings,
 			"plant_data": {},
 			"topology_data": {},
-			"initial_conditions_data": {}
+			"initial_conditions_data": {},
+			"controllers_data": {},
+			"alarms_data": {}
 		}
 		
 	var dt: float = 1.0
 	if plant_data.has("simulation_settings") and plant_data["simulation_settings"].has("default_dt_s"):
 		dt = float(plant_data["simulation_settings"]["default_dt_s"])
 		
-	var validation: Dictionary = PlantValidator.validate_config(plant_data, topology_data, initial_conditions_data, dt)
+	var validation: Dictionary = PlantValidator.validate_config(
+		plant_data, 
+		topology_data, 
+		initial_conditions_data, 
+		dt,
+		controllers_data,
+		alarms_data
+	)
 	errors.append_array(validation["errors"])
 	warnings.append_array(validation["warnings"])
 	
@@ -62,5 +74,7 @@ static func load_plant_config(plant_id: String) -> Dictionary:
 		"warnings": warnings,
 		"plant_data": plant_data,
 		"topology_data": topology_data,
-		"initial_conditions_data": initial_conditions_data
+		"initial_conditions_data": initial_conditions_data,
+		"controllers_data": controllers_data,
+		"alarms_data": alarms_data
 	}

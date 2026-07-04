@@ -1,0 +1,79 @@
+{
+  "unit_states": [
+    {
+      "unit_id": "EXTERNAL_SOURCE",
+      "in_service": true
+    },
+    {
+      "unit_id": "SOURCE_RESERVOIR",
+      "in_service": true,
+      "volume_m3": 500.0
+    },
+    {
+      "unit_id": "BASIN",
+      "in_service": true,
+      "volume_m3": 200.0
+    },
+    {
+      "unit_id": "RECEIVING_RESERVOIR",
+      "in_service": true,
+      "volume_m3": 100.0
+    },
+    {
+      "unit_id": "EXTERNAL_SINK",
+      "in_service": true
+    },
+    {
+      "unit_id": "DRAIN_SINK",
+      "in_service": true
+    },
+    {
+      "unit_id": "SPILL_SINK",
+      "in_service": true
+    }
+  ],
+  "actuator_states": [
+    {
+      "actuator_id": "VALVE_IN",
+      "is_manual": true,
+      "commanded_position": 50.0,
+      "position": 50.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_SRC",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_SRC",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_BASIN",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_BASIN",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_RCV",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_RCV",
+      "is_manual": true,
+      "commanded_position": 0.0,
+      "position": 0.0
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "plant_id": "phase2_three_unit",
+  "display_name": "Phase 2 Three-Unit Sandbox",
+  "simulation_settings": {
+    "default_dt_s": 1.0
+  }
+}

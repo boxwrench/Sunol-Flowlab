@@ -1,0 +1,256 @@
+{
+  "units": [
+    {
+      "unit_id": "EXTERNAL_SOURCE",
+      "type": "ExternalBoundary",
+      "display_name": "External Inflow Source",
+      "boundary_type": "SOURCE_INFLOW",
+      "flow_limit_m3s": 10.0,
+      "ports": [
+        {
+          "port_id": "PORT_EXT_SRC_OUT",
+          "port_type": "OUTLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "SOURCE_RESERVOIR",
+      "type": "StorageUnit",
+      "display_name": "Source Reservoir",
+      "maximum_volume_m3": 1000.0,
+      "surface_area_m2": 100.0,
+      "bottom_elevation_m": 0.0,
+      "high_level_m": 9.0,
+      "spill_level_m": 9.5,
+      "min_operating_level_m": 0.5,
+      "spill_destination_id": "SPILL_SINK",
+      "ports": [
+        {
+          "port_id": "PORT_SRC_RES_IN",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_SRC_RES_OUT",
+          "port_type": "OUTLET"
+        },
+        {
+          "port_id": "PORT_SRC_RES_DRAIN",
+          "port_type": "DRAIN"
+        }
+      ]
+    },
+    {
+      "unit_id": "BASIN",
+      "type": "StorageUnit",
+      "display_name": "Treatment Basin",
+      "maximum_volume_m3": 1000.0,
+      "surface_area_m2": 100.0,
+      "bottom_elevation_m": 0.0,
+      "high_level_m": 9.0,
+      "spill_level_m": 9.5,
+      "min_operating_level_m": 0.5,
+      "spill_destination_id": "SPILL_SINK",
+      "ports": [
+        {
+          "port_id": "PORT_BASIN_IN",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_BASIN_OUT",
+          "port_type": "OUTLET"
+        },
+        {
+          "port_id": "PORT_BASIN_DRAIN",
+          "port_type": "DRAIN"
+        }
+      ]
+    },
+    {
+      "unit_id": "RECEIVING_RESERVOIR",
+      "type": "StorageUnit",
+      "display_name": "Receiving Reservoir",
+      "maximum_volume_m3": 1000.0,
+      "surface_area_m2": 100.0,
+      "bottom_elevation_m": 0.0,
+      "high_level_m": 9.0,
+      "spill_level_m": 9.5,
+      "min_operating_level_m": 0.5,
+      "spill_destination_id": "SPILL_SINK",
+      "ports": [
+        {
+          "port_id": "PORT_RCV_RES_IN",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_RCV_RES_OUT",
+          "port_type": "OUTLET"
+        },
+        {
+          "port_id": "PORT_RCV_RES_DRAIN",
+          "port_type": "DRAIN"
+        }
+      ]
+    },
+    {
+      "unit_id": "EXTERNAL_SINK",
+      "type": "ExternalBoundary",
+      "display_name": "Treated Water Sink",
+      "boundary_type": "TREATED_DEMAND",
+      "ports": [
+        {
+          "port_id": "PORT_EXT_SINK_IN",
+          "port_type": "INLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "DRAIN_SINK",
+      "type": "ExternalBoundary",
+      "display_name": "Drain Waste Sink",
+      "boundary_type": "DRAIN",
+      "ports": [
+        {
+          "port_id": "PORT_DRAIN_SINK_IN_SRC",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_DRAIN_SINK_IN_BASIN",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_DRAIN_SINK_IN_RCV",
+          "port_type": "INLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "SPILL_SINK",
+      "type": "ExternalBoundary",
+      "display_name": "Spill Overflow Sink",
+      "boundary_type": "SPILL",
+      "ports": [
+        {
+          "port_id": "PORT_SPILL_SINK_IN_SRC",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_SPILL_SINK_IN_BASIN",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_SPILL_SINK_IN_RCV",
+          "port_type": "INLET"
+        }
+      ]
+    }
+  ],
+  "actuators": [
+    {
+      "actuator_id": "VALVE_IN",
+      "display_name": "Inlet Control Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_SRC",
+      "display_name": "Source Outlet Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_SRC",
+      "display_name": "Source Drain Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_BASIN",
+      "display_name": "Basin Outlet Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_BASIN",
+      "display_name": "Basin Drain Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_OUT_RCV",
+      "display_name": "Receiving Outlet Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    },
+    {
+      "actuator_id": "VALVE_DRAIN_RCV",
+      "display_name": "Receiving Drain Valve",
+      "opening_rate_percent_per_s": 5.0,
+      "closing_rate_percent_per_s": 5.0
+    }
+  ],
+  "links": [
+    {
+      "link_id": "LINK_IN",
+      "display_name": "Source to Source Reservoir Link",
+      "max_flow_m3s": 10.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_EXT_SRC_OUT",
+      "destination_port_id": "PORT_SRC_RES_IN",
+      "actuator_id": "VALVE_IN"
+    },
+    {
+      "link_id": "LINK_OUT_SRC",
+      "display_name": "Source Reservoir to Basin Link",
+      "max_flow_m3s": 8.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_SRC_RES_OUT",
+      "destination_port_id": "PORT_BASIN_IN",
+      "actuator_id": "VALVE_OUT_SRC"
+    },
+    {
+      "link_id": "LINK_DRAIN_SRC",
+      "display_name": "Source Reservoir Drain Link",
+      "max_flow_m3s": 5.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_SRC_RES_DRAIN",
+      "destination_port_id": "PORT_DRAIN_SINK_IN_SRC",
+      "actuator_id": "VALVE_DRAIN_SRC"
+    },
+    {
+      "link_id": "LINK_OUT_BASIN",
+      "display_name": "Basin to Receiving Reservoir Link",
+      "max_flow_m3s": 6.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_OUT",
+      "destination_port_id": "PORT_RCV_RES_IN",
+      "actuator_id": "VALVE_OUT_BASIN"
+    },
+    {
+      "link_id": "LINK_DRAIN_BASIN",
+      "display_name": "Basin Drain Link",
+      "max_flow_m3s": 5.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_BASIN_DRAIN",
+      "destination_port_id": "PORT_DRAIN_SINK_IN_BASIN",
+      "actuator_id": "VALVE_DRAIN_BASIN"
+    },
+    {
+      "link_id": "LINK_OUT_RCV",
+      "display_name": "Receiving Reservoir to Sink Link",
+      "max_flow_m3s": 5.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_RCV_RES_OUT",
+      "destination_port_id": "PORT_EXT_SINK_IN",
+      "actuator_id": "VALVE_OUT_RCV"
+    },
+    {
+      "link_id": "LINK_DRAIN_RCV",
+      "display_name": "Receiving Reservoir Drain Link",
+      "max_flow_m3s": 5.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_RCV_RES_DRAIN",
+      "destination_port_id": "PORT_DRAIN_SINK_IN_RCV",
+      "actuator_id": "VALVE_DRAIN_RCV"
+    }
+  ]
+}
