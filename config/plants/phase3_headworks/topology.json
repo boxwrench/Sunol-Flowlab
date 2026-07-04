@@ -296,29 +296,51 @@
       ]
     },
     {
-      "unit_id": "APPLIED_CHANNEL_PLACEHOLDER",
+      "unit_id": "APPLIED_CHANNEL_01",
+      "type": "StorageUnit",
+      "display_name": "Applied Channel 1",
+      "maximum_volume_m3": 200.0,
+      "surface_area_m2": 40.0,
+      "bottom_elevation_m": 0.0,
+      "high_level_m": 4.5,
+      "spill_level_m": 5.0,
+      "min_operating_level_m": 0.5,
+      "spill_destination_id": "SPILL_SINK",
+      "ports": [
+        {
+          "port_id": "PORT_AC_IN_01",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_AC_IN_02",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_AC_IN_03",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_AC_IN_04",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_AC_IN_05",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_AC_01_OUT",
+          "port_type": "OUTLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "FILTER_FEED_01",
       "type": "ExternalBoundary",
-      "display_name": "Applied Channel Placeholder Sink",
+      "display_name": "Filter Feed Sink",
       "boundary_type": "TREATED_DEMAND",
       "ports": [
         {
-          "port_id": "PORT_AC_PH_IN_01",
-          "port_type": "INLET"
-        },
-        {
-          "port_id": "PORT_AC_PH_IN_02",
-          "port_type": "INLET"
-        },
-        {
-          "port_id": "PORT_AC_PH_IN_03",
-          "port_type": "INLET"
-        },
-        {
-          "port_id": "PORT_AC_PH_IN_04",
-          "port_type": "INLET"
-        },
-        {
-          "port_id": "PORT_AC_PH_IN_05",
+          "port_id": "PORT_FILTER_FEED_IN",
           "port_type": "INLET"
         }
       ]
@@ -403,6 +425,10 @@
         },
         {
           "port_id": "PORT_SPILL_SINK_IN_BASIN_05",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_SPILL_SINK_IN_AC_01",
           "port_type": "INLET"
         }
       ]
@@ -672,7 +698,7 @@
       "max_flow_m3s": 4.0,
       "flow_mode": "RESTRICTED",
       "source_port_id": "PORT_BASIN_01_OUT",
-      "destination_port_id": "PORT_AC_PH_IN_01",
+      "destination_port_id": "PORT_AC_IN_01",
       "actuator_id": "VALVE_OUT_BASIN_01"
     },
     {
@@ -681,7 +707,7 @@
       "max_flow_m3s": 4.0,
       "flow_mode": "RESTRICTED",
       "source_port_id": "PORT_BASIN_02_OUT",
-      "destination_port_id": "PORT_AC_PH_IN_02",
+      "destination_port_id": "PORT_AC_IN_02",
       "actuator_id": "VALVE_OUT_BASIN_02"
     },
     {
@@ -690,7 +716,7 @@
       "max_flow_m3s": 4.0,
       "flow_mode": "RESTRICTED",
       "source_port_id": "PORT_BASIN_03_OUT",
-      "destination_port_id": "PORT_AC_PH_IN_03",
+      "destination_port_id": "PORT_AC_IN_03",
       "actuator_id": "VALVE_OUT_BASIN_03"
     },
     {
@@ -699,7 +725,7 @@
       "max_flow_m3s": 4.0,
       "flow_mode": "RESTRICTED",
       "source_port_id": "PORT_BASIN_04_OUT",
-      "destination_port_id": "PORT_AC_PH_IN_04",
+      "destination_port_id": "PORT_AC_IN_04",
       "actuator_id": "VALVE_OUT_BASIN_04"
     },
     {
@@ -708,8 +734,16 @@
       "max_flow_m3s": 4.0,
       "flow_mode": "RESTRICTED",
       "source_port_id": "PORT_BASIN_05_OUT",
-      "destination_port_id": "PORT_AC_PH_IN_05",
+      "destination_port_id": "PORT_AC_IN_05",
       "actuator_id": "VALVE_OUT_BASIN_05"
+    },
+    {
+      "link_id": "LINK_OUT_AC_01",
+      "display_name": "Applied Channel to Filter Feed Link",
+      "max_flow_m3s": 15.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_AC_01_OUT",
+      "destination_port_id": "PORT_FILTER_FEED_IN"
     },
     {
       "link_id": "LINK_DRAIN_BASIN_01",

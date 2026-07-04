@@ -1,0 +1,25 @@
+{
+  "$schema": "../../schema/alarms.schema.json",
+  "alarms": [
+    {
+      "alarm_id": "APPLIED_CHANNEL_HIGH_LEVEL",
+      "display_name": "Applied Channel High Level Alarm",
+      "target_unit_id": "APPLIED_CHANNEL_01",
+      "target_property": "level_m",
+      "alarm_type": "HIGH",
+      "threshold_value": 4.5,
+      "delay_s": 0.0,
+      "deadband": 0.1
+    },
+    {
+      "alarm_id": "APPLIED_CHANNEL_LOW_LEVEL",
+      "display_name": "Applied Channel Low Level Alarm",
+      "target_unit_id": "APPLIED_CHANNEL_01",
+      "target_property": "level_m",
+      "alarm_type": "LOW",
+      "threshold_value": 0.5,
+      "delay_s": 0.0,
+      "deadband": 0.1
+    }
+  ]
+}

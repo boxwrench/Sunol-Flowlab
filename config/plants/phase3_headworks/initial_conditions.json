@@ -60,7 +60,12 @@
       "volume_m3": 200.0
     },
     {
-      "unit_id": "APPLIED_CHANNEL_PLACEHOLDER",
+      "unit_id": "APPLIED_CHANNEL_01",
+      "in_service": true,
+      "volume_m3": 100.0
+    },
+    {
+      "unit_id": "FILTER_FEED_01",
       "in_service": true
     },
     {
