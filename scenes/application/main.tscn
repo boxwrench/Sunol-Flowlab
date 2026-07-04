@@ -1,6 +1,21 @@
-[gd_scene load_steps=2 format=3 uid="uid://c1vj8m1v2j4c3"]
+[gd_scene load_steps=6 format=3 uid="uid://c1vj8m1v2j4c3"]
 
 [ext_resource type="Script" path="res://scripts/application/app_bootstrap.gd" id="1_bootstrap"]
+[ext_resource type="Script" path="res://scripts/application/simulation_host.gd" id="2_host"]
+[ext_resource type="PackedScene" uid="uid://b7y2y2p2r3c4d" path="res://scenes/environment/placeholder_environment.tscn" id="3_env"]
+[ext_resource type="PackedScene" uid="uid://b8b8g2yv8p2k8" path="res://scenes/cameras/orbit_camera.tscn" id="4_camera"]
+[ext_resource type="PackedScene" uid="uid://d3x1k1v3j4c5t" path="res://scenes/ui/controls/time_controls.tscn" id="5_ui"]
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_bootstrap")
+
+[node name="SimulationHost" type="Node" parent="."]
+script = ExtResource("2_host")
+
+[node name="PlaceholderEnvironment" parent="." instance=ExtResource("3_env")]
+
+[node name="OrbitCamera" parent="." instance=ExtResource("4_camera")]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="TimeControls" parent="CanvasLayer" instance=ExtResource("5_ui")]

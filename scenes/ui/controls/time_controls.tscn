@@ -1,0 +1,40 @@
+[gd_scene load_steps=2 format=3 uid="uid://d3x1k1v3j4c5t"]
+
+[ext_resource type="Script" path="res://scripts/ui/controllers/time_controls.gd" id="1_time_controls"]
+
+[node name="TimeControls" type="PanelContainer"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -60.0
+offset_right = 200.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+script = ExtResource("1_time_controls")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+alignment = 1
+
+[node name="PauseButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+text = "Pause"
+
+[node name="PlayButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+text = "Play"
+
+[node name="StepButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+text = "Step"
+
+[node name="SpeedSelector" type="OptionButton" parent="HBoxContainer"]
+layout_mode = 2
+
+[node name="TickLabel" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Tick: 0"

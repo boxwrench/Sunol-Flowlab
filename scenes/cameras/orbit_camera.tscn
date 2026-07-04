@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8b8g2yv8p2k8"]
+
+[ext_resource type="Script" path="res://scripts/presentation/camera/orbit_camera.gd" id="1_orbit_camera"]
+
+[node name="OrbitCamera" type="Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15)
+script = ExtResource("1_orbit_camera")
