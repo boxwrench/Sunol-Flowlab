@@ -34,7 +34,7 @@
         },
         {
           "port_id": "PORT_BASIN_DRAIN",
-          "port_type": "OUTLET"
+          "port_type": "DRAIN"
         }
       ]
     },

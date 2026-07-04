@@ -112,4 +112,15 @@ static func build_plant(
 		context.links_list.append(links_map[lid])
 		context.links_dict[lid] = links_map[lid]
 		
+	var sorted_act_ids: Array = actuators_map.keys()
+	sorted_act_ids.sort_custom(func(a, b) -> bool:
+		return String(a) < String(b)
+	)
+	
+	context.actuators_list.clear()
+	context.actuators_dict.clear()
+	for aid in sorted_act_ids:
+		context.actuators_list.append(actuators_map[aid])
+		context.actuators_dict[aid] = actuators_map[aid]
+		
 	return true

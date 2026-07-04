@@ -87,9 +87,7 @@ func test_engine_14_step_tick_order() -> void:
 	assert_eq(engine.step_history, expected_steps, "Engine steps must execute in the canonical 14-step order")
 	
 	var expected_unit_log: Array[String] = [
-		"apply_changes",
-		"update_actuators",
-		"evaluate_controllers",
+		"pre_tick",
 		"solve_tick",
 		"post_tick"
 	]

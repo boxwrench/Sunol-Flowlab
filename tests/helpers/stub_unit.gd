@@ -1,24 +1,15 @@
 class_name StubUnit
-extends RefCounted
+extends ProcessUnit
 
-var unit_id: StringName
 var counter: int = 0
 var lifecycle_log: Array[String] = []
 
 func _init(p_id: StringName) -> void:
 	unit_id = p_id
 
-func apply_changes(_context: RefCounted) -> void:
-	lifecycle_log.append("apply_changes")
+func pre_tick(_context: RefCounted) -> void:
+	lifecycle_log.append("pre_tick")
 	counter += 1
-
-func update_actuators(_context: RefCounted) -> void:
-	lifecycle_log.append("update_actuators")
-	counter += 2
-
-func evaluate_controllers(_context: RefCounted) -> void:
-	lifecycle_log.append("evaluate_controllers")
-	counter += 3
 
 func solve_tick(_context: RefCounted) -> void:
 	lifecycle_log.append("solve_tick")

@@ -21,6 +21,10 @@ Automated tests are provided under `tests/`.  Run them with `godot --headless -s
 
 The first iteration includes definitions for generic storage nodes, junction nodes, flow links and controllers.  Future phases will introduce full modules for reservoirs, basins, filters and more.
 
+## For AI agents
+
+**Start here, every session, before any change:** follow the Cold-Start Protocol in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Minimum required reading: [AGENTS.md](AGENTS.md) (binding rules, including the failure-mode guardrails), then [docs/REPOSITORY_ARCHITECTURE.md](docs/REPOSITORY_ARCHITECTURE.md), then your assigned work package. Do not work from a task prompt or prior-context summary alone.
+
 ## Documentation
 
 - [Project scope](docs/PROJECT_SCOPE.md)

@@ -4,6 +4,18 @@ Date: 2026-07-03
 Prerequisite reading: `docs/ARCHITECTURE_REVIEW.md` (defines gates G0–G5 and invariants INV-1/2/3), `docs/REPOSITORY_ARCHITECTURE.md` (canonical layout).
 Audience: AI coding agents (Claude Code, Codex) executing work packages; solo orchestrator reviewing.
 
+## Cold-Start Protocol (mandatory)
+
+If you are an agent starting from a fresh context, read these **in order** before touching any file:
+
+1. `AGENTS.md` — all of it, especially § "Verification and failure-mode guardrails" (11 binding rules; each traces to a real failure in this repo).
+2. `docs/REPOSITORY_ARCHITECTURE.md` — canonical layout and dependency rules; wins all structural conflicts.
+3. Your assigned WP in this plan — including its **done-when** list; you own nothing outside its file list.
+4. If your task is a fix from `docs/PHASE1_CODE_REVIEW.md` — read the specific finding (F1–F8) and its fix in full.
+5. The spec docs your WP touches (`docs/SIMULATION_RULES.md`, `docs/PROCESS_UNIT_CONTRACTS.md`, etc.).
+
+Do not begin work on a summary of these documents from a prior context or a task prompt alone — re-read them; they change between work packages.
+
 ## How to Use This Plan
 
 - **WP-1 (before anything else): make the initial git commit.** As of 2026-07-03 the repository has zero commits — all docs, including `ARCHITECTURE_REVIEW.md` and this plan, are untracked. Agents can't follow gates from uncommitted specs, and WP feature branches need a `main` to branch from.

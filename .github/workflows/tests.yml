@@ -20,7 +20,16 @@ jobs:
 
       - name: Run GUT Tests
         run: |
-          godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit
+          godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit > gut_output.log 2>&1
+          cat gut_output.log
+          if grep -q "Failing Tests" gut_output.log || grep -q "SCRIPT ERROR" gut_output.log || grep -q "Parse Error" gut_output.log; then
+            echo "GUT tests failed or encountered errors!"
+            exit 1
+          fi
+          if ! grep -qE "Tests[[:space:]]+[1-9]" gut_output.log; then
+            echo "Error: Zero tests were collected or run!"
+            exit 1
+          fi
 
       - name: Enforce G3 (No Node inheritance in domain)
         run: |

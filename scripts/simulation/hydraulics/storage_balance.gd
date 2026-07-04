@@ -50,7 +50,7 @@ static func solve(
 	if new_volume_m3 < EPSILON:
 		new_volume_m3 = 0.0
 		
-	new_volume_m3 = min(new_volume_m3, max_volume_m3)
+	assert(new_volume_m3 <= max_volume_m3 + EPSILON, "Volume exceeded maximum volume")
 	
 	return {
 		"new_volume_m3": new_volume_m3,

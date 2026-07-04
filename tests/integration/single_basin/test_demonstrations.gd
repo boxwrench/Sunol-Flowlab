@@ -31,6 +31,8 @@ func test_demo_a_level_rises() -> void:
 	var storage: StorageUnit = engine.context.units_dict[&"BASIN_01"]
 	var initial_volume: float = storage.volume_m3
 	
+	# Initial configuration from JSON has VALVE_IN = 50%, VALVE_OUT = 0%.
+	# No commands needed for tick 1-10 because it's already in positive net inflow.
 	for tick in range(1, 11):
 		engine.clock.tick_count = tick
 		engine.context.current_tick = tick
@@ -46,16 +48,19 @@ func test_demo_b_level_falls() -> void:
 	var engine: SimulationEngine = _setup_engine()
 	var storage: StorageUnit = engine.context.units_dict[&"BASIN_01"]
 	
-	var valve_in: SimValve = engine.context.links_dict[&"LINK_IN"].actuator
-	var valve_out: SimValve = engine.context.links_dict[&"LINK_OUT"].actuator
+	# Enable instant mode on valves for test convenience
+	var valve_in: SimValve = engine.context.actuators_dict[&"VALVE_IN"]
+	var valve_out: SimValve = engine.context.actuators_dict[&"VALVE_OUT"]
 	valve_in.instant_mode = true
 	valve_out.instant_mode = true
 	
-	valve_in.set_commanded_position(0.0)
-	valve_out.set_commanded_position(100.0)
+	# Enqueue commands to close inlet and fully open outlet
+	engine.enqueue(SetValvePositionCommand.new(&"VALVE_IN", 0.0))
+	engine.enqueue(SetValvePositionCommand.new(&"VALVE_OUT", 100.0))
 	
 	var initial_volume: float = storage.volume_m3
 	
+	# Run ticks. Commands will apply on tick 1.
 	for tick in range(1, 11):
 		engine.clock.tick_count = tick
 		engine.context.current_tick = tick
@@ -71,13 +76,13 @@ func test_demo_c_spill_and_alarm() -> void:
 	var engine: SimulationEngine = _setup_engine()
 	var storage: StorageUnit = engine.context.units_dict[&"BASIN_01"]
 	
-	var valve_in: SimValve = engine.context.links_dict[&"LINK_IN"].actuator
-	var valve_out: SimValve = engine.context.links_dict[&"LINK_OUT"].actuator
+	var valve_in: SimValve = engine.context.actuators_dict[&"VALVE_IN"]
+	var valve_out: SimValve = engine.context.actuators_dict[&"VALVE_OUT"]
 	valve_in.instant_mode = true
 	valve_out.instant_mode = true
 	
-	valve_in.set_commanded_position(100.0)
-	valve_out.set_commanded_position(0.0)
+	engine.enqueue(SetValvePositionCommand.new(&"VALVE_IN", 100.0))
+	engine.enqueue(SetValvePositionCommand.new(&"VALVE_OUT", 0.0))
 	
 	var alarm: ThresholdAlarm = engine.alarm_engine.alarms_dict[&"ALARM_HIGH"]
 	
@@ -105,17 +110,17 @@ func test_demo_d_empty_to_zero() -> void:
 	var engine: SimulationEngine = _setup_engine()
 	var storage: StorageUnit = engine.context.units_dict[&"BASIN_01"]
 	
-	var valve_in: SimValve = engine.context.links_dict[&"LINK_IN"].actuator
-	var valve_out: SimValve = engine.context.links_dict[&"LINK_OUT"].actuator
-	var valve_drain: SimValve = engine.context.links_dict[&"LINK_DRAIN"].actuator
+	var valve_in: SimValve = engine.context.actuators_dict[&"VALVE_IN"]
+	var valve_out: SimValve = engine.context.actuators_dict[&"VALVE_OUT"]
+	var valve_drain: SimValve = engine.context.actuators_dict[&"VALVE_DRAIN"]
 	
 	valve_in.instant_mode = true
 	valve_out.instant_mode = true
 	valve_drain.instant_mode = true
 	
-	valve_in.set_commanded_position(0.0)
-	valve_out.set_commanded_position(0.0)
-	valve_drain.set_commanded_position(100.0)
+	engine.enqueue(SetValvePositionCommand.new(&"VALVE_IN", 0.0))
+	engine.enqueue(SetValvePositionCommand.new(&"VALVE_OUT", 0.0))
+	engine.enqueue(SetValvePositionCommand.new(&"VALVE_DRAIN", 100.0))
 	
 	for tick in range(1, 201):
 		engine.clock.tick_count = tick
@@ -130,14 +135,13 @@ func test_demo_d_empty_to_zero() -> void:
 
 func test_headless_parity() -> void:
 	var engine_headless: SimulationEngine = _setup_engine()
-	var valve_in_h: SimValve = engine_headless.context.links_dict[&"LINK_IN"].actuator
+	var valve_in_h: SimValve = engine_headless.context.actuators_dict[&"VALVE_IN"]
 	valve_in_h.instant_mode = true
-	valve_in_h.set_commanded_position(80.0)
+	
+	engine_headless.enqueue(SetValvePositionCommand.new(&"VALVE_IN", 80.0))
 	
 	for tick in range(1, 51):
-		engine_headless.clock.tick_count = tick
-		engine_headless.context.current_tick = tick
-		engine_headless.run_tick(1.0)
+		engine_headless.advance_frame(1.0)
 		
 	var final_volume_headless: float = engine_headless.context.units_dict[&"BASIN_01"].volume_m3
 	
@@ -150,14 +154,16 @@ func test_headless_parity() -> void:
 	var config: Dictionary = ConfigLoader.load_plant_config("phase1_single_basin")
 	var _ok: bool = PlantFactory.build_plant(host.engine.context, config.topology_data, config.initial_conditions_data)
 	
-	var valve_in_host: SimValve = host.engine.context.links_dict[&"LINK_IN"].actuator
+	var valve_in_host: SimValve = host.engine.context.actuators_dict[&"VALVE_IN"]
 	valve_in_host.instant_mode = true
-	valve_in_host.set_commanded_position(80.0)
 	
+	host.engine.enqueue(SetValvePositionCommand.new(&"VALVE_IN", 80.0))
+	
+	# For G4, strengthen headless parity: drive scene run via host.engine.advance_frame()
+	# instead of manual run_tick calls.
+	var elapsed: float = 0.0
 	for tick in range(1, 51):
-		host.engine.clock.tick_count = tick
-		host.engine.context.current_tick = tick
-		host.engine.run_tick(1.0)
+		host.engine.advance_frame(1.0)
 		
 	var final_volume_host: float = host.engine.context.units_dict[&"BASIN_01"].volume_m3
 	
@@ -167,8 +173,8 @@ func test_extended_soak() -> void:
 	var engine: SimulationEngine = _setup_engine()
 	var storage: StorageUnit = engine.context.units_dict[&"BASIN_01"]
 	
-	var valve_in: SimValve = engine.context.links_dict[&"LINK_IN"].actuator
-	var valve_out: SimValve = engine.context.links_dict[&"LINK_OUT"].actuator
+	var valve_in: SimValve = engine.context.actuators_dict[&"VALVE_IN"]
+	var valve_out: SimValve = engine.context.actuators_dict[&"VALVE_OUT"]
 	valve_in.instant_mode = true
 	valve_out.instant_mode = true
 	
@@ -179,8 +185,8 @@ func test_extended_soak() -> void:
 	
 	for tick in range(1, 100001):
 		if tick % 100 == 1:
-			valve_in.set_commanded_position(rng.randf_range(0.0, 100.0))
-			valve_out.set_commanded_position(rng.randf_range(0.0, 100.0))
+			engine.enqueue(SetValvePositionCommand.new(&"VALVE_IN", rng.randf_range(0.0, 100.0)))
+			engine.enqueue(SetValvePositionCommand.new(&"VALVE_OUT", rng.randf_range(0.0, 100.0)))
 			
 		engine.clock.tick_count = tick
 		engine.context.current_tick = tick

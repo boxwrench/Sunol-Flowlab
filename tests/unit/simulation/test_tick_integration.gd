@@ -58,3 +58,40 @@ func test_tick_integration_full_sequence() -> void:
 	assert_eq(storage.level_m, 5.01)
 	assert_eq(storage.inflow_m3s, 2.5)
 	assert_eq(storage.outflow_m3s, 4.0)
+
+func test_valve_gradual_travel() -> void:
+	var config: Dictionary = ConfigLoader.load_plant_config("phase1_single_basin")
+	assert_true(config.success)
+	
+	var engine: SimulationEngine = SimulationEngine.new()
+	var build_ok: bool = PlantFactory.build_plant(engine.context, config.topology_data, config.initial_conditions_data)
+	assert_true(build_ok)
+	
+	var valve_drain: SimValve = engine.context.actuators_dict[&"VALVE_DRAIN"]
+	assert_eq(valve_drain.position, 0.0)
+	assert_eq(valve_drain.opening_rate_percent_per_s, 5.0)
+	valve_drain.instant_mode = false
+	
+	# Command VALVE_DRAIN to 100%
+	engine.enqueue(SetValvePositionCommand.new(&"VALVE_DRAIN", 100.0))
+	
+	var link_drain: FlowLink = engine.context.links_dict[&"LINK_DRAIN"]
+	assert_eq(link_drain.max_flow_m3s, 3.0)
+	
+	# At 5%/s rate, it takes exactly 20 ticks of dt=1s to reach 100%
+	for i in range(20):
+		var tick: int = i + 1
+		engine.clock.tick_count = tick
+		engine.context.current_tick = tick
+		engine.run_tick(1.0)
+		
+		var expected_pos: float = min(100.0, tick * 5.0)
+		assert_eq(valve_drain.position, expected_pos)
+		
+		# Flow should be proportional: max_flow * opening
+		var expected_flow: float = 3.0 * (expected_pos / 100.0)
+		assert_eq(link_drain.actual_flow_m3s, expected_flow)
+		
+	assert_eq(valve_drain.position, 100.0)
+	assert_eq(link_drain.actual_flow_m3s, 3.0)
+

@@ -1,0 +1,113 @@
+[gd_scene load_steps=2 format=3 uid="uid://c1assetpanel"]
+
+[ext_resource type="Script" path="res://scripts/ui/controllers/asset_panel.gd" id="1_controller"]
+
+[node name="AssetPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -300.0
+grow_horizontal = 0
+grow_vertical = 2
+script = ExtResource("1_controller")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Sedimentation Basin 1"
+
+[node name="StateLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "State:"
+
+[node name="StateValue" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "IN_SERVICE"
+
+[node name="LevelLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Level:"
+
+[node name="LevelValue" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "0.00 ft"
+
+[node name="VolumeLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Volume:"
+
+[node name="VolumeValue" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "0.000 MG"
+
+[node name="InflowLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Inflow Rate:"
+
+[node name="InflowValue" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "0.00 MGD"
+
+[node name="OutflowLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Outflow Rate:"
+
+[node name="OutflowValue" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "0.00 MGD"
+
+[node name="SpillLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Spill Rate:"
+
+[node name="SpillValue" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "0.00 MGD"
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="InletLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Inlet Valve"
+
+[node name="InletSlider" type="HSlider" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+value = 50.0
+
+[node name="InletValueLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "50%"
+
+[node name="OutletLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Outlet Valve"
+
+[node name="OutletSlider" type="HSlider" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="OutletValueLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "0%"
+
+[node name="DrainLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Drain Valve"
+
+[node name="DrainSlider" type="HSlider" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="DrainValueLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "0%"

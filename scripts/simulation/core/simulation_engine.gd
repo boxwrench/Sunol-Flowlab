@@ -6,6 +6,8 @@ var context: SimulationContext
 var command_queue: Array[SimulationCommand] = []
 var mass_balance_tracker: MassBalanceTracker = null
 var alarm_engine: AlarmEngine = null
+var latest_snapshot: Dictionary = {}
+var previous_snapshot_hash: int = 0
 
 func _init() -> void:
 	clock = SimulationClock.new()
@@ -69,47 +71,53 @@ func _step_receive_commands() -> void:
 	command_queue = remaining_commands
 
 func _step_apply_changes() -> void:
-	# Unit loops must iterate alphabetically by ID
 	for unit in context.units_list:
-		if unit.has_method("apply_changes"):
-			unit.apply_changes(context)
+		unit.pre_tick(context)
 
 func _step_update_actuators() -> void:
-	# Update position of valves / actuators
-	for unit in context.units_list:
-		if unit.has_method("update_actuators"):
-			unit.update_actuators(context)
+	var dt: float = context.dt
+	for actuator in context.actuators_list:
+		actuator.update(dt)
 
 func _step_evaluate_controllers() -> void:
-	for unit in context.units_list:
-		if unit.has_method("evaluate_controllers"):
-			unit.evaluate_controllers(context)
+	pass
 
 func _step_resolve_requested_flows() -> void:
-	for link in context.links_list:
-		link.calculate_requested_flow()
+	FlowSolver.solve_flows(context)
 
 func _step_apply_constraints() -> void:
-	for link in context.links_list:
-		link.granted_flow_m3s = link.requested_flow_m3s
-		link.actual_flow_m3s = link.granted_flow_m3s
+	pass
 
 func _step_transfer_water() -> void:
 	pass
 
 func _step_update_volumes() -> void:
-	# Domain classes loop over explicitly ordered units
 	for unit in context.units_list:
-		if unit.has_method("solve_tick"):
-			unit.solve_tick(context)
+		unit.solve_tick(context)
 
 func _step_calculate_levels_spills() -> void:
-	pass
+	for unit in context.units_list:
+		if unit is ExternalBoundary:
+			unit.current_flow_m3s = 0.0
+			
+	for link in context.links_list:
+		if link.source_port != null and link.source_port.parent_unit is ExternalBoundary:
+			link.source_port.parent_unit.current_flow_m3s = link.actual_flow_m3s
+		if link.destination_port != null and link.destination_port.parent_unit is ExternalBoundary:
+			link.destination_port.parent_unit.current_flow_m3s = link.actual_flow_m3s
+			
+	var total_spill_m3s: float = 0.0
+	for unit in context.units_list:
+		if unit is StorageUnit:
+			total_spill_m3s += unit.spill_flow_m3s
+			
+	for unit in context.units_list:
+		if unit is ExternalBoundary and unit.boundary_type == &"SPILL":
+			unit.current_flow_m3s = total_spill_m3s
 
 func _step_update_state_machines() -> void:
 	for unit in context.units_list:
-		if unit.has_method("post_tick"):
-			unit.post_tick(context)
+		unit.post_tick(context)
 
 func _step_evaluate_alarms() -> void:
 	if alarm_engine != null:
@@ -123,4 +131,7 @@ func _step_validate_invariants() -> void:
 		mass_balance_tracker.validate(context)
 
 func _step_publish_snapshot() -> void:
-	pass
+	if not latest_snapshot.is_empty():
+		assert(str(latest_snapshot).hash() == previous_snapshot_hash, "Mutation Violation: Snapshot was mutated externally!")
+	latest_snapshot = SnapshotService.take_snapshot(context, self)
+	previous_snapshot_hash = str(latest_snapshot).hash()

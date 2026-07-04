@@ -1,56 +1,7 @@
 extends "res://addons/gut/test.gd"
 
-class MockSolveEngine extends SimulationEngine:
-	func run_tick(dt: float) -> void:
-		_step_receive_commands()
-		_step_update_actuators()
-		
-		# Resolve requested flows (restricted flow only for Phase 1)
-		for link in context.links_list:
-			link.calculate_requested_flow()
-			link.granted_flow_m3s = link.requested_flow_m3s
-			link.actual_flow_m3s = link.granted_flow_m3s
-			
-		var storage: StorageUnit = context.units_dict[&"BASIN_01"]
-		var source: ExternalBoundary = context.units_dict[&"SOURCE"]
-		var sink: ExternalBoundary = context.units_dict[&"SINK"]
-		var drain_sink: ExternalBoundary = context.units_dict[&"DRAIN_SINK"]
-		var spill_sink: ExternalBoundary = context.units_dict[&"SPILL_SINK"]
-		
-		var link_in: FlowLink = context.links_dict[&"LINK_IN"]
-		var link_out: FlowLink = context.links_dict[&"LINK_OUT"]
-		var link_drain: FlowLink = context.links_dict[&"LINK_DRAIN"]
-		
-		# Solve storage balance
-		var inflows: Array[float] = [link_in.granted_flow_m3s]
-		var balance: Dictionary = StorageBalance.solve(
-			storage.volume_m3,
-			inflows,
-			link_out.granted_flow_m3s,
-			link_drain.granted_flow_m3s,
-			storage.maximum_volume_m3,
-			storage.spill_level_m * storage.surface_area_m2,
-			dt
-		)
-		
-		# Update states
-		storage.volume_m3 = balance.new_volume_m3
-		storage.update_level()
-		storage.inflow_m3s = balance.actual_inflow_m3s
-		storage.outflow_m3s = balance.actual_outflow_m3s
-		storage.drain_flow_m3s = balance.actual_drain_flow_m3s
-		storage.spill_flow_m3s = balance.actual_spill_flow_m3s
-		
-		# Update boundary rates for ledger
-		source.current_flow_m3s = link_in.granted_flow_m3s
-		sink.current_flow_m3s = balance.actual_outflow_m3s
-		drain_sink.current_flow_m3s = balance.actual_drain_flow_m3s
-		spill_sink.current_flow_m3s = balance.actual_spill_flow_m3s
-		
-		_step_validate_invariants()
-
 func test_mass_conservation_100k_ticks() -> void:
-	var engine: MockSolveEngine = MockSolveEngine.new()
+	var engine: SimulationEngine = SimulationEngine.new()
 	
 	var source: ExternalBoundary = ExternalBoundary.new()
 	source.initialize({
@@ -104,11 +55,12 @@ func test_mass_conservation_100k_ticks() -> void:
 	var port_basin_in: FlowPort = FlowPort.new(&"PORT_BASIN_IN", storage, &"INLET")
 	var port_basin_out: FlowPort = FlowPort.new(&"PORT_BASIN_OUT", storage, &"OUTLET")
 	var port_sink_in: FlowPort = FlowPort.new(&"PORT_SINK_IN", sink, &"INLET")
-	var port_basin_drain: FlowPort = FlowPort.new(&"PORT_BASIN_DRAIN", storage, &"OUTLET")
+	var port_basin_drain: FlowPort = FlowPort.new(&"PORT_BASIN_DRAIN", storage, &"DRAIN")
 	var port_drain_in: FlowPort = FlowPort.new(&"PORT_DRAIN_IN", drain_sink, &"INLET")
 	
 	for p in [port_src_out, port_basin_in, port_basin_out, port_sink_in, port_basin_drain, port_drain_in]:
 		port_dict[p.port_id] = p
+		p.parent_unit.ports[p.port_id] = p
 		
 	var valve_in: SimValve = SimValve.new(&"VALVE_IN")
 	valve_in.initialize({"opening_rate_percent_per_s": 10.0, "initial_position": 50.0})
@@ -119,6 +71,13 @@ func test_mass_conservation_100k_ticks() -> void:
 	var valve_drain: SimValve = SimValve.new(&"VALVE_DRAIN")
 	valve_drain.initialize({"opening_rate_percent_per_s": 10.0, "initial_position": 0.0})
 	
+	# Register actuators
+	var actuators: Array = [valve_in, valve_out, valve_drain]
+	actuators.sort_custom(func(a, b) -> bool: return String(a.actuator_id) < String(b.actuator_id))
+	for act in actuators:
+		engine.context.actuators_list.append(act)
+		engine.context.actuators_dict[act.actuator_id] = act
+		
 	var link_in: FlowLink = FlowLink.new()
 	link_in.initialize({
 		"link_id": &"LINK_IN",

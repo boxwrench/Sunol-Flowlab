@@ -4,6 +4,8 @@ Date: 2026-07-03
 Scope: All 16 docs in `docs/` (incl. `DECISIONS/0001-godot.md`), root duplicates, `AGENTS.md`, `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `THIRD_PARTY_NOTICES.md`, asset manifest, and the deep-research report (background only).
 Audience: Solo orchestrator + AI coding agents (Claude Code, Codex).
 
+> **Agents starting cold from this document:** this is background/rationale. Actionable entry points are the Cold-Start Protocol in `docs/IMPLEMENTATION_PLAN.md` and the binding rules in `AGENTS.md`. Read those before implementing anything referenced here.
+
 ## Verdict Summary
 
 The architecture is fundamentally sound. Simulation-first separation, fixed-tick determinism, command/event/snapshot boundaries, data-driven configuration, and the single-basin-first sequencing are all correct decisions and mutually reinforcing. The problems are not in the direction — they are in **contradictions between documents** (which will cause AI agents to diverge) and **one under-specified algorithm** (the flow solver) that sits directly on top of both core invariants. Fix the doc conflicts before Phase 0 code; specify the solver before Phase 2.

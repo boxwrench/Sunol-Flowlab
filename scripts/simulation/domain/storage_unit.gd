@@ -77,12 +77,11 @@ func solve_tick(context: RefCounted) -> void:
 		if port.port_type == &"INLET":
 			inflows_arr.append(link.granted_flow_m3s)
 		elif port.port_type == &"OUTLET":
-			if "drain" in String(port_id).to_lower() or "drain" in String(link.link_id).to_lower():
-				requested_drain = link.granted_flow_m3s
-				drain_link = link
-			else:
-				requested_outflow = link.granted_flow_m3s
-				outlet_link = link
+			requested_outflow = link.granted_flow_m3s
+			outlet_link = link
+		elif port.port_type == &"DRAIN":
+			requested_drain = link.granted_flow_m3s
+			drain_link = link
 				
 	var spill_vol: float = spill_level_m * surface_area_m2
 	
@@ -109,9 +108,7 @@ func solve_tick(context: RefCounted) -> void:
 	if drain_link != null:
 		drain_link.actual_flow_m3s = balance.actual_drain_flow_m3s
 		
-	for unit in context.units_list:
-		if unit is ExternalBoundary and unit.boundary_type == &"SPILL":
-			unit.current_flow_m3s = spill_flow_m3s
+
 
 func validate(context: RefCounted) -> Array[String]:
 	var errors: Array[String] = super.validate(context)
