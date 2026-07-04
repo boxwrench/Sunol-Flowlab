@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "defs.schema.json",
+  "title": "Sunol FlowLab shared configuration definitions",
+  "description": "Shared $defs referenced by all plant-config schemas. Schemas own SHAPE (types, ranges, enums, required keys); scripts/configuration/plant_validator.gd owns RELATIONSHIPS (dangling IDs, cycle detection, geometry cross-checks).",
+  "$defs": {
+    "tag_id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]*$",
+      "description": "Uppercase StringName identifier per docs/TAG_NAMING.md, e.g. BASIN_01, VALVE_IN, LINK_SRC_TO_BASIN_01."
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable name shown in the UI."
+    },
+    "positive_number": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Strictly positive number."
+    },
+    "non_negative_number": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Zero or positive number."
+    },
+    "percent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Percentage in [0, 100]."
+    },
+    "vector3": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 3,
+      "maxItems": 3,
+      "description": "[x, y, z] triple."
+    }
+  }
+}
