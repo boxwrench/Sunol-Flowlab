@@ -13,6 +13,7 @@
     "display_name": { "$ref": "defs.schema.json#/$defs/display_name" },
     "simulation_settings": {
       "type": "object",
+      "description": "Engine timing settings; optional, engine defaults apply when absent.",
       "properties": {
         "default_dt_s": {
           "type": "number",
