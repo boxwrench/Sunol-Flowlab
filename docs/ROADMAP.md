@@ -1,46 +1,107 @@
 # Project Roadmap
 
-This roadmap organises development into stages.  Dates are intentionally omitted to allow flexibility.
+This roadmap organises development into numbered phases matching the rest of the
+repository (Phase 0–3 delivered, Phase 4 next). Detailed per-phase work packages live
+in the `*_IMPLEMENTATION_PLAN.md` documents; this file is the high-level map and status.
+Dates are intentionally omitted to allow flexibility.
 
-## Documentation
+**Authority note:** per `docs/INDEX.md`, `REPOSITORY_ARCHITECTURE.md` and the binding
+specs win all conflicts. Where this roadmap and a phase plan disagree on scope, the phase
+plan governs the work — and this file must be updated to match rather than the reverse.
 
-- End-to-end build guide: `docs/BUILDING_A_PLANT_SIMULATOR.md` — assembles the domain model,
-  config/schema/factory contract, add-a-component recipes, and verification machinery into a single
-  tutorial, with a portability appendix. (Draft; the control-law subsection tracks WP3.5.)
+## Status at a glance
 
-## Current phase
+| Phase | Scope | Status |
+|-------|-------|--------|
+| Phase 0 — Project Foundation | clock, engine shell, tick pipeline, CI, base classes | ✅ Delivered |
+| Phase 1 — Single Storage-Unit Prototype | mass-balance ledger, config load, snapshot, phase-1 verification | ✅ Delivered |
+| Phase 2 — Three-Unit Flow Sandbox | source→basin→receiver flow propagation, closed-loop level control | ✅ Delivered |
+| Phase 3 — Headworks + Sedimentation | reservoirs, manifold, flash mix, distribution box, 5 basins, applied channel, availability, 5 level loops |  Delivered — **pending exit gate (WP3.8 batch audit)** |
+| Phase 3.5 — Self-Regulating Hydraulics (WP4.0) | implement GRAVITY flow mode; re-baseline Phase 3 hydraulics | ⬜ Next |
+| Phase 4a — Filtration + Clearwell | 12 filters, clearwell, filter flow splitting, one clearwell level loop | ⬜ Planned |
+| Phase 4b — Contact + Treated Water | 2 CT basins, treated-water reservoir, treated-water demand, plant flow control (cascade) | ⬜ Planned |
 
-- Finalise documentation (scope, simulation rules, unit contracts, control logic).
-- Implement project foundation: simulation clock, basic test harness, empty Godot project.
-- Build single storage‑unit prototype to validate mass balance and spill logic.
+## Cross-cutting workstreams
 
-## Next phase
+### Verification infrastructure (continuous)
+- Push every WP to origin/main on completion; **GitHub Actions must be green on
+  origin/main before the next WP starts.** CI-green is the third-party reproduction of
+  the GUT suite and is the canonical execution record — it replaces implementer
+  self-reported pass counts.
+- Keep the `EXPECTED_SCRIPTS` / `EXPECTED_TESTS` gates current in the same push that
+  changes the count.
+- Target a nightly full soak (100k-tick) run once Phase 4a lands.
 
-- Connect a three‑unit sandbox (source → basin → receiver) and test flow propagation and simple level control.
-- Build headworks and five sedimentation trains: reservoirs, manifold, flash mix, distribution box, basins and applied channel.
-- Implement flow splitting and basin availability.
+### Hydraulic design basis (prerequisite for Phase 4a)
+- Maintain the authoritative design-basis table in `docs/PLANT_TOPOLOGY.md`. Every future
+  `max_flow_m3s` value must cite it. Phase 3's 15-vs-12 trunk defect was the direct result
+  of having no design basis; the filter phase multiplies that exposure.
 
-## Later phase
+### Telemetry & trends (near-term)
+- Implement a minimal ring-buffer trend historian behind `_step_record_telemetry()`
+  (currently a `pass` stub) with simple UI overlays, per the scope goals. Beyond being a
+  stated goal, it makes control diagnostics (e.g. limit cycles) observable without
+  throwaway debug scripts.
 
-- Add twelve filters, clearwell, two CT basins and treated‑water reservoir.
-- Implement filter flow splitting, clearwell level control and CT basin splitting.
-- Add treated‑water demand and optional plant flow control.
+## Phase 3.5 / WP4.0 — Self-regulating hydraulics (next)
+
+The Phase 3 control effort — limit cycles at any gain, the velocity-PID escalation —
+traced to a plant with **zero self-regulation**: every downstream demand is a fixed-max,
+unactuated link. `SIMULATION_RULES.md` already specifies flow mode 3 (flow ∝ valve · √head)
+and `flow_link.gd` stubs it with a warn-once fallback. Implementing it makes basin and
+channel outflow level-dependent — self-regulating — and makes the Phase 4 clearwell and CT
+control problems materially easier.
+
+**Sequencing note:** lightweight in code, heavy in re-verification. It changes existing
+Phase 3 steady-states, so it must land as its own gated WP that re-tunes the five Phase 3
+controllers and re-baselines the headworks and verification tests, with full determinism
+and mass-balance reverification. It is sequenced **before** Phase 4a so the filters build
+on self-regulating hydraulics.
+
+## Phase 4 — Filtration through Treated Water (split)
+
+Phase 3 required a mid-phase structural escalation; Phase 4's original single-phase scope
+is roughly twice Phase 3's surface area, so it is split at a natural batch-audit boundary:
+
+- **Phase 4a — Filters + clearwell.** Reuses Phase 3 patterns (proration-based splitting,
+  one level loop), ideally on top of GRAVITY mode.
+- **Phase 4b — CT basins + treated-water reservoir + plant flow control.** Introduces the
+  first two-layer (cascade / supervisory) control loop, driven by treated-water level —
+  which gets its own spec-first WP, the way basin availability did.
+
+Detailed WPs will be authored in `PHASE4_IMPLEMENTATION_PLAN.md` after the Phase 3 exit
+gate closes.
 
 ## Future enhancements
 
-- Backwash sequences and filter‑to‑waste.
+- **Cyclic topology support (recycle streams).** A single structural capability — the
+  DAG-only solver rejects cycles today — and the shared precondition for backwash /
+  filter-to-waste return, backwash waste handling, **and** any wastewater port. Grouped so
+  the dependency is explicit.
+- Backwash sequences and filter-to-waste (depends on cyclic topology).
 - Coagulant dosing and simplified chemistry.
-- Hydraulic grade line calculations with pump curves.
-- PID control with anti‑reset windup.
+- Interlocks / permissives (specced in `CONTROL_LOGIC.md`, unimplemented; first matters at
+  the filter phase for service-state preconditions).
+- Hydraulic grade line calculations with pump curves (the heavyweight hydraulics; distinct
+  from the near-term GRAVITY mode above).
 - Scenario scripting and training modules.
-- Integration with Node‑RED, MQTT or external control systems.
-- Historian playback and data export.
-- Port the engine to other utilities (e.g. wastewater) — the solver is utility-agnostic; see the
-  portability appendix in `docs/BUILDING_A_PLANT_SIMULATOR.md`.
+- Historian playback and data export (the full version; the near-term trend buffer above is
+  the minimal slice).
+- Port the engine to other utilities (e.g. wastewater). ~95% portable at the code level
+  (boundary labels, ledger fields, display vocabulary), **but requires cyclic topology
+  support first** — a wastewater plant is built around recycle streams (return activated
+  sludge, supernatant returns, backwash recovery) that the DAG solver cannot represent. See
+  the portability appendix in `docs/BUILDING_A_PLANT_SIMULATOR.md`.
+- Integration with Node-RED, MQTT or external control systems — gated post-POC behind a
+  versioned snapshot/command API; not required by the scope doc's completion criteria.
+
+> Removed: "PID control with anti-reset windup." It is shipped — WP3.5 delivered a
+> velocity-form PID whose output clamping inherently avoids reset windup. The residual
+> control work is bumpless transfer on AUTO entry (WP3.5-R) and per-loop tuning guidance.
 
 ## Out of scope
 
-- Real‑time multiplayer operations.
+- Real-time multiplayer operations.
 - Detailed CFD or finite element analysis.
 - Regulatory compliance calculations.
 - Live SCADA connections for a specific plant.
