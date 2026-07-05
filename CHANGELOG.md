@@ -21,6 +21,8 @@ All notable changes to this project will be documented in this file. The format 
 - **WP3.3**: Added `test_basin_availability.gd` (unit tests verifying link flow zeroing, service restoration, and drain status) and `test_basin_availability_integration.gd` (integration tests verifying four-basin proration redistribution and availability churn mass conservation). Added validation unit tests to `test_plant_validator.gd`.
 - **WP3.4**: Added `test_applied_channel.gd` to verify applied channel inflow matching the sum of basin outflows, the high-level alarm activation, and mass conservation over 1000 ticks.
 - **WP3.5**: Added `test_headworks_controller.gd` to verify level stabilization in AUTO mode and automatic proration/redistribution when a basin goes out of service.
+- **WP3.7**: Added `test_phase3_verification.gd` (verifying 100k-tick headworks soak, 100k-tick availability churn, and 1k-tick deterministic replay) and `test_phase3_invariants.gd` (verifying mass conservation over 10k ticks and static topological list under availability toggles).
+
 
 
 
