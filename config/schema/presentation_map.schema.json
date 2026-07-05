@@ -29,6 +29,39 @@
         "required": ["unit_id"],
         "additionalProperties": false
       }
+    },
+    "reference_plane": {
+      "type": "object",
+      "description": "Optional background/scaled site blueprint image plane rendered under the plant.",
+      "properties": {
+        "image_path": {
+          "type": "string",
+          "pattern": "^res://.+\\.(png|jpg|jpeg|webp)$",
+          "description": "Path to the blueprint image texture inside the project."
+        },
+        "size_m": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Physical size [width, height] in meters."
+        },
+        "center_m": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Center location [x, z] in meters on the ground plane."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Transparency/opacity factor from 0.0 (invisible) to 1.0 (opaque)."
+        }
+      },
+      "required": ["image_path", "size_m"],
+      "additionalProperties": false
     }
   },
   "required": ["units"],

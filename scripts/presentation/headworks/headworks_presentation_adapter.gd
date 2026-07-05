@@ -16,6 +16,9 @@ func configure(engine: SimulationEngine, topology_data: Dictionary, presentation
 	_unit_definitions.clear()
 	_presentation_positions.clear()
 
+	if presentation_map.has("reference_plane"):
+		_build_reference_plane(presentation_map["reference_plane"])
+
 	for entry in presentation_map.get("units", []):
 		var unit_id: StringName = StringName(entry.get("unit_id", ""))
 		if unit_id == &"":
@@ -125,6 +128,44 @@ func _clear_visuals() -> void:
 	_link_visuals.clear()
 	for child in get_children():
 		child.queue_free()
+
+func _build_reference_plane(ref_config: Dictionary) -> void:
+	var image_path: String = ref_config.get("image_path", "")
+	var size_arr = ref_config.get("size_m", [10.0, 10.0])
+	var center_arr = ref_config.get("center_m", [0.0, 0.0])
+	var opacity: float = float(ref_config.get("opacity", 1.0))
+
+	if image_path == "" or not ResourceLoader.exists(image_path):
+		push_warning("Reference plane image path does not exist: %s" % image_path)
+		return
+
+	var texture = load(image_path)
+	if texture == null:
+		push_warning("Failed to load reference plane texture: %s" % image_path)
+		return
+
+	var plane_instance := MeshInstance3D.new()
+	plane_instance.name = "ReferencePlane"
+
+	var plane_mesh := PlaneMesh.new()
+	plane_mesh.size = Vector2(float(size_arr[0]), float(size_arr[1]))
+	plane_instance.mesh = plane_mesh
+
+	var x_pos := float(center_arr[0])
+	var z_pos := float(center_arr[1])
+	plane_instance.position = Vector3(x_pos, -0.05, z_pos)
+
+	var mat := StandardMaterial3D.new()
+	mat.albedo_texture = texture
+	mat.roughness = 1.0
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+
+	if opacity < 1.0:
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mat.albedo_color = Color(1.0, 1.0, 1.0, opacity)
+
+	plane_instance.set_surface_override_material(0, mat)
+	add_child(plane_instance)
 
 func _array_to_vector3(values: Variant) -> Vector3:
 	if values is Array and values.size() >= 3:

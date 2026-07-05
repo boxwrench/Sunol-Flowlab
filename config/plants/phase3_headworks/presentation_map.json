@@ -1,5 +1,11 @@
 {
   "$schema": "../../schema/presentation_map.schema.json",
+  "reference_plane": {
+    "image_path": "res://assets/textures/blueprint.jpg",
+    "size_m": [130.0, 60.0],
+    "center_m": [-2.5, 0.0],
+    "opacity": 0.85
+  },
   "units": [
     {
       "unit_id": "EXTERNAL_SOURCE_01",

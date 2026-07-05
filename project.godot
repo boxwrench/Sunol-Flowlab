@@ -1,3 +1,11 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
 config_version=5
 
 [application]
@@ -6,16 +14,15 @@ config/name="Sunol FlowLab"
 run/main_scene="res://scenes/plant/headworks_area.tscn"
 config/features=PackedStringArray("4.7")
 
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/gut/plugin.cfg")
-
-[debug]
-
-gdscript/warnings/untyped_declaration=1
-
 [autoload]
 
 CommandBus="*res://scripts/application/command_bus.gd"
 EventBus="*res://scripts/application/event_bus.gd"
 
+[debug]
+
+gdscript/warnings/untyped_declaration=1
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gut/plugin.cfg")
