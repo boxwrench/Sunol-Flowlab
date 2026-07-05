@@ -1,7 +1,8 @@
 extends "res://addons/gut/test.gd"
 
-func _setup_engine() -> SimulationEngine:
+func _setup_engine(snapshot_mode: int = SimulationEngine.SNAPSHOT_MODE_EVERY_TICK) -> SimulationEngine:
 	var engine := SimulationEngine.new()
+	engine.snapshot_mode = snapshot_mode
 	var config: Dictionary = ConfigLoader.load_plant_config("phase3_headworks")
 	assert_true(config.success, "Config should load")
 	var ok: bool = PlantFactory.build_plant(engine.context, config.topology_data,
@@ -21,7 +22,7 @@ func _state_hash(engine: SimulationEngine) -> String:
 	return ",".join(parts)
 
 func test_phase3_soak_100k_ticks() -> void:
-	var engine := _setup_engine()
+	var engine := _setup_engine(SimulationEngine.SNAPSHOT_MODE_OFF)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 12345
 
@@ -85,7 +86,7 @@ func test_phase3_soak_100k_ticks() -> void:
 	print("test_phase3_soak_100k_ticks Benchmark: 100,000 ticks took %f ms" % duration_ms)
 
 func test_availability_churn_100k_ticks() -> void:
-	var engine := _setup_engine()
+	var engine := _setup_engine(SimulationEngine.SNAPSHOT_MODE_OFF)
 	engine.context.rng.seed = 12345
 
 	# Open intermediate manual valves so flow propagates

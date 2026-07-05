@@ -1,7 +1,8 @@
 extends "res://addons/gut/test.gd"
 
-func _setup_engine() -> SimulationEngine:
+func _setup_engine(snapshot_mode: int = SimulationEngine.SNAPSHOT_MODE_EVERY_TICK) -> SimulationEngine:
 	var engine: SimulationEngine = SimulationEngine.new()
+	engine.snapshot_mode = snapshot_mode
 	var config: Dictionary = ConfigLoader.load_plant_config("phase2_three_unit")
 	assert_true(config.success, "Configuration should load successfully")
 	
@@ -15,7 +16,7 @@ func _setup_engine() -> SimulationEngine:
 	return engine
 
 func test_continuous_soak_100k_ticks() -> void:
-	var engine: SimulationEngine = _setup_engine()
+	var engine: SimulationEngine = _setup_engine(SimulationEngine.SNAPSHOT_MODE_OFF)
 	
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 88888

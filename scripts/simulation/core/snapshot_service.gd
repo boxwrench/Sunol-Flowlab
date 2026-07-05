@@ -1,7 +1,7 @@
 class_name SnapshotService
 extends RefCounted
 
-static func take_snapshot(context: SimulationContext, engine: RefCounted) -> Dictionary:
+static func take_snapshot(context: SimulationContext, engine: RefCounted, deep_copy: bool = true) -> Dictionary:
 	var snap: Dictionary = {
 		"tick": context.current_tick,
 		"dt": context.dt,
@@ -58,5 +58,8 @@ static func take_snapshot(context: SimulationContext, engine: RefCounted) -> Dic
 			"mass_balance_error_m3": report.mass_balance_error_m3
 		}
 		
-	# Return a deep duplicate to prevent external mutation
-	return snap.duplicate(true)
+	if deep_copy:
+		# EVERY_TICK keeps the mutation-guard contract by returning an isolated deep copy.
+		return snap.duplicate(true)
+	# PUBLISH_LIGHT skips the extra deep copy; all nested snapshots are freshly built dictionaries.
+	return snap

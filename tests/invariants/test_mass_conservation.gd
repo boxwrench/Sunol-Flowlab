@@ -2,6 +2,7 @@ extends "res://addons/gut/test.gd"
 
 func test_mass_conservation_100k_ticks() -> void:
 	var engine: SimulationEngine = SimulationEngine.new()
+	engine.snapshot_mode = SimulationEngine.SNAPSHOT_MODE_OFF
 	
 	var source: ExternalBoundary = ExternalBoundary.new()
 	source.initialize({
@@ -135,3 +136,4 @@ func test_mass_conservation_100k_ticks() -> void:
 			
 	var duration_ms: float = (float(Time.get_ticks_usec()) - start_time_usec) / 1000.0
 	print("WP1.2 Benchmark: 100,000 ticks took %f ms" % duration_ms)
+

@@ -1,6 +1,10 @@
 class_name SimulationEngine
 extends RefCounted
 
+const SNAPSHOT_MODE_OFF := 0
+const SNAPSHOT_MODE_PUBLISH_LIGHT := 1
+const SNAPSHOT_MODE_EVERY_TICK := 2
+
 var clock: SimulationClock
 var context: SimulationContext
 var command_queue: Array[SimulationCommand] = []
@@ -8,6 +12,7 @@ var mass_balance_tracker: MassBalanceTracker = null
 var alarm_engine: AlarmEngine = null
 var latest_snapshot: Dictionary = {}
 var previous_snapshot_hash: int = 0
+var snapshot_mode: int = SNAPSHOT_MODE_EVERY_TICK
 
 func _init() -> void:
 	clock = SimulationClock.new()
@@ -126,7 +131,7 @@ func _step_calculate_levels_spills() -> void:
 		if unit is ExternalBoundary and unit.flow_limit_m3s >= 0.0:
 			assert(
 				unit.current_flow_m3s <= unit.flow_limit_m3s + 1e-9,
-				"_step_calculate_levels_spills: boundary '%s' accumulated flow (%f) exceeds limit (%f) — solver grant leak." \
+				"_step_calculate_levels_spills: boundary '%s' accumulated flow (%f) exceeds limit (%f) - solver grant leak." \
 				% [unit.unit_id, unit.current_flow_m3s, unit.flow_limit_m3s]
 			)
 
@@ -141,14 +146,14 @@ func _step_calculate_levels_spills() -> void:
 		var dest_id: StringName = unit.spill_destination_id
 		if dest_id == &"":
 			push_warning(
-				"StorageUnit '%s': spill_destination_id is empty — spill of %f m³/s not routed." \
+				"StorageUnit '%s': spill_destination_id is empty - spill of %f m3/s not routed." \
 				% [unit.unit_id, unit.spill_flow_m3s]
 			)
 			continue
 		var dest = context.units_dict.get(dest_id)
 		if dest == null or not (dest is ExternalBoundary):
 			push_warning(
-				"StorageUnit '%s': spill_destination_id '%s' does not resolve to an ExternalBoundary — spill not routed." \
+				"StorageUnit '%s': spill_destination_id '%s' does not resolve to an ExternalBoundary - spill not routed." \
 				% [unit.unit_id, dest_id]
 			)
 			continue
@@ -171,7 +176,21 @@ func _step_validate_invariants() -> void:
 		mass_balance_tracker.validate(context)
 
 func _step_publish_snapshot() -> void:
-	if not latest_snapshot.is_empty():
+	if not _should_publish_snapshot():
+		return
+	if _snapshot_mutation_guard_enabled() and previous_snapshot_hash != 0 and not latest_snapshot.is_empty():
 		assert(str(latest_snapshot).hash() == previous_snapshot_hash, "Mutation Violation: Snapshot was mutated externally!")
-	latest_snapshot = SnapshotService.take_snapshot(context, self)
-	previous_snapshot_hash = str(latest_snapshot).hash()
+	latest_snapshot = SnapshotService.take_snapshot(context, self, _snapshot_deep_copy_enabled())
+	if _snapshot_mutation_guard_enabled():
+		previous_snapshot_hash = str(latest_snapshot).hash()
+	else:
+		previous_snapshot_hash = 0
+
+func _should_publish_snapshot() -> bool:
+	return snapshot_mode != SNAPSHOT_MODE_OFF
+
+func _snapshot_mutation_guard_enabled() -> bool:
+	return snapshot_mode == SNAPSHOT_MODE_EVERY_TICK
+
+func _snapshot_deep_copy_enabled() -> bool:
+	return snapshot_mode == SNAPSHOT_MODE_EVERY_TICK
