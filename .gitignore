@@ -1,6 +1,7 @@
 # Godot
 .godot/
 .import/
+docs/**/*.import
 
 # Build outputs and runtime data
 builds/
