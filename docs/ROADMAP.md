@@ -23,14 +23,12 @@ plan governs the work — and this file must be updated to match rather than the
 
 ## Cross-cutting workstreams
 
-### Verification infrastructure (continuous)
-- Push every WP to origin/main on completion; **GitHub Actions must be green on
-  origin/main before the next WP starts.** CI-green is the third-party reproduction of
-  the GUT suite and is the canonical execution record — it replaces implementer
-  self-reported pass counts.
-- Keep the `EXPECTED_SCRIPTS` / `EXPECTED_TESTS` gates current in the same push that
-  changes the count.
-- Target a nightly full soak (100k-tick) run once Phase 4a lands.
+### Continuous testing (CI)
+- GitHub Actions runs the full GUT test suite and config-schema validation on every
+  push to `main`. A green run means the suite passed — that's the signal a change is
+  good; if CI goes red, fix it before building on top. CI runs on GitHub's servers
+  in the background, so there's nothing to wait on — push and check back.
+- When you add or remove a test script, update `EXPECTED_SCRIPTS` in the workflow.
 
 ### Hydraulic design basis (prerequisite for Phase 4a)
 - Maintain the authoritative design-basis table in `docs/PLANT_TOPOLOGY.md`. Every future

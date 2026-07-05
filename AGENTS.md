@@ -58,7 +58,7 @@ Each rule below exists because the failure it names actually occurred in this re
 
 13. **Config schema sync.** Any addition or change to a plant-config field updates the matching schema in `config/schema/` and `scripts/configuration/plant_validator.gd` in the same commit. `tools/ci/validate_configs.sh` must pass. Field documentation lives in the schema `description` — do not duplicate it in prose docs.
 
-14. **CI-green gate.** Every WP is pushed to origin/main on completion; GitHub Actions must be green on origin/main before the next WP starts. CI-green is the third-party reproduction of the GUT suite and replaces implementer-self-reported pass counts.
+14. **Testing on push.** Push each work package to main when it's done. CI runs the test suite and config-schema checks on every push; if CI goes red, fix it before building on top. Update EXPECTED_SCRIPTS when you add/remove a test script.
 
 
 ## Development checklist
