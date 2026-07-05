@@ -14,9 +14,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Godot
-        uses: firebelley/godot-default-setup-action@v2
+        uses: chickensoft-games/setup-godot@v2.4.1
         with:
-          version: 4.5.0
+          version: 4.7.0
+          use-dotnet: false
 
       - name: Run GUT Tests
         run: |
@@ -31,9 +32,9 @@ jobs:
 
           # Fail if GUT silently skipped a file due to a parse error or bad base class.
           # GUT loads each file and emits these strings when a script cannot be used.
-          if grep -qiE "Parse error|does not extend GutTest|does not extend gut_test" gut_output.log; then
+          if grep -vi "Ignoring Inner Class" gut_output.log | grep -qiE "Parse error|does not extend GutTest|does not extend gut_test"; then
             echo "ERROR: One or more test scripts failed to load (parse error or wrong base class)."
-            echo "       GUT silently skips unparseable files — this step ensures they fail loudly."
+            echo "       GUT silently skips unparseable files - this step ensures they fail loudly."
             exit 1
           fi
 
@@ -48,7 +49,7 @@ jobs:
           EXPECTED_SCRIPTS=30
           ACTUAL_SCRIPTS=$(grep -oE "Script[s]?:?[[:space:]]+[0-9]+" gut_output.log | grep -oE "[0-9]+$" | head -1)
           if [ -z "$ACTUAL_SCRIPTS" ]; then
-            echo "WARNING: Could not parse script count from GUT output — skipping count assertion."
+            echo "WARNING: Could not parse script count from GUT output - skipping count assertion."
           elif [ "$ACTUAL_SCRIPTS" -ne "$EXPECTED_SCRIPTS" ]; then
             echo "ERROR: Expected $EXPECTED_SCRIPTS test scripts but GUT loaded $ACTUAL_SCRIPTS."
             echo "       Add/remove scripts from the expected count when the test suite changes."
