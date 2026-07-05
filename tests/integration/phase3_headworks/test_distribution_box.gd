@@ -8,13 +8,20 @@ func _setup_engine() -> SimulationEngine:
 		print("Config errors: ", config.errors)
 	
 	var build_ok: bool = PlantFactory.build_plant(
-		engine.context, 
-		config.topology_data, 
+		engine.context,
+		config.topology_data,
 		config.initial_conditions_data,
 		config.controllers_data
 	)
 	assert_true(build_ok, "Factory build should succeed")
-	
+
+	# WP3.2 tests drive VALVE_OUT_DB_01..05 manually. The WP3.5 LevelControllers
+	# default to AUTO on these same actuators, so force MANUAL here to keep this
+	# suite's direct valve control uncontested.
+	for i in range(1, 6):
+		var ctrl = engine.context.controllers_dict[StringName("LC_BASIN_0%d" % i)]
+		ctrl.control_mode = &"MANUAL"
+
 	return engine
 
 func test_equal_split_five_basins() -> void:
