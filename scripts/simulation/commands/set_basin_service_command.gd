@@ -1,6 +1,7 @@
 class_name SetBasinServiceCommand
 extends SimulationCommand
 
+# Canonical operator-facing service-state command for StorageUnit availability.
 var target_unit_id: StringName
 var put_in_service: bool
 

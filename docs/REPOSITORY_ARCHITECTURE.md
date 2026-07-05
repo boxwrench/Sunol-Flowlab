@@ -395,6 +395,7 @@ water-digital-twin/
 │   │   │   ├── set_valve_position_command.gd
 │   │   │   ├── set_flow_setpoint_command.gd
 │   │   │   ├── set_control_mode_command.gd
+│   │   │   ├── set_basin_service_command.gd
 │   │   │   ├── set_unit_service_command.gd
 │   │   │   └── acknowledge_alarm_command.gd
 │   │   │
@@ -1162,7 +1163,7 @@ SetGatePosition
 SetFlowSetpoint
 SetLevelSetpoint
 SetControlMode
-SetUnitInService
+SetBasinService
 SetSimulationSpeed
 AcknowledgeAlarm
 ResetSimulation

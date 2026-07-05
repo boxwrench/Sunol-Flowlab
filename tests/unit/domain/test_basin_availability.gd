@@ -171,6 +171,23 @@ func test_drain_stays_enabled_when_out_of_service() -> void:
 	
 	assert_true(drain_link.is_enabled, "Drain link must remain enabled when basin is out of service")
 
+func test_legacy_service_command_alias_matches_basin_command() -> void:
+	var engine := _setup_engine()
+	var basin_command := SetBasinServiceCommand.new(&"BASIN_01", false)
+	var legacy_command := SetUnitServiceCommand.new(&"BASIN_01", false)
+
+	assert_eq(legacy_command.unit_id, basin_command.target_unit_id, "Legacy alias should mirror the target unit id")
+	assert_eq(legacy_command.in_service, basin_command.put_in_service, "Legacy alias should mirror the service-state flag")
+	assert_eq(legacy_command.validate(engine.context), basin_command.validate(engine.context), "Legacy alias should share canonical validation")
+
+	legacy_command.execute(engine.context)
+
+	var basin: StorageUnit = engine.context.units_dict[&"BASIN_01"]
+	assert_false(basin.in_service, "Legacy alias should toggle the basin out of service")
+	assert_false(engine.context.links_dict[&"LINK_OUT_DB_01"].is_enabled, "Legacy alias should disable inlet links")
+	assert_false(engine.context.links_dict[&"LINK_OUT_BASIN_01"].is_enabled, "Legacy alias should disable outlet links")
+	assert_true(engine.context.links_dict[&"LINK_DRAIN_BASIN_01"].is_enabled, "Legacy alias should preserve drain availability")
+
 func test_factory_build_precedence_topology_inactive_ic_omitted() -> void:
 	var engine := SimulationEngine.new()
 	var topology := {

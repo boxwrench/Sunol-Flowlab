@@ -1,21 +1,19 @@
 class_name SetUnitServiceCommand
-extends SimulationCommand
+extends SetBasinServiceCommand
 
-var unit_id: StringName
-var in_service: bool
+# Legacy alias retained for compatibility. SetBasinServiceCommand is the single
+# service-command implementation and the documented operator-facing command.
+var unit_id: StringName:
+	get:
+		return target_unit_id
+	set(value):
+		target_unit_id = value
+
+var in_service: bool:
+	get:
+		return put_in_service
+	set(value):
+		put_in_service = value
 
 func _init(p_unit_id: StringName = &"", p_in_service: bool = true, p_apply_tick: int = 0) -> void:
-	unit_id = p_unit_id
-	in_service = p_in_service
-	apply_tick = p_apply_tick
-
-func validate(context: RefCounted) -> Array[String]:
-	var errors: Array[String] = []
-	if not context.units_dict.has(unit_id):
-		errors.append("SetUnitServiceCommand: unknown unit_id '%s'" % unit_id)
-	return errors
-
-func execute(context: RefCounted) -> void:
-	var unit: ProcessUnit = context.units_dict.get(unit_id)
-	if unit != null:
-		unit.set_in_service(in_service)
+	super(p_unit_id, p_in_service, p_apply_tick)
