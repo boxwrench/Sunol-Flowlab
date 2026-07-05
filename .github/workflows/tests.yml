@@ -21,7 +21,10 @@ jobs:
 
       - name: Run GUT Tests
         run: |
+          set +e
           godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit > gut_output.log 2>&1
+          GUT_RC=$?
+          set -e
           cat gut_output.log
 
           # Fail on any test failures or engine errors
