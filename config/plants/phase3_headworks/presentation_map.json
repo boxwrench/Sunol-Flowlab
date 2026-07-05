@@ -1,0 +1,85 @@
+{
+  "$schema": "../../schema/presentation_map.schema.json",
+  "units": [
+    {
+      "unit_id": "EXTERNAL_SOURCE_01",
+      "position_m": [-60.0, 0.0, -5.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "EXTERNAL_SOURCE_02",
+      "position_m": [-60.0, 0.0, 5.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "RESERVOIR_01",
+      "position_m": [-45.0, 0.0, -10.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "RESERVOIR_02",
+      "position_m": [-45.0, 0.0, 10.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "MANIFOLD_01",
+      "position_m": [-30.0, 0.0, 0.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "FLASH_MIX_01",
+      "position_m": [-15.0, 0.0, 0.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "DIST_BOX_01",
+      "position_m": [0.0, 0.0, 0.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "BASIN_01",
+      "position_m": [20.0, 0.0, -20.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "BASIN_02",
+      "position_m": [20.0, 0.0, -10.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "BASIN_03",
+      "position_m": [20.0, 0.0, 0.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "BASIN_04",
+      "position_m": [20.0, 0.0, 10.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "BASIN_05",
+      "position_m": [20.0, 0.0, 20.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "APPLIED_CHANNEL_01",
+      "position_m": [40.0, 0.0, 0.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "FILTER_FEED_01",
+      "position_m": [55.0, 0.0, 0.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "DRAIN_SINK",
+      "position_m": [0.0, -10.0, -30.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    },
+    {
+      "unit_id": "SPILL_SINK",
+      "position_m": [0.0, -10.0, 30.0],
+      "rotation_deg": [0.0, 0.0, 0.0]
+    }
+  ]
+}
