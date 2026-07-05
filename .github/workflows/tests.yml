@@ -45,7 +45,7 @@ jobs:
 
           # Assert expected script count so a silently skipped file fails the build.
           # Update this number whenever a test script is added or removed.
-          EXPECTED_SCRIPTS=26
+          EXPECTED_SCRIPTS=30
           ACTUAL_SCRIPTS=$(grep -oE "Script[s]?:?[[:space:]]+[0-9]+" gut_output.log | grep -oE "[0-9]+$" | head -1)
           if [ -z "$ACTUAL_SCRIPTS" ]; then
             echo "WARNING: Could not parse script count from GUT output — skipping count assertion."

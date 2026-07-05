@@ -614,3 +614,4 @@ Phase 2 is closed and this plan is accepted. The per-WP review pause is **suspen
 5. **Never write to `PHASE2_CODE_REVIEW.md` or any review verdict document.** Review verdicts are issued only by the orchestrator's reviewer. Implementer self-reviews recorded as acceptance are a firing-severity violation (it happened once; see the removed commit noted in PHASE2_CODE_REVIEW).
 6. **Batch audit points:** the orchestrator reviews at **WP3.3** (spec + configs + availability wiring) and at **WP3.8** (phase exit, including WP3.7 soak rerun by the reviewer). Findings at an audit point may reopen earlier WPs; keep them small.
 7. All existing AGENTS.md guardrails remain in force unchanged.
+8. **CI-green gate:** Every WP is pushed to origin/main on completion; GitHub Actions must be green on origin/main before the next WP starts. CI-green is the third-party reproduction of the GUT suite and replaces implementer-self-reported pass counts.
