@@ -2,6 +2,37 @@
 
 This document describes the process network modelled in the drinking water plant sandbox.  It is a human‑readable complement to the JSON topology configuration file.
 
+## Hydraulic Design Basis
+
+This table is the authoritative source for link capacities. **Every `max_flow_m3s` value in
+any plant config must trace to a row here.** When a new phase adds units, extend this table
+first (spec-first), then set config capacities to match.
+
+**Plant design flow (Phase 3 headworks): 10 m³/s** — set by the fixed treated-water demand
+(`LINK_OUT_AC_01`), which equals the sustainable trunk supply. Capacities upstream carry
+margin over this basis; capacities are intentionally NOT uniform.
+
+| Stage | Link(s) | Count × cap (m³/s) | Total | Margin vs 10 | Notes |
+|-------|---------|--------------------|-------|--------------|-------|
+| Raw sources | LINK_IN_01/02 | 2 × 10 | 20 | +100% | Over-provisioned; sources never limiting |
+| Reservoir outlets | LINK_OUT_RES_01/02 | 2 × 8 | 16 | +60% | |
+| Trunk (manifold→flash→dist-box) | LINK_OUT_MAN_01, LINK_OUT_FM_01 | 1 × 12 (series) | 12 | +20% | Plant spine; single-file series path |
+| DB → basin inlet gates | LINK_OUT_DB_01..05 | 5 × 3 | 15 | +50% | Actuated; ~2.0/3.0 (~67% open) at steady state |
+| Basin outlets | LINK_OUT_BASIN_01..05 | 5 × 4 | 20 | +100% | |
+| Applied-channel demand | LINK_OUT_AC_01 | 1 × 10 | 10 | basis | Fixed, unactuated — sets the design flow |
+| Reservoir drains | LINK_DRAIN_RES_01/02 | 2 × 5 | — | — | DRAIN category; enabled out-of-service |
+| Basin drains | LINK_DRAIN_BASIN_01..05 | 5 × 2 | — | — | DRAIN category |
+
+**Coherence rule (must hold every phase):** fixed demand (10) < trunk (12) < DB gate total
+(15). This gives the five level controllers real authority margin. The WP3.4 defect was a
+violation of this rule (trunk 12 vs an original AC demand of 15); `cf64d5e` restored it by
+setting the demand to 10.
+
+**Non-self-regulation caveat:** the applied-channel demand is a fixed-max *unactuated* link,
+so the Phase 3 plant has no self-regulation — this is what makes the level loops hard (see
+Phase 3.5 / WP4.0, GRAVITY flow mode, in `ROADMAP.md`). Record any change to this design
+choice here.
+
 ## Process‑flow diagram
 
 ```
