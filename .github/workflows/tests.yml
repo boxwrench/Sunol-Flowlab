@@ -19,6 +19,9 @@ jobs:
           version: 4.7.0
           use-dotnet: false
 
+      - name: Import Godot Project
+        run: godot --headless --import
+
       - name: Run GUT Tests
         run: |
           set +e
