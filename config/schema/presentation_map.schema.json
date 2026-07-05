@@ -24,9 +24,39 @@
           "rotation_deg": {
             "$ref": "defs.schema.json#/$defs/vector3",
             "description": "Euler rotation [degrees] around X, Y, Z."
+          },
+          "mesh_path": {
+            "type": "string",
+            "pattern": "^res://.+\\.(tscn|glb|gltf)$",
+            "description": "Custom visual mesh or scene path for the unit."
+          },
+          "mesh_scale_m": {
+            "$ref": "defs.schema.json#/$defs/vector3",
+            "description": "Scale of the custom unit mesh."
           }
         },
         "required": ["unit_id"],
+        "additionalProperties": false
+      }
+    },
+    "links": {
+      "type": "array",
+      "description": "Per-link visual overrides; optional.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "link_id": { "$ref": "defs.schema.json#/$defs/tag_id" },
+          "mesh_path": {
+            "type": "string",
+            "pattern": "^res://.+\\.(tscn|glb|gltf)$",
+            "description": "Custom visual pipe mesh or scene path for the link."
+          },
+          "mesh_scale_m": {
+            "$ref": "defs.schema.json#/$defs/vector3",
+            "description": "Scale of the custom link mesh."
+          }
+        },
+        "required": ["link_id"],
         "additionalProperties": false
       }
     },

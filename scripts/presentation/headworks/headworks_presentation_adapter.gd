@@ -25,7 +25,9 @@ func configure(engine: SimulationEngine, topology_data: Dictionary, presentation
 			continue
 		_presentation_positions[unit_id] = {
 			"position": _array_to_vector3(entry.get("position_m", [])),
-			"rotation": _array_to_vector3(entry.get("rotation_deg", []))
+			"rotation": _array_to_vector3(entry.get("rotation_deg", [])),
+			"mesh_path": String(entry.get("mesh_path", "")),
+			"mesh_scale_m": entry.get("mesh_scale_m", [1.0, 1.0, 1.0])
 		}
 
 	var port_to_unit: Dictionary = {}
@@ -59,6 +61,12 @@ func configure(engine: SimulationEngine, topology_data: Dictionary, presentation
 		unit_visual.configure(_unit_definitions[unit_id], placement)
 		_unit_visuals[unit_id] = unit_visual
 
+	var link_presentation_settings := {}
+	for entry in presentation_map.get("links", []):
+		var link_id := StringName(entry.get("link_id", ""))
+		if link_id != &"":
+			link_presentation_settings[link_id] = entry
+
 	for link_config in topology_data.get("links", []):
 		var source_port_id: StringName = StringName(link_config.get("source_port_id", ""))
 		var destination_port_id: StringName = StringName(link_config.get("destination_port_id", ""))
@@ -73,10 +81,14 @@ func configure(engine: SimulationEngine, topology_data: Dictionary, presentation
 		var link_id: StringName = StringName(link_config.get("link_id", ""))
 		link_visual.name = "%sVisual" % String(link_id)
 		add_child(link_visual)
+		
+		var setting: Dictionary = link_presentation_settings.get(link_id, {})
 		link_visual.configure({
 			"link_id": link_id,
 			"display_name": link_config.get("display_name", String(link_id)),
-			"max_flow_m3s": float(link_config.get("max_flow_m3s", 0.0))
+			"max_flow_m3s": float(link_config.get("max_flow_m3s", 0.0)),
+			"mesh_path": String(setting.get("mesh_path", "")),
+			"mesh_scale_m": setting.get("mesh_scale_m", [1.0, 1.0, 1.0])
 		}, _presentation_positions[source_unit_id]["position"], _presentation_positions[destination_unit_id]["position"])
 		_link_visuals[link_id] = link_visual
 

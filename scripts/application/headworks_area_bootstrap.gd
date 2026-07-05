@@ -53,6 +53,21 @@ func _ready() -> void:
 	)
 	presenter.refresh_from_snapshot()
 
+	# Check for command line argument to capture a screenshot and exit
+	for arg in OS.get_cmdline_args():
+		if arg.begins_with("--screenshot="):
+			var path := arg.split("=")[1]
+			await get_tree().process_frame
+			await get_tree().process_frame
+			await get_tree().process_frame
+			var image := get_viewport().get_texture().get_image()
+			var err := image.save_png(path)
+			if err == OK:
+				print("Screenshot saved successfully to: %s" % path)
+			else:
+				push_error("Failed to save screenshot to %s, error: %d" % [path, err])
+			get_tree().quit()
+
 func _queue_startup_commands(engine: SimulationEngine) -> void:
 	for actuator_id in STARTUP_OPEN_VALVES:
 		engine.enqueue(SetValvePositionCommand.new(actuator_id, 80.0))

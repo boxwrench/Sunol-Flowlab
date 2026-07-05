@@ -10,12 +10,16 @@
     {
       "unit_id": "EXTERNAL_SOURCE_01",
       "position_m": [-60.0, 0.0, -5.0],
-      "rotation_deg": [0.0, 0.0, 0.0]
+      "rotation_deg": [0.0, 0.0, 0.0],
+      "mesh_path": "res://assets/models/boundary.glb",
+      "mesh_scale_m": [1.0, 1.0, 1.0]
     },
     {
       "unit_id": "EXTERNAL_SOURCE_02",
       "position_m": [-60.0, 0.0, 5.0],
-      "rotation_deg": [0.0, 0.0, 0.0]
+      "rotation_deg": [0.0, 0.0, 0.0],
+      "mesh_path": "res://assets/models/boundary.glb",
+      "mesh_scale_m": [1.0, 1.0, 1.0]
     },
     {
       "unit_id": "RESERVOIR_01",
@@ -45,27 +49,37 @@
     {
       "unit_id": "BASIN_01",
       "position_m": [20.0, 0.0, -20.0],
-      "rotation_deg": [0.0, 0.0, 0.0]
+      "rotation_deg": [0.0, 0.0, 0.0],
+      "mesh_path": "res://assets/models/basin.glb",
+      "mesh_scale_m": [1.0, 1.0, 1.0]
     },
     {
       "unit_id": "BASIN_02",
       "position_m": [20.0, 0.0, -10.0],
-      "rotation_deg": [0.0, 0.0, 0.0]
+      "rotation_deg": [0.0, 0.0, 0.0],
+      "mesh_path": "res://assets/models/basin.glb",
+      "mesh_scale_m": [1.0, 1.0, 1.0]
     },
     {
       "unit_id": "BASIN_03",
       "position_m": [20.0, 0.0, 0.0],
-      "rotation_deg": [0.0, 0.0, 0.0]
+      "rotation_deg": [0.0, 0.0, 0.0],
+      "mesh_path": "res://assets/models/basin.glb",
+      "mesh_scale_m": [1.0, 1.0, 1.0]
     },
     {
       "unit_id": "BASIN_04",
       "position_m": [20.0, 0.0, 10.0],
-      "rotation_deg": [0.0, 0.0, 0.0]
+      "rotation_deg": [0.0, 0.0, 0.0],
+      "mesh_path": "res://assets/models/basin.glb",
+      "mesh_scale_m": [1.0, 1.0, 1.0]
     },
     {
       "unit_id": "BASIN_05",
       "position_m": [20.0, 0.0, 20.0],
-      "rotation_deg": [0.0, 0.0, 0.0]
+      "rotation_deg": [0.0, 0.0, 0.0],
+      "mesh_path": "res://assets/models/basin.glb",
+      "mesh_scale_m": [1.0, 1.0, 1.0]
     },
     {
       "unit_id": "APPLIED_CHANNEL_01",
@@ -86,6 +100,28 @@
       "unit_id": "SPILL_SINK",
       "position_m": [0.0, -10.0, 30.0],
       "rotation_deg": [0.0, 0.0, 0.0]
+    }
+  ],
+  "links": [
+    {
+      "link_id": "LINK_OUT_RES_01",
+      "mesh_path": "res://assets/models/pipe.glb",
+      "mesh_scale_m": [1.0, 1.0, 1.0]
+    },
+    {
+      "link_id": "LINK_OUT_RES_02",
+      "mesh_path": "res://assets/models/pipe.glb",
+      "mesh_scale_m": [1.0, 1.0, 1.0]
+    },
+    {
+      "link_id": "LINK_OUT_MAN_01",
+      "mesh_path": "res://assets/models/pipe.glb",
+      "mesh_scale_m": [1.0, 1.0, 1.0]
+    },
+    {
+      "link_id": "LINK_OUT_FM_01",
+      "mesh_path": "res://assets/models/pipe.glb",
+      "mesh_scale_m": [1.0, 1.0, 1.0]
     }
   ]
 }

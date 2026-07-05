@@ -1,1 +1,5 @@
 asset_name,creator,source,license,modified,repository_path,notes
+blueprint.jpg,Google Gemini,AI Generated,CC0,No,assets/textures/blueprint.jpg,Underlay blueprint
+basin.glb,Sunol Tool,Programmatic,CC0,No,assets/models/basin.glb,Basin model
+pipe.glb,Sunol Tool,Programmatic,CC0,No,assets/models/pipe.glb,Pipe model
+boundary.glb,Sunol Tool,Programmatic,CC0,No,assets/models/boundary.glb,Boundary box model

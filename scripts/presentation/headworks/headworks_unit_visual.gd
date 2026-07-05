@@ -13,6 +13,9 @@ var boundary_type: String = ""
 var max_level_m: float = 0.0
 var maximum_volume_m3: float = 0.0
 
+var mesh_path: String = ""
+var mesh_scale_m: Vector3 = Vector3.ONE
+
 var _body_mesh: MeshInstance3D = null
 var _water_mesh: MeshInstance3D = null
 var _label: Label3D = null
@@ -30,6 +33,8 @@ func configure(definition: Dictionary, placement: Dictionary) -> void:
 	position = placement.get("position", Vector3.ZERO)
 	rotation_degrees = placement.get("rotation", Vector3.ZERO)
 	_size = _pick_size()
+	mesh_path = String(placement.get("mesh_path", ""))
+	mesh_scale_m = _array_to_vector3(placement.get("mesh_scale_m", [1.0, 1.0, 1.0]))
 	_build_visual()
 
 func apply_snapshot(unit_snap: Dictionary) -> void:
@@ -38,9 +43,10 @@ func apply_snapshot(unit_snap: Dictionary) -> void:
 	_last_level_m = float(unit_snap.get("level_m", 0.0))
 	_fill_ratio = 0.0
 
-	var body_material: StandardMaterial3D = _body_mesh.get_active_material(0) as StandardMaterial3D
-	if body_material != null:
-		body_material.albedo_color = _body_color(in_service)
+	if _body_mesh != null:
+		var body_material: StandardMaterial3D = _body_mesh.get_active_material(0) as StandardMaterial3D
+		if body_material != null:
+			body_material.albedo_color = _body_color(in_service)
 
 	if _water_mesh != null:
 		if max_level_m > 0.0:
@@ -73,11 +79,22 @@ func _build_visual() -> void:
 	for child in get_children():
 		child.queue_free()
 
-	_body_mesh = MeshInstance3D.new()
-	_body_mesh.mesh = _create_body_mesh()
-	_body_mesh.position = Vector3(0.0, _size.y * 0.5, 0.0)
-	_body_mesh.set_surface_override_material(0, _make_body_material())
-	add_child(_body_mesh)
+	if mesh_path != "" and ResourceLoader.exists(mesh_path):
+		var scene = load(mesh_path)
+		if scene is PackedScene:
+			var instance = scene.instantiate()
+			instance.name = "CustomMesh"
+			add_child(instance)
+			instance.scale = mesh_scale_m
+			_body_mesh = _find_first_mesh(instance)
+		else:
+			_body_mesh = null
+	else:
+		_body_mesh = MeshInstance3D.new()
+		_body_mesh.mesh = _create_body_mesh()
+		_body_mesh.position = Vector3(0.0, _size.y * 0.5, 0.0)
+		_body_mesh.set_surface_override_material(0, _make_body_material())
+		add_child(_body_mesh)
 
 	if unit_type == "StorageUnit":
 		_water_mesh = MeshInstance3D.new()
@@ -94,9 +111,26 @@ func _build_visual() -> void:
 	_label.font_size = 32
 	_label.outline_modulate = Color(0.04, 0.06, 0.08, 1.0)
 	_label.outline_size = 6
-	_label.position = Vector3(0.0, _size.y + 0.75, 0.0)
+	var label_height := _size.y + 0.75
+	if mesh_path != "":
+		label_height = max(mesh_scale_m.y * 3.0, 3.0)
+	_label.position = Vector3(0.0, label_height, 0.0)
 	_label.text = display_name
 	add_child(_label)
+
+func _find_first_mesh(node: Node) -> MeshInstance3D:
+	if node is MeshInstance3D:
+		return node
+	for child in node.get_children():
+		var found = _find_first_mesh(child)
+		if found != null:
+			return found
+	return null
+
+func _array_to_vector3(values: Variant, default_val := Vector3.ONE) -> Vector3:
+	if values is Array and values.size() >= 3:
+		return Vector3(float(values[0]), float(values[1]), float(values[2]))
+	return default_val
 
 func _create_body_mesh() -> Mesh:
 	if unit_type == "StorageUnit":
