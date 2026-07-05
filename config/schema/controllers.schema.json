@@ -54,6 +54,14 @@
           "max_output": {
             "$ref": "defs.schema.json#/$defs/percent",
             "description": "Output clamp ceiling [%]."
+          },
+          "kp": {
+            "type": "number",
+            "description": "Proportional gain: output_delta = kp * (error - previous_error)."
+          },
+          "kd": {
+            "type": "number",
+            "description": "Derivative gain: output_delta = kd * (error - 2.0 * previous_error + previous_error2)."
           }
         },
         "required": [

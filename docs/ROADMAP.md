@@ -2,6 +2,12 @@
 
 This roadmap organises development into stages.  Dates are intentionally omitted to allow flexibility.
 
+## Documentation
+
+- End-to-end build guide: `docs/BUILDING_A_PLANT_SIMULATOR.md` — assembles the domain model,
+  config/schema/factory contract, add-a-component recipes, and verification machinery into a single
+  tutorial, with a portability appendix. (Draft; the control-law subsection tracks WP3.5.)
+
 ## Current phase
 
 - Finalise documentation (scope, simulation rules, unit contracts, control logic).
@@ -29,6 +35,8 @@ This roadmap organises development into stages.  Dates are intentionally omitted
 - Scenario scripting and training modules.
 - Integration with Node‑RED, MQTT or external control systems.
 - Historian playback and data export.
+- Port the engine to other utilities (e.g. wastewater) — the solver is utility-agnostic; see the
+  portability appendix in `docs/BUILDING_A_PLANT_SIMULATOR.md`.
 
 ## Out of scope
 

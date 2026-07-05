@@ -86,7 +86,7 @@ Although conventionally named a "proportional" controller, the velocity-form imp
 - **Limit cycles and stability**: Because the storage unit acts as a physical integrator (volume integrates net flow) and the velocity-form controller acts as an integral controller, the closed-loop system is an undamped double integrator. Combined with one-tick scan/actuator lag, the loop cannot asymptotically settle and will exhibit deadband-bounded limit cycles.
 - **Tuning and Loop Gain**: High gains destabilize the loop and cause rapid, high-amplitude valve oscillations (rail-to-rail chattering). The loop gain per tick is approximated by:
   $$\text{Loop Gain} \approx \frac{\text{gain} \times \text{max\_flow\_m3s}}{100 \times \text{surface\_area\_m2}}$$
-  To avoid severe limit cycles and preserve equipment lifetime, the gain should be kept small (e.g., `gain = 2.0`). Adding derivative/damping terms (PID) is a roadmap item for future phases.
+  To avoid severe limit cycles and preserve equipment lifetime, the gain should be kept small (e.g., `gain = 2.0`). LevelController is implemented as a velocity-form PID controller (behaving as I-only when `kp=kd=0`).
 
 ### Loop direction and element pairing
 

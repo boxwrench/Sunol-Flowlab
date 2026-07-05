@@ -2,6 +2,7 @@
 
 Date: 2026-07-03
 Prerequisite reading: `docs/ARCHITECTURE_REVIEW.md` (defines gates G0–G5 and invariants INV-1/2/3), `docs/REPOSITORY_ARCHITECTURE.md` (canonical layout).
+Orientation (optional, big-picture): `docs/BUILDING_A_PLANT_SIMULATOR.md` — end-to-end build guide (domain model, config/schema/factory contract, add-a-component recipes, verification, portability). Assembly of the reference docs; committed code remains authoritative.
 Audience: AI coding agents (Claude Code, Codex) executing work packages; solo orchestrator reviewing.
 
 ## Cold-Start Protocol (mandatory)

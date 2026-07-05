@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. The format 
 - **WP3.1-WP3.3 Remediation**: Fixed integration test parsing errors by passing system storage to `MassBalanceTracker.report()`. Corrected starvation test same-tick inflow leakage. Corrected basin service restoration unit test to run across two ticks. Enforced initial `in_service = false` on ports/links during factory build and initial conditions loading. Added validation checks for `in_service` types.
 - **WP3.4 / config**: Promoted the applied channel placeholder sink to a full `StorageUnit` (`APPLIED_CHANNEL_01`) and added the filter feed external boundary (`FILTER_FEED_01`) and the passive `LINK_OUT_AC_01` link. Added high-level and low-level threshold alarms for the applied channel in `alarms.json` under `config/plants/phase3_headworks/`.
 - **WP3.5 / config**: Added controllers configuration `controllers.json` under `config/plants/phase3_headworks/` defining five `LevelController` instances targeting basin inlet gates and regulating `APPLIED_CHANNEL_01` level.
+- **WP3.5 / control-law damping**: Added velocity-form PID damping (`kp` and `kd` parameters) to `LevelController` and `controllers.schema.json` in a backward-compatible way. Configured stabilizing `gain = 1.5` and `kp = 20.0` for the five `phase3_headworks` level controllers to resolve limit-cycle oscillations.
 
 ### Tests Added
 - **WP3.1**: Added `test_reservoir_manifold.gd` to verify dual-reservoir combining flow, single-reservoir starvation behavior, and mass conservation.

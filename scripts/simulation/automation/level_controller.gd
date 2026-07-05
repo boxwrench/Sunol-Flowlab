@@ -3,10 +3,18 @@ extends SimController
 
 var setpoint: float = 0.0
 var _unknown_mode_warned: bool = false
+var kp: float = 0.0
+var kd: float = 0.0
+var previous_error: float = 0.0
+var previous_error2: float = 0.0
 
 func initialize(config: Dictionary) -> void:
 	super.initialize(config)
 	setpoint = float(config.get("setpoint", 0.0))
+	kp = float(config.get("kp", 0.0))
+	kd = float(config.get("kd", 0.0))
+	previous_error = 0.0
+	previous_error2 = 0.0
 
 func evaluate(context: RefCounted) -> void:
 	var actuator: SimValve = context.actuators_dict.get(target_actuator_id)
@@ -34,14 +42,24 @@ func evaluate(context: RefCounted) -> void:
 	
 	var output: float = previous_output
 	if abs(error) > deadband_m:
-		output = previous_output + gain * error
+		var d_out: float = gain * error \
+						 + kp * (error - previous_error) \
+						 + kd * (error - 2.0 * previous_error + previous_error2)
+		output = previous_output + d_out
 		
 	output = clamp(output, min_output, max_output)
 	actuator.set_commanded_position(output)
+
+	previous_error2 = previous_error
+	previous_error = error
 	previous_output = output
 
 func get_snapshot() -> Dictionary:
 	var snap: Dictionary = super.get_snapshot()
 	snap["setpoint"] = setpoint
+	snap["kp"] = kp
+	snap["kd"] = kd
+	snap["previous_error"] = previous_error
+	snap["previous_error2"] = previous_error2
 	return snap
 
