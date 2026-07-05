@@ -23,7 +23,7 @@ This document lists the current limitations of the drinking water plant sandbox.
 
 ## Control system
 
-- Control logic is limited to proportional controllers; integral/derivative terms, deadbands, and anti-reset windup are out of scope.
+- Control logic is implemented as a velocity-form PID controller with deadband, proportional/derivative damping (kp/kd), and optional bumpless transfer; other complex PID topologies and advanced anti-reset windup are out of scope.
 - External PLC or SCADA communication interfaces are out of scope; all control logic is executed natively by the simulation clock.
 
 ## Process details

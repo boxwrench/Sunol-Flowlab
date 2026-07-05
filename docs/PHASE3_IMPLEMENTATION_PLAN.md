@@ -407,7 +407,7 @@ proration set automatically).
 1. Create `controllers.json` with five `LevelController` entries:
    - Each entry: `type = "LevelController"`, `pv_unit_id = "APPLIED_CHANNEL_01"`,
      `pv_property = "level_m"`, `target_actuator_id = "<basin_N_inlet_gate>"`,
-     same `gain`, `deadband_m`, `min_output = 0.0`, `max_output = 1.0`.
+     same `gain`, `deadband_m`, `min_output = 0.0`, `max_output = 100.0`.
    - Wire into `PlantFactory` (already handles `LevelController` from WP2.4; no new
      factory code needed — confirm the existing loading path handles multiple instances).
 

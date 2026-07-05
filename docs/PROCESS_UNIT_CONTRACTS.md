@@ -6,17 +6,17 @@ This document defines the required interface for every reusable unit in the simu
 
 The following table defines the canonical class names used across the domain codebase. All domain classes must use these exact names (which do not have a `Node` suffix, as `Node` is reserved for actual Godot Nodes in the presentation/UI layers) and extend `RefCounted`:
 
-| Concept | Canonical Class Name | Suffix Rule / Notes |
+| Concept | Canonical Class Name | Implementation Status / Notes |
 |---------|----------------------|---------------------|
-| Process Unit Base | `ProcessUnit` | Base class for all domain units |
-| Storage Unit | `StorageUnit` | Replaces `StorageNode` |
-| Junction Unit | `JunctionUnit` | Replaces `JunctionNode` |
-| Flow Link | `FlowLink` | Connects flow ports |
-| Flow Port | `FlowPort` | Connection point on a unit |
-| Valve Actuator | `SimValve` | Actuator modeling valve travel |
-| Controller | `SimController` | Base for level/flow controllers |
-| Alarm | `SimAlarm` | Threshold or diagnostic alarm |
-| Instrument | `SimInstrument` | Level/flow transmitters |
+| Process Unit Base | `ProcessUnit` | Implemented; base class for all domain units |
+| Storage Unit | `StorageUnit` | Implemented |
+| Junction Unit | `JunctionUnit` | Realized as `StorageUnit` (No separate `JunctionUnit` class exists; small storage units behave as junctions) |
+| Flow Link | `FlowLink` | Implemented |
+| Flow Port | `FlowPort` | Implemented |
+| Valve Actuator | `SimValve` | Implemented |
+| Controller | `SimController` | Implemented; base for level/flow controllers |
+| Alarm | `SimAlarm` | Implemented as `ThresholdAlarm` (No generic `SimAlarm` class exists) |
+| Instrument | `SimInstrument` | Planned/Not Implemented (No `SimInstrument` class exists; instruments read property fields directly from units) |
 
 ## Common fields
 
