@@ -28,7 +28,7 @@ func _process(delta: float) -> void:
 		key_input.x -= 1.0
 	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
 		key_input.x += 1.0
-	
+
 	if key_input != Vector2.ZERO:
 		key_input = key_input.normalized()
 		target.x += key_input.x * key_pan_speed * delta
@@ -56,7 +56,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _is_dragging:
 			var mouse_delta: Vector2 = event.position - _last_mouse_pos
 			_last_mouse_pos = event.position
-			
+
 			var drag_scale := height / 800.0
 			target.x -= mouse_delta.x * pan_speed * drag_scale
 			target.z -= mouse_delta.y * pan_speed * drag_scale
