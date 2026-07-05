@@ -217,3 +217,225 @@ func test_level_controller_unknown_mode_fallback() -> void:
 	assert_eq(lc.previous_output, 45.0)
 	assert_true(valve.is_manual)
 
+func test_bumpless_transfer_remediation() -> void:
+	var context := SimulationContext.new()
+	var valve := SimValve.new(&"VALVE_OUT")
+	valve.instant_mode = true
+	valve.set_commanded_position(50.0)
+	context.actuators_dict[&"VALVE_OUT"] = valve
+	
+	var basin := StorageUnit.new()
+	basin.initialize({
+		"unit_id": "BASIN",
+		"maximum_volume_m3": 10.0,
+		"surface_area_m2": 4.0,
+		"bottom_elevation_m": 0.0,
+		"min_operating_level_m": 0.0,
+		"high_level_m": 2.5,
+		"spill_level_m": 3.0
+	})
+	basin.volume_m3 = 10.0 # level = 2.5m
+	basin.update_level()
+	context.units_dict[&"BASIN"] = basin
+	
+	# Scenario a) bumpless_transfer=true, AUTO cold start (level 2.5, sp 2.0, valve at 50, kp=20)
+	var lc_a := LevelController.new()
+	lc_a.initialize({
+		"controller_id": "LC_A",
+		"type": "LevelController",
+		"target_actuator_id": "VALVE_OUT",
+		"pv_unit_id": "BASIN",
+		"pv_property": "level_m",
+		"control_mode": "AUTO",
+		"setpoint": 2.0,
+		"gain": 1.5,
+		"deadband_m": 0.0,
+		"min_output": 0.0,
+		"max_output": 100.0,
+		"kp": 20.0,
+		"kd": 0.0,
+		"bumpless_transfer": true
+	})
+	# On tick 1: error = 2.0 - 2.5 = -0.5
+	# gain * error = 1.5 * -0.5 = -0.75
+	# kp and kd terms should be 0 because of bumpless transition
+	# output = 50.0 - 0.75 = 49.25
+	lc_a.evaluate(context)
+	assert_almost_eq(valve.commanded_position, 49.25, 1e-4)
+	
+	# Scenario b) bumpless_transfer=true, MANUAL->AUTO transition with accumulated error
+	# We start in MANUAL with valve at 50.0, drift level to 0.5 (sp 2.0, error = 1.5)
+	# Switch to AUTO. First AUTO tick should be:
+	# gain * error = 1.5 * 1.5 = 2.25
+	# kp and kd terms should be 0.
+	# output = 50.0 + 2.25 = 52.25
+	valve.set_commanded_position(50.0)
+	basin.volume_m3 = 2.0 # level = 0.5m
+	basin.update_level()
+	
+	var lc_b := LevelController.new()
+	lc_b.initialize({
+		"controller_id": "LC_B",
+		"type": "LevelController",
+		"target_actuator_id": "VALVE_OUT",
+		"pv_unit_id": "BASIN",
+		"pv_property": "level_m",
+		"control_mode": "MANUAL",
+		"setpoint": 2.0,
+		"gain": 1.5,
+		"deadband_m": 0.0,
+		"min_output": 0.0,
+		"max_output": 100.0,
+		"kp": 20.0,
+		"kd": 0.0,
+		"bumpless_transfer": true
+	})
+	
+	# Tick 1: MANUAL evaluate (tracks position and updates stale error)
+	lc_b.evaluate(context)
+	assert_eq(valve.commanded_position, 50.0)
+	
+	# Change mode to AUTO
+	lc_b.control_mode = &"AUTO"
+	
+	# Tick 2: first AUTO evaluate
+	lc_b.evaluate(context)
+	assert_almost_eq(valve.commanded_position, 52.25, 1e-4)
+	
+	# Scenario c) bumpless_transfer=false: reproduces legacy behavior
+	# AUTO cold start (expected to clamp to 0.0 because: 0.0 - 0.75 - 10.0 = -10.75 -> clamped to 0.0)
+	valve.set_commanded_position(50.0)
+	basin.volume_m3 = 10.0 # level = 2.5m
+	basin.update_level()
+	
+	var lc_c1 := LevelController.new()
+	lc_c1.initialize({
+		"controller_id": "LC_C1",
+		"type": "LevelController",
+		"target_actuator_id": "VALVE_OUT",
+		"pv_unit_id": "BASIN",
+		"pv_property": "level_m",
+		"control_mode": "AUTO",
+		"setpoint": 2.0,
+		"gain": 1.5,
+		"deadband_m": 0.0,
+		"min_output": 0.0,
+		"max_output": 100.0,
+		"kp": 20.0,
+		"kd": 0.0,
+		"bumpless_transfer": false
+	})
+	lc_c1.evaluate(context)
+	assert_almost_eq(valve.commanded_position, 0.0, 1e-4)
+	
+	# MANUAL->AUTO transition (expected to jump to 82.25 because: 50.0 + 2.25 + 30.0 = 82.25)
+	valve.set_commanded_position(50.0)
+	basin.volume_m3 = 2.0 # level = 0.5m
+	basin.update_level()
+	
+	var lc_c2 := LevelController.new()
+	lc_c2.initialize({
+		"controller_id": "LC_C2",
+		"type": "LevelController",
+		"target_actuator_id": "VALVE_OUT",
+		"pv_unit_id": "BASIN",
+		"pv_property": "level_m",
+		"control_mode": "MANUAL",
+		"setpoint": 2.0,
+		"gain": 1.5,
+		"deadband_m": 0.0,
+		"min_output": 0.0,
+		"max_output": 100.0,
+		"kp": 20.0,
+		"kd": 0.0,
+		"bumpless_transfer": false
+	})
+	lc_c2.evaluate(context)
+	lc_c2.control_mode = &"AUTO"
+	lc_c2.evaluate(context)
+	assert_almost_eq(valve.commanded_position, 82.25, 1e-4)
+	
+	# Scenario d) kp=kd=0 and bumpless_transfer=false: pure integral equivalence
+	# AUTO cold start with I-only law:
+	# output = 0.0 + 1.5 * -0.5 = -0.75 -> clamped to 0.0
+	valve.set_commanded_position(50.0)
+	basin.volume_m3 = 10.0 # level = 2.5m
+	basin.update_level()
+	
+	var lc_d1 := LevelController.new()
+	lc_d1.initialize({
+		"controller_id": "LC_D1",
+		"type": "LevelController",
+		"target_actuator_id": "VALVE_OUT",
+		"pv_unit_id": "BASIN",
+		"pv_property": "level_m",
+		"control_mode": "AUTO",
+		"setpoint": 2.0,
+		"gain": 1.5,
+		"deadband_m": 0.0,
+		"min_output": 0.0,
+		"max_output": 100.0,
+		"kp": 0.0,
+		"kd": 0.0,
+		"bumpless_transfer": false
+	})
+	lc_d1.evaluate(context)
+	assert_almost_eq(valve.commanded_position, 0.0, 1e-4)
+	
+	# MANUAL->AUTO with kp=kd=0 (expected to step to 52.25: 50.0 + 2.25)
+	valve.set_commanded_position(50.0)
+	basin.volume_m3 = 2.0 # level = 0.5m
+	basin.update_level()
+	
+	var lc_d2 := LevelController.new()
+	lc_d2.initialize({
+		"controller_id": "LC_D2",
+		"type": "LevelController",
+		"target_actuator_id": "VALVE_OUT",
+		"pv_unit_id": "BASIN",
+		"pv_property": "level_m",
+		"control_mode": "MANUAL",
+		"setpoint": 2.0,
+		"gain": 1.5,
+		"deadband_m": 0.0,
+		"min_output": 0.0,
+		"max_output": 100.0,
+		"kp": 0.0,
+		"kd": 0.0,
+		"bumpless_transfer": false
+	})
+	lc_d2.evaluate(context)
+	lc_d2.control_mode = &"AUTO"
+	lc_d2.evaluate(context)
+	assert_almost_eq(valve.commanded_position, 52.25, 1e-4)
+	
+	# Sanity check with kp > 0
+	# MANUAL->AUTO with kp=10.0, kd=0, bumpless_transfer=false:
+	# output = 50.0 + 1.5 * 1.5 + 10.0 * (1.5 - 0.0) = 50.0 + 2.25 + 15.0 = 67.25
+	valve.set_commanded_position(50.0)
+	basin.volume_m3 = 2.0 # level = 0.5m
+	basin.update_level()
+	
+	var lc_d3 := LevelController.new()
+	lc_d3.initialize({
+		"controller_id": "LC_D3",
+		"type": "LevelController",
+		"target_actuator_id": "VALVE_OUT",
+		"pv_unit_id": "BASIN",
+		"pv_property": "level_m",
+		"control_mode": "MANUAL",
+		"setpoint": 2.0,
+		"gain": 1.5,
+		"deadband_m": 0.0,
+		"min_output": 0.0,
+		"max_output": 100.0,
+		"kp": 10.0,
+		"kd": 0.0,
+		"bumpless_transfer": false
+	})
+	lc_d3.evaluate(context)
+	lc_d3.control_mode = &"AUTO"
+	lc_d3.evaluate(context)
+	assert_almost_eq(valve.commanded_position, 67.25, 1e-4)
+
+

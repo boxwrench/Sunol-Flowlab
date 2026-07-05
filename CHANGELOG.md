@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file. The format 
 - **WP3.5 / config**: Added controllers configuration `controllers.json` under `config/plants/phase3_headworks/` defining five `LevelController` instances targeting basin inlet gates and regulating `APPLIED_CHANNEL_01` level.
 - **WP3.5 / control-law damping**: Added velocity-form PID damping (`kp` and `kd` parameters) to `LevelController` and `controllers.schema.json` in a backward-compatible way. Configured stabilizing `gain = 1.5` and `kp = 20.0` for the five `phase3_headworks` level controllers to resolve limit-cycle oscillations.
 - **WP3.6 / config**: Created `presentation_map.json` under `config/plants/phase3_headworks/` mapping the physical positions and rotations of all 16 process units, exercising the presentation map schema validation in CI. Confirm that the inverted P3-A5 junction-size heuristic warning was NOT added to the validator.
+- **WP3.5-R / control-law**: Added optional `bumpless_transfer` boolean configuration flag to `LevelController` and the controllers JSON schema, preventing step-change commanded output swings when transitioning to AUTO control or cold starting.
 
 ### Tests Added
 - **WP3.1**: Added `test_reservoir_manifold.gd` to verify dual-reservoir combining flow, single-reservoir starvation behavior, and mass conservation.
@@ -22,6 +23,8 @@ All notable changes to this project will be documented in this file. The format 
 - **WP3.4**: Added `test_applied_channel.gd` to verify applied channel inflow matching the sum of basin outflows, the high-level alarm activation, and mass conservation over 1000 ticks.
 - **WP3.5**: Added `test_headworks_controller.gd` to verify level stabilization in AUTO mode and automatic proration/redistribution when a basin goes out of service.
 - **WP3.7**: Added `test_phase3_verification.gd` (verifying 100k-tick headworks soak, 100k-tick availability churn, and 1k-tick deterministic replay) and `test_phase3_invariants.gd` (verifying mass conservation over 10k ticks and static topological list under availability toggles).
+- **WP3.5-R**: Added regression tests in `test_level_controller.gd` verifying AUTO cold start, MANUAL->AUTO transition with accumulated error (with bumpless_transfer set to true vs false), and backward compatibility / pure-integral equivalence checks.
+
 
 
 

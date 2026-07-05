@@ -264,6 +264,8 @@ static func validate_config(
 				check_key.call(ctrl_dict, "deadband_m", TYPE_FLOAT, ctrl_prefix)
 				check_key.call(ctrl_dict, "min_output", TYPE_FLOAT, ctrl_prefix)
 				check_key.call(ctrl_dict, "max_output", TYPE_FLOAT, ctrl_prefix)
+				if ctrl_dict.has("bumpless_transfer"):
+					check_key.call(ctrl_dict, "bumpless_transfer", TYPE_BOOL, ctrl_prefix)
 				
 				if type_ok:
 					var ctrl_type: String = ctrl_dict["type"]

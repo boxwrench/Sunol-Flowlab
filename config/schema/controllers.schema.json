@@ -62,6 +62,10 @@
           "kd": {
             "type": "number",
             "description": "Derivative gain: output_delta = kd * (error - 2.0 * previous_error + previous_error2)."
+          },
+          "bumpless_transfer": {
+            "type": "boolean",
+            "description": "Optional flag to enable bumpless transfer: true to initialize previous_output from current actuator position and previous_error/previous_error2 from current error upon transition into AUTO."
           }
         },
         "required": [

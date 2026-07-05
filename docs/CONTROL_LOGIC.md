@@ -60,6 +60,20 @@ Before a unit can be placed in service, ensure that all permissive conditions ar
 
 When switching an asset from MANUAL to AUTO, the controller output should start from the current manual position to avoid sudden jumps.  Similarly, switching from AUTO to MANUAL should not immediately change the valve position.
 
+### Bumpless Transfer Configuration (`bumpless_transfer`)
+
+`LevelController` supports an optional configuration parameter `bumpless_transfer: bool` (defaulting to `false`).
+
+- **Bumpless Transfer Disabled (`bumpless_transfer: false`)**:
+  - Upon transition from MANUAL to AUTO (or on AUTO cold start), the controller uses its standard velocity-form update with the existing `previous_output` state (initializing to `0.0` at boot) and stale error history. This matches the behavior of the original proportional control-loop implementation.
+  
+- **Bumpless Transfer Enabled (`bumpless_transfer: true`)**:
+  - **Cold Start in AUTO**: At tick 1, the controller initializes `previous_output = actuator.commanded_position` (e.g., matching the starting physical position configured in the initial conditions, such as `50.0%`) and sets both `previous_error` and `previous_error2` to the current error ($e_0 = \text{setpoint} - \text{level}$). This prevents a step-change slam to $0.0$.
+  - **MANUAL -> AUTO Transition**: During MANUAL mode, the controller continuously tracks the manual position (`previous_output = actuator.commanded_position`) and refreshes error history with the current level error ($e = \text{setpoint} - \text{level}$). Upon transitioning to `AUTO` on the first tick, the derivative and proportional-difference terms evaluate to zero:
+    $$\Delta e = e - e_{\text{stale}} = 0$$
+    The output change $\Delta \text{output}$ is driven solely by the integral action $\text{gain} \times e$, starting smoothly from the manual commanded position.
+
+
 ## Fallback behaviour
 
 If a controller fails or its measured input is invalid, default to a safe state:
