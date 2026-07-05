@@ -740,7 +740,7 @@
     {
       "link_id": "LINK_OUT_AC_01",
       "display_name": "Applied Channel to Filter Feed Link",
-      "max_flow_m3s": 15.0,
+      "max_flow_m3s": 10.0,
       "flow_mode": "RESTRICTED",
       "source_port_id": "PORT_AC_01_OUT",
       "destination_port_id": "PORT_FILTER_FEED_IN"
