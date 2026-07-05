@@ -220,3 +220,69 @@ func test_deterministic_replay_phase3() -> void:
 		engine2.run_tick(1.0)
 		var hash2 = _state_hash(engine2)
 		assert_eq(trajectory1[tick - 1], hash2, "Replay must be bit-identical at tick %d" % tick)
+
+func test_headworks_presentation_adapter_parity() -> void:
+	var scene = load("res://scenes/plant/headworks_area.tscn").instantiate()
+	add_child_autofree(scene)
+
+	var host: SimulationHost = scene.get_node("SimulationHost")
+	var presenter = scene.get_node("HeadworksPresentation")
+	assert_not_null(host, "SimulationHost must exist in headworks scene")
+	assert_not_null(presenter, "HeadworksPresentation must exist in headworks scene")
+	assert_eq(host.engine.snapshot_mode, SimulationEngine.SNAPSHOT_MODE_PUBLISH_LIGHT,
+		"Interactive headworks run must use PUBLISH_LIGHT snapshots")
+
+	for _tick in range(30):
+		host.engine.advance_frame(1.0)
+		presenter.refresh_from_snapshot()
+
+	var basin: StorageUnit = host.engine.context.units_dict[&"BASIN_01"]
+	var expected_fill_ratio: float = 0.0
+	var max_level_m: float = presenter.get_unit_max_level_m(&"BASIN_01")
+	if max_level_m > 0.0:
+		expected_fill_ratio = clamp(basin.level_m / max_level_m, 0.0, 1.0)
+	assert_almost_eq(
+		presenter.get_unit_fill_ratio(&"BASIN_01"),
+		expected_fill_ratio,
+		1e-9,
+		"Presentation fill ratio must match the storage-unit state"
+	)
+	assert_eq(
+		presenter.get_unit_level_m(&"BASIN_01"),
+		basin.level_m,
+		"Presentation level readout must match the storage-unit level"
+	)
+
+	var link: FlowLink = host.engine.context.links_dict[&"LINK_OUT_FM_01"]
+	var expected_link_ratio: float = 0.0
+	if link.max_flow_m3s > 0.0:
+		expected_link_ratio = clamp(link.actual_flow_m3s / link.max_flow_m3s, 0.0, 1.0)
+	assert_almost_eq(
+		presenter.get_link_flow_ratio(&"LINK_OUT_FM_01"),
+		expected_link_ratio,
+		1e-9,
+		"Presentation flow ratio must match the link flow state"
+	)
+
+	# Verify command path and drain link enabled status when unit is out of service
+	var drain_link: FlowLink = host.engine.context.links_dict[&"LINK_DRAIN_BASIN_01"]
+	assert_true(drain_link.is_enabled, "Drain link should start enabled")
+	assert_true(basin.in_service, "BASIN_01 should start in service")
+
+	# Toggle BASIN_01 out of service via the command path
+	var cmd = SetBasinServiceCommand.new(&"BASIN_01", false)
+	host.engine.enqueue(cmd)
+
+	# Advance engine by a tick to execute command
+	host.engine.advance_frame(1.0)
+	presenter.refresh_from_snapshot()
+
+	# Verify snapshot shows out-of-service
+	var latest_snap = host.engine.latest_snapshot
+	var basin_snap: Dictionary = latest_snap.get("units", {}).get(&"BASIN_01", {})
+	assert_false(basin_snap.get("in_service", true), "BASIN_01 should show out of service in snapshot")
+
+	# Verify drain link remains enabled
+	assert_true(drain_link.is_enabled, "Drain link must stay enabled when the unit is out of service")
+
+

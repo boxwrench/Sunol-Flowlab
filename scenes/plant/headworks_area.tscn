@@ -1,0 +1,36 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/application/headworks_area_bootstrap.gd" id="1_bootstrap"]
+[ext_resource type="Script" path="res://scripts/application/simulation_host.gd" id="2_host"]
+[ext_resource type="PackedScene" path="res://scenes/environment/placeholder_environment.tscn" id="3_env"]
+[ext_resource type="PackedScene" path="res://scenes/cameras/orbit_camera.tscn" id="4_camera"]
+[ext_resource type="Script" path="res://scripts/presentation/headworks/headworks_presentation_adapter.gd" id="5_presenter"]
+[ext_resource type="PackedScene" path="res://scenes/ui/controls/time_controls.tscn" id="6_controls"]
+[ext_resource type="PackedScene" path="res://scenes/ui/asset_panel/asset_panel.tscn" id="7_asset_panel"]
+[ext_resource type="PackedScene" path="res://scenes/ui/controls/basin_service_panel.tscn" id="8_service_panel"]
+
+[node name="HeadworksArea" type="Node3D"]
+script = ExtResource("1_bootstrap")
+
+[node name="SimulationHost" type="Node" parent="."]
+script = ExtResource("2_host")
+
+[node name="PlaceholderEnvironment" parent="." instance=ExtResource("3_env")]
+
+[node name="OrbitCamera" parent="." instance=ExtResource("4_camera")]
+target = Vector3(0, 6, 0)
+distance = 108.0
+yaw = 52.0
+pitch = -24.0
+
+[node name="HeadworksPresentation" type="Node3D" parent="."]
+script = ExtResource("5_presenter")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="TimeControls" parent="CanvasLayer" instance=ExtResource("6_controls")]
+
+[node name="AssetPanel" parent="CanvasLayer" instance=ExtResource("7_asset_panel")]
+selected_unit_id = &"BASIN_03"
+
+[node name="BasinServicePanel" parent="CanvasLayer" instance=ExtResource("8_service_panel")]

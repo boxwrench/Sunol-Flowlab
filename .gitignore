@@ -17,3 +17,9 @@ data/exports/
 .DS_Store
 Thumbs.db
 .claude/
+
+# Godot Local Cache / Temp directories
+.tmp_godot_appdata/
+.tmp_godot_localapp/
+Godot/
+
