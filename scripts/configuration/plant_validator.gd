@@ -66,6 +66,8 @@ static func validate_config(
 			check_key.call(unit_dict, "maximum_volume_m3", TYPE_FLOAT, unit_prefix)
 			check_key.call(unit_dict, "surface_area_m2", TYPE_FLOAT, unit_prefix)
 			check_key.call(unit_dict, "bottom_elevation_m", TYPE_FLOAT, unit_prefix)
+			if unit_dict.has("floor_elevation_m") and typeof(unit_dict["floor_elevation_m"]) != TYPE_FLOAT:
+				errors.append("%s: floor_elevation_m must be a float" % unit_prefix)
 			check_key.call(unit_dict, "high_level_m", TYPE_FLOAT, unit_prefix)
 			check_key.call(unit_dict, "spill_level_m", TYPE_FLOAT, unit_prefix)
 			check_key.call(unit_dict, "min_operating_level_m", TYPE_FLOAT, unit_prefix)
@@ -91,6 +93,8 @@ static func validate_config(
 			
 		elif type_str == "ExternalBoundary":
 			check_key.call(unit_dict, "boundary_type", TYPE_STRING, unit_prefix)
+			if unit_dict.has("reference_head_m") and typeof(unit_dict["reference_head_m"]) != TYPE_FLOAT:
+				errors.append("%s: reference_head_m must be a float" % unit_prefix)
 			boundary_ids.append(unit_id)
 			
 		if unit_dict.has("ports"):
@@ -157,6 +161,28 @@ static func validate_config(
 					check_key.call(link_dict, "max_flow_m3s", TYPE_FLOAT, link_prefix)
 					check_key.call(link_dict, "source_port_id", TYPE_STRING, link_prefix)
 					check_key.call(link_dict, "destination_port_id", TYPE_STRING, link_prefix)
+					
+					if link_dict.has("flow_mode"):
+						if typeof(link_dict["flow_mode"]) != TYPE_STRING:
+							errors.append("%s: flow_mode must be a string" % link_prefix)
+						else:
+							var fm: String = link_dict["flow_mode"]
+							if fm != "RESTRICTED" and fm != "COMMANDED" and fm != "GRAVITY":
+								errors.append("%s: invalid flow_mode '%s'" % [link_prefix, fm])
+								
+					var fm: String = link_dict.get("flow_mode", "RESTRICTED")
+					if fm == "GRAVITY":
+						if not link_dict.has("design_head_m"):
+							errors.append("%s: GRAVITY link must have a 'design_head_m' parameter" % link_prefix)
+						elif typeof(link_dict["design_head_m"]) != TYPE_FLOAT:
+							errors.append("%s: design_head_m must be a float" % link_prefix)
+						elif float(link_dict["design_head_m"]) <= 0.0:
+							errors.append("%s: design_head_m must be > 0" % link_prefix)
+					elif link_dict.has("design_head_m"):
+						if typeof(link_dict["design_head_m"]) != TYPE_FLOAT:
+							errors.append("%s: design_head_m must be a float" % link_prefix)
+						elif float(link_dict["design_head_m"]) <= 0.0:
+							errors.append("%s: design_head_m must be > 0" % link_prefix)
 					
 					var src_port: StringName = StringName(link_dict.get("source_port_id", ""))
 					var dest_port: StringName = StringName(link_dict.get("destination_port_id", ""))

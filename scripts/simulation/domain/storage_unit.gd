@@ -5,6 +5,7 @@ extends ProcessUnit
 var maximum_volume_m3: float = 0.0
 var surface_area_m2: float = 0.0
 var bottom_elevation_m: float = 0.0
+var floor_elevation_m: float = 0.0
 var high_level_m: float = 0.0
 var spill_level_m: float = 0.0
 var min_operating_level_m: float = 0.0
@@ -30,6 +31,7 @@ func initialize(config: Dictionary) -> void:
 	maximum_volume_m3 = float(config.get("maximum_volume_m3", 0.0))
 	surface_area_m2 = float(config.get("surface_area_m2", 0.0))
 	bottom_elevation_m = float(config.get("bottom_elevation_m", 0.0))
+	floor_elevation_m = float(config.get("floor_elevation_m", bottom_elevation_m))
 	high_level_m = float(config.get("high_level_m", 0.0))
 	spill_level_m = float(config.get("spill_level_m", 0.0))
 	min_operating_level_m = float(config.get("min_operating_level_m", 0.0))
@@ -37,9 +39,15 @@ func initialize(config: Dictionary) -> void:
 	volume_m3 = float(config.get("initial_volume_m3", 0.0))
 	update_level()
 
+func water_surface_elevation_m() -> float:
+	return floor_elevation_m + level_m
+
 func set_in_service(p_in_service: bool) -> void:
 	super.set_in_service(p_in_service)
-	for port in ports.values():
+	var sorted_port_ids = ports.keys()
+	sorted_port_ids.sort()
+	for port_id in sorted_port_ids:
+		var port = ports[port_id]
 		if port.connected_link != null:
 			var port_type: StringName = port.port_type
 			if port_type == &"INLET" or port_type == &"OUTLET":

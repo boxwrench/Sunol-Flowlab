@@ -61,7 +61,7 @@ link its own port.
 A `FlowLink` (`flow_link.gd`) connects one source port to one destination port and carries
 `max_flow_m3s`. Its `flow_mode` is `RESTRICTED` (flow = `max_flow_m3s` × actuator opening) by
 default. `COMMANDED` is unimplemented — it warns once and falls back to RESTRICTED at full open;
-any unknown mode (e.g. a would-be `GRAVITY`) warns once and falls back to RESTRICTED at current
+any unknown mode warns once and falls back to RESTRICTED at current
 opening. If a link names an `actuator_id`, that valve modulates its flow.
 
 ### 1.4 The two-pass flow solver

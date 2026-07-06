@@ -1,0 +1,139 @@
+{
+  "$schema": "../../schema/topology.schema.json",
+  "units": [
+    {
+      "unit_id": "SOURCE",
+      "type": "ExternalBoundary",
+      "display_name": "Source Inflow Reservoir",
+      "boundary_type": "SOURCE_INFLOW",
+      "reference_head_m": 15.0,
+      "ports": [
+        {
+          "port_id": "PORT_SRC_OUT",
+          "port_type": "OUTLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "BASIN_A",
+      "type": "StorageUnit",
+      "display_name": "Upstream Basin A",
+      "maximum_volume_m3": 100.0,
+      "surface_area_m2": 10.0,
+      "bottom_elevation_m": 5.0,
+      "floor_elevation_m": 5.0,
+      "high_level_m": 9.0,
+      "spill_level_m": 9.5,
+      "min_operating_level_m": 0.5,
+      "spill_destination_id": "SPILL_SINK",
+      "ports": [
+        {
+          "port_id": "PORT_A_IN",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_A_OUT",
+          "port_type": "OUTLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "BASIN_B",
+      "type": "StorageUnit",
+      "display_name": "Downstream Basin B",
+      "maximum_volume_m3": 100.0,
+      "surface_area_m2": 10.0,
+      "bottom_elevation_m": 0.0,
+      "floor_elevation_m": 0.0,
+      "high_level_m": 9.0,
+      "spill_level_m": 9.5,
+      "min_operating_level_m": 0.5,
+      "spill_destination_id": "SPILL_SINK",
+      "ports": [
+        {
+          "port_id": "PORT_B_IN",
+          "port_type": "INLET"
+        },
+        {
+          "port_id": "PORT_B_OUT",
+          "port_type": "OUTLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "SINK",
+      "type": "ExternalBoundary",
+      "display_name": "Treated Water demand",
+      "boundary_type": "TREATED_DEMAND",
+      "reference_head_m": 0.0,
+      "ports": [
+        {
+          "port_id": "PORT_SINK_IN",
+          "port_type": "INLET"
+        }
+      ]
+    },
+    {
+      "unit_id": "SPILL_SINK",
+      "type": "ExternalBoundary",
+      "display_name": "Spill Overflow",
+      "boundary_type": "SPILL",
+      "ports": [
+        {
+          "port_id": "PORT_SPILL_IN",
+          "port_type": "INLET"
+        }
+      ]
+    }
+  ],
+  "actuators": [
+    {
+      "actuator_id": "VALVE_IN",
+      "display_name": "Inlet Valve",
+      "opening_rate_percent_per_s": 10.0,
+      "closing_rate_percent_per_s": 10.0
+    },
+    {
+      "actuator_id": "VALVE_GRAVITY",
+      "display_name": "Gravity Pipe Valve",
+      "opening_rate_percent_per_s": 10.0,
+      "closing_rate_percent_per_s": 10.0
+    },
+    {
+      "actuator_id": "VALVE_OUT",
+      "display_name": "Outlet Valve",
+      "opening_rate_percent_per_s": 10.0,
+      "closing_rate_percent_per_s": 10.0
+    }
+  ],
+  "links": [
+    {
+      "link_id": "LINK_IN",
+      "display_name": "Inflow Link",
+      "max_flow_m3s": 10.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_SRC_OUT",
+      "destination_port_id": "PORT_A_IN",
+      "actuator_id": "VALVE_IN"
+    },
+    {
+      "link_id": "LINK_GRAVITY",
+      "display_name": "Gravity Link A to B",
+      "max_flow_m3s": 5.0,
+      "flow_mode": "GRAVITY",
+      "design_head_m": 2.0,
+      "source_port_id": "PORT_A_OUT",
+      "destination_port_id": "PORT_B_IN",
+      "actuator_id": "VALVE_GRAVITY"
+    },
+    {
+      "link_id": "LINK_OUT",
+      "display_name": "Outflow Link",
+      "max_flow_m3s": 10.0,
+      "flow_mode": "RESTRICTED",
+      "source_port_id": "PORT_B_OUT",
+      "destination_port_id": "PORT_SINK_IN",
+      "actuator_id": "VALVE_OUT"
+    }
+  ]
+}

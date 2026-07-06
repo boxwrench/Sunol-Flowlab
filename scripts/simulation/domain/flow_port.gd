@@ -5,6 +5,7 @@ var port_id: StringName
 var parent_unit: RefCounted # ProcessUnit
 var port_type: StringName # INLET, OUTLET, DRAIN
 var connected_link: RefCounted = null # FlowLink
+var owner_unit: RefCounted = null # Back-reference to unit
 
 func _init(p_id: StringName, p_parent: RefCounted, p_type: StringName) -> void:
 	port_id = p_id

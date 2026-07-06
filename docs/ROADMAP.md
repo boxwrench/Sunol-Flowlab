@@ -17,7 +17,7 @@ plan governs the work — and this file must be updated to match rather than the
 | Phase 1 — Single Storage-Unit Prototype | mass-balance ledger, config load, snapshot, phase-1 verification | ✅ Delivered |
 | Phase 2 — Three-Unit Flow Sandbox | source→basin→receiver flow propagation, closed-loop level control | ✅ Delivered |
 | Phase 3 — Headworks + Sedimentation | reservoirs, manifold, flash mix, distribution box, 5 basins, applied channel, availability, 5 level loops |  Delivered — **pending exit gate (WP3.8 batch audit)** |
-| Phase 3.5 — Self-Regulating Hydraulics (WP4.0) | implement GRAVITY flow mode; re-baseline Phase 3 hydraulics | ⬜ Next |
+| Phase 3.5 — Self-Regulating Hydraulics (WP4.0) | implement GRAVITY flow mode; re-baseline Phase 3 hydraulics | ✅ Delivered |
 | Phase 4a — Filtration + Clearwell | 12 filters, clearwell, filter flow splitting, one clearwell level loop | ⬜ Planned |
 | Phase 4b — Contact + Treated Water | 2 CT basins, treated-water reservoir, treated-water demand, plant flow control (cascade) | ⬜ Planned |
 

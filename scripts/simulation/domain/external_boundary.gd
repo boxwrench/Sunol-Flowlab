@@ -11,6 +11,8 @@ var flow_limit_m3s: float = -1.0
 # Current flow rate through this boundary
 var current_flow_m3s: float = 0.0
 
+var reference_head_m: float = 0.0
+
 # Ports dictionary (port_id -> FlowPort)
 var ports: Dictionary = {}
 
@@ -18,6 +20,7 @@ func initialize(config: Dictionary) -> void:
 	super.initialize(config)
 	boundary_type = StringName(config.get("boundary_type", ""))
 	flow_limit_m3s = float(config.get("flow_limit_m3s", -1.0))
+	reference_head_m = float(config.get("reference_head_m", 0.0))
 	current_flow_m3s = 0.0
 
 func get_snapshot() -> Dictionary:
@@ -25,7 +28,8 @@ func get_snapshot() -> Dictionary:
 	snap.merge({
 		"boundary_type": boundary_type,
 		"flow_limit_m3s": flow_limit_m3s,
-		"current_flow_m3s": current_flow_m3s
+		"current_flow_m3s": current_flow_m3s,
+		"reference_head_m": reference_head_m
 	})
 	return snap
 

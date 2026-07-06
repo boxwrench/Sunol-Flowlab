@@ -10,6 +10,7 @@ var destination_port: FlowPort = null
 var max_flow_m3s: float = 0.0
 var reverse_flow_allowed: bool = false
 var flow_mode: StringName = &"RESTRICTED" # COMMANDED, RESTRICTED, GRAVITY
+var design_head_m: float = 0.0
 
 # Actuator controlling this link
 var actuator: SimValve = null
@@ -32,6 +33,7 @@ func initialize(config: Dictionary, port_resolver: Callable) -> void:
 	max_flow_m3s = float(config.get("max_flow_m3s", 0.0))
 	reverse_flow_allowed = bool(config.get("reverse_flow_allowed", false))
 	flow_mode = StringName(config.get("flow_mode", "RESTRICTED"))
+	design_head_m = float(config.get("design_head_m", 0.0))
 	is_enabled = bool(config.get("is_enabled", true))
 	
 	var src_port_id: StringName = StringName(config.get("source_port_id", ""))
@@ -44,6 +46,16 @@ func initialize(config: Dictionary, port_resolver: Callable) -> void:
 		source_port.connected_link = self
 	if destination_port != null:
 		destination_port.connected_link = self
+
+func _get_port_elevation(port: FlowPort) -> float:
+	if port == null or port.owner_unit == null:
+		return 0.0
+	var unit = port.owner_unit
+	if unit.has_method("water_surface_elevation_m"):
+		return unit.water_surface_elevation_m()
+	elif "reference_head_m" in unit:
+		return unit.reference_head_m
+	return 0.0
 
 func calculate_requested_flow() -> float:
 	constraint_reason = ""
@@ -75,17 +87,59 @@ func calculate_requested_flow() -> float:
 			_commanded_warned = true
 		constraint_reason = "COMMANDED (unimplemented, treated as RESTRICTED@1.0)"
 		requested_flow_m3s = max_flow_m3s
+	elif flow_mode == &"GRAVITY":
+		var opening: float = 1.0
+		if actuator != null:
+			opening = actuator.get_effective_opening()
+			if opening == 0.0:
+				constraint_reason = "Valve Closed"
+				requested_flow_m3s = 0.0
+				return 0.0
+
+		var upstream_elev: float = _get_port_elevation(source_port)
+		var downstream_elev: float = _get_port_elevation(destination_port)
+		var dh: float = upstream_elev - downstream_elev
+		
+		# Q calculation
+		var base: float = max_flow_m3s * opening
+		var Q: float = 0.0
+		if dh >= 0.0:
+			if design_head_m > 0.0:
+				Q = base * sqrt(dh / design_head_m)
+			else:
+				Q = 0.0
+		elif reverse_flow_allowed:
+			if design_head_m > 0.0:
+				Q = -base * sqrt(-dh / design_head_m)
+			else:
+				Q = 0.0
+		else:
+			Q = 0.0
+
+		# Clamping and constraint reason setting
+		if abs(Q) > max_flow_m3s + 1e-9:
+			if Q > 0.0:
+				Q = max_flow_m3s
+			else:
+				Q = -max_flow_m3s
+			constraint_reason = "GRAVITY clamped@max"
+		elif abs(dh) < 1e-9:
+			constraint_reason = "GRAVITY equalized"
+		elif dh < 0.0 and not reverse_flow_allowed:
+			constraint_reason = "GRAVITY reverse blocked"
+		else:
+			constraint_reason = "GRAVITY self-regulating"
+
+		requested_flow_m3s = Q
 	else:
-		# F2.2-5 / Edge Rule 6: GRAVITY or unknown mode — warn once, fall back to
-		# RESTRICTED at current actuator opening (not full open) to avoid silent
-		# max-flow placeholder behavior.
+		# Unknown mode — warn once, fall back to RESTRICTED
 		if not _gravity_warned:
 			push_warning(
-				"FlowLink '%s': flow_mode '%s' is unimplemented. Treating as RESTRICTED at current opening." \
+				"FlowLink '%s': flow_mode '%s' is unknown. Treating as RESTRICTED at current opening." \
 				% [link_id, flow_mode]
 			)
 			_gravity_warned = true
-		constraint_reason = "GRAVITY/unknown mode (unimplemented, treated as RESTRICTED)"
+		constraint_reason = "Unknown mode (unimplemented, treated as RESTRICTED)"
 		if actuator != null:
 			requested_flow_m3s = max_flow_m3s * actuator.get_effective_opening()
 		else:
@@ -102,6 +156,7 @@ func get_snapshot() -> Dictionary:
 		"max_flow_m3s": max_flow_m3s,
 		"reverse_flow_allowed": reverse_flow_allowed,
 		"flow_mode": flow_mode,
+		"design_head_m": design_head_m,
 		"requested_flow_m3s": requested_flow_m3s,
 		"granted_flow_m3s": granted_flow_m3s,
 		"actual_flow_m3s": actual_flow_m3s,

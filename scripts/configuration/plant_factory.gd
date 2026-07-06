@@ -35,6 +35,7 @@ static func build_plant(
 				var port_id: StringName = StringName(port_config.get("port_id", ""))
 				var port_type: StringName = StringName(port_config.get("port_type", ""))
 				var port := FlowPort.new(port_id, unit, port_type)
+				port.owner_unit = unit
 				
 				if unit is StorageUnit:
 					unit.ports[port_id] = port

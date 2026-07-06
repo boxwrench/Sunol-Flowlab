@@ -63,6 +63,10 @@
           "type": "number",
           "description": "Bottom elevation [m] relative to the plant datum. StorageUnit only."
         },
+        "floor_elevation_m": {
+          "type": "number",
+          "description": "Floor elevation [m] relative to the plant datum. StorageUnit only."
+        },
         "high_level_m": {
           "$ref": "defs.schema.json#/$defs/non_negative_number",
           "description": "Level [m above bottom] for high-level alarming. StorageUnit only."
@@ -86,6 +90,10 @@
         "flow_limit_m3s": {
           "type": "number",
           "description": "Cap [m3/s] on the boundary's TOTAL flow across all its links; the solver prorates to fit. Negative or absent = unlimited. ExternalBoundary only."
+        },
+        "reference_head_m": {
+          "type": "number",
+          "description": "Reference water surface/supply head elevation [m] relative to the plant datum. ExternalBoundary only."
         },
         "ports": {
           "type": "array",
@@ -142,8 +150,12 @@
           "description": "Hydraulic capacity [m3/s]. RESTRICTED mode requests max_flow_m3s * actuator opening."
         },
         "flow_mode": {
-          "enum": ["RESTRICTED", "COMMANDED"],
-          "description": "RESTRICTED: flow = capacity x valve opening. COMMANDED: unimplemented — warns at runtime and behaves as RESTRICTED fully open (Edge Rule 6)."
+          "enum": ["RESTRICTED", "COMMANDED", "GRAVITY"],
+          "description": "RESTRICTED: flow = capacity x valve opening. COMMANDED: unimplemented — warns at runtime and behaves as RESTRICTED fully open. GRAVITY: flow is self-regulated based on head differences."
+        },
+        "design_head_m": {
+          "$ref": "defs.schema.json#/$defs/positive_number",
+          "description": "Design head [m] for gravity flow calculation."
         },
         "source_port_id": { "$ref": "defs.schema.json#/$defs/tag_id" },
         "destination_port_id": { "$ref": "defs.schema.json#/$defs/tag_id" },

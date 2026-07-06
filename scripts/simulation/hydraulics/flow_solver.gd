@@ -26,7 +26,9 @@ static func solve_flows(context: SimulationContext) -> void:
 		# we compute the request on the connected link.
 		var ports: Dictionary = unit.ports
 		var incoming_links: Array[FlowLink] = []
-		for port_id in ports:
+		var sorted_port_ids: Array = ports.keys()
+		sorted_port_ids.sort()
+		for port_id in sorted_port_ids:
 			var port: FlowPort = ports[port_id]
 			if port.port_type != &"INLET":
 				continue
@@ -65,7 +67,9 @@ static func solve_flows(context: SimulationContext) -> void:
 		var outlet_links: Array[FlowLink] = []
 		var drain_links: Array[FlowLink] = []
 		var ports: Dictionary = unit.ports
-		for port_id in ports:
+		var sorted_port_ids: Array = ports.keys()
+		sorted_port_ids.sort()
+		for port_id in sorted_port_ids:
 			var port: FlowPort = ports[port_id]
 			var link: FlowLink = port.connected_link
 			if link == null:
@@ -124,7 +128,9 @@ static func _grant_storage_source(
 
 	# Sum inflows already granted on INLET ports this tick
 	var granted_inflow_m3s: float = 0.0
-	for port_id in unit.ports:
+	var sorted_port_ids: Array = unit.ports.keys()
+	sorted_port_ids.sort()
+	for port_id in sorted_port_ids:
 		var port: FlowPort = unit.ports[port_id]
 		if port.port_type == &"INLET" and port.connected_link != null:
 			granted_inflow_m3s += port.connected_link.granted_flow_m3s
