@@ -87,8 +87,8 @@ func test_applied_channel_high_level_alarm() -> void:
 	
 	var ac: StorageUnit = engine.context.units_dict[&"APPLIED_CHANNEL_01"]
 	
-	# Set volume to drive level above high_level_m = 4.5 (area = 40.0, volume = 190.0 => level = 4.75)
-	ac.volume_m3 = 190.0
+	# Set volume to drive level above high_level_m = 4.5 (area = 40.0, volume = 195.0 => level = 4.875)
+	ac.volume_m3 = 195.0
 	ac.update_level()
 	
 	# Run 1 tick

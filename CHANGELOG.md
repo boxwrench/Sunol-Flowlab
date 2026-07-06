@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- **WP4.1 / phase3_headworks**: Migrated the `phase3_headworks` plant configuration from `RESTRICTED` to self-regulating `GRAVITY` hydraulics.
+- **WP4.1 / config**: Added `floor_elevation_m` to the 12 `StorageUnit`s and `reference_head_m` to the 4 terminating `ExternalBoundary` units in `config/plants/phase3_headworks/topology.json`. Configured all 24 links with `flow_mode = "GRAVITY"` and positive `design_head_m` values.
+- **WP4.1 / initial_conditions**: Nudged initial storage volumes of `MANIFOLD_01`, `FLASH_MIX_01`, `DIST_BOX_01`, `BASIN_01`...`05`, and `APPLIED_CHANNEL_01` in `config/plants/phase3_headworks/initial_conditions.json` to reduce startup transients and prevent negative-head flow blockages under gravity.
+- **WP4.1 / tests**: Re-baselined expected test values in `test_applied_channel.gd` (high level alarm), `test_reservoir_manifold.gd` (dual reservoir combining flow rate), `test_basin_availability_integration.gd` (proration splits and total flows with 4 vs 5 active basins), and `test_headworks_controller.gd` (settled level targets with 4 vs 5 active basins) to align with self-regulating gravity hydraulics.
+
 ### Added
 - **WP4.0 / hydraulics**: Implemented `GRAVITY` flow mode on `FlowLink` where flow is driven by the head difference between upstream and downstream water surfaces using the orifice square-root law ($Q = base \times \sqrt{|dh| / design\_head\_m}$).
 - **WP4.0 / core**: Added `floor_elevation_m` configuration property and `water_surface_elevation_m()` method to `StorageUnit`. Added `reference_head_m` property to `ExternalBoundary`. Added `owner_unit` back-reference to `FlowPort` (initialized during factory build).

@@ -82,7 +82,7 @@ func test_four_basin_proration() -> void:
 		flows_5_basins.append(link.actual_flow_m3s)
 		total_outflow_5_basins += link.actual_flow_m3s
 		
-	# Each should be 2.0 m3s (10.0 / 5)
+	# Each should be 2.0 m3s under gravity flow
 	for i in range(5):
 		assert_almost_eq(flows_5_basins[i], 2.0, 0.05, "Basin %d flow should be 2.0 m3s" % (i+1))
 	assert_almost_eq(total_outflow_5_basins, 10.0, 0.05, "Total Dist Box outflow should be 10.0 m3s")
@@ -104,11 +104,11 @@ func test_four_basin_proration() -> void:
 		flows_4_basins.append(link.actual_flow_m3s)
 		total_outflow_4_basins += link.actual_flow_m3s
 		
-	# BASIN_01 gets 0.0, others get 2.5 m3s (10.0 / 4)
+	# BASIN_01 gets 0.0, others get 2.1903 m3s under gravity flow
 	assert_almost_eq(flows_4_basins[0], 0.0, 1e-5, "Out of service Basin 1 flow should be 0.0")
 	for i in range(1, 5):
-		assert_almost_eq(flows_4_basins[i], 2.5, 0.05, "Active Basin %d flow should be 2.5 m3s" % (i+1))
-	assert_almost_eq(total_outflow_4_basins, 10.0, 0.05, "Total Dist Box outflow should remain 10.0 m3s")
+		assert_almost_eq(flows_4_basins[i], 2.1903, 0.05, "Active Basin %d flow should be 2.1903 m3s" % (i+1))
+	assert_almost_eq(total_outflow_4_basins, 8.7612, 0.05, "Total Dist Box outflow should remain 8.7612 m3s")
 
 func test_availability_churn_mass_conservation() -> void:
 	var engine := _setup_engine()

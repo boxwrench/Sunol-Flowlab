@@ -12,7 +12,8 @@
           "port_id": "PORT_EXT_SRC_01_OUT",
           "port_type": "OUTLET"
         }
-      ]
+      ],
+      "reference_head_m": 20.0
     },
     {
       "unit_id": "EXTERNAL_SOURCE_02",
@@ -25,7 +26,8 @@
           "port_id": "PORT_EXT_SRC_02_OUT",
           "port_type": "OUTLET"
         }
-      ]
+      ],
+      "reference_head_m": 20.0
     },
     {
       "unit_id": "RESERVOIR_01",
@@ -51,7 +53,8 @@
           "port_id": "PORT_RES_01_DRAIN",
           "port_type": "DRAIN"
         }
-      ]
+      ],
+      "floor_elevation_m": 13.0
     },
     {
       "unit_id": "RESERVOIR_02",
@@ -77,7 +80,8 @@
           "port_id": "PORT_RES_02_DRAIN",
           "port_type": "DRAIN"
         }
-      ]
+      ],
+      "floor_elevation_m": 13.0
     },
     {
       "unit_id": "MANIFOLD_01",
@@ -103,7 +107,8 @@
           "port_id": "PORT_MAN_01_OUT",
           "port_type": "OUTLET"
         }
-      ]
+      ],
+      "floor_elevation_m": 14.0
     },
     {
       "unit_id": "FLASH_MIX_01",
@@ -125,7 +130,8 @@
           "port_id": "PORT_FM_01_OUT",
           "port_type": "OUTLET"
         }
-      ]
+      ],
+      "floor_elevation_m": 12.0
     },
     {
       "unit_id": "DIST_BOX_01",
@@ -163,7 +169,8 @@
           "port_id": "PORT_BASIN_05",
           "port_type": "OUTLET"
         }
-      ]
+      ],
+      "floor_elevation_m": 10.0
     },
     {
       "unit_id": "BASIN_01",
@@ -189,7 +196,8 @@
           "port_id": "PORT_BASIN_01_DRAIN",
           "port_type": "DRAIN"
         }
-      ]
+      ],
+      "floor_elevation_m": 6.0
     },
     {
       "unit_id": "BASIN_02",
@@ -215,7 +223,8 @@
           "port_id": "PORT_BASIN_02_DRAIN",
           "port_type": "DRAIN"
         }
-      ]
+      ],
+      "floor_elevation_m": 6.0
     },
     {
       "unit_id": "BASIN_03",
@@ -241,7 +250,8 @@
           "port_id": "PORT_BASIN_03_DRAIN",
           "port_type": "DRAIN"
         }
-      ]
+      ],
+      "floor_elevation_m": 6.0
     },
     {
       "unit_id": "BASIN_04",
@@ -267,7 +277,8 @@
           "port_id": "PORT_BASIN_04_DRAIN",
           "port_type": "DRAIN"
         }
-      ]
+      ],
+      "floor_elevation_m": 6.0
     },
     {
       "unit_id": "BASIN_05",
@@ -293,7 +304,8 @@
           "port_id": "PORT_BASIN_05_DRAIN",
           "port_type": "DRAIN"
         }
-      ]
+      ],
+      "floor_elevation_m": 6.0
     },
     {
       "unit_id": "APPLIED_CHANNEL_01",
@@ -331,7 +343,8 @@
           "port_id": "PORT_AC_01_OUT",
           "port_type": "OUTLET"
         }
-      ]
+      ],
+      "floor_elevation_m": 4.0
     },
     {
       "unit_id": "FILTER_FEED_01",
@@ -343,7 +356,8 @@
           "port_id": "PORT_FILTER_FEED_IN",
           "port_type": "INLET"
         }
-      ]
+      ],
+      "reference_head_m": 4.5
     },
     {
       "unit_id": "DRAIN_SINK",
@@ -379,7 +393,8 @@
           "port_id": "PORT_DRAIN_SINK_IN_BASIN_05",
           "port_type": "INLET"
         }
-      ]
+      ],
+      "reference_head_m": 0.0
     },
     {
       "unit_id": "SPILL_SINK",
@@ -579,216 +594,240 @@
       "link_id": "LINK_IN_01",
       "display_name": "Source 1 to Reservoir 1 Link",
       "max_flow_m3s": 10.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_EXT_SRC_01_OUT",
       "destination_port_id": "PORT_RES_01_IN",
-      "actuator_id": "VALVE_IN_01"
+      "actuator_id": "VALVE_IN_01",
+      "design_head_m": 2.0
     },
     {
       "link_id": "LINK_IN_02",
       "display_name": "Source 2 to Reservoir 2 Link",
       "max_flow_m3s": 10.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_EXT_SRC_02_OUT",
       "destination_port_id": "PORT_RES_02_IN",
-      "actuator_id": "VALVE_IN_02"
+      "actuator_id": "VALVE_IN_02",
+      "design_head_m": 2.0
     },
     {
       "link_id": "LINK_OUT_RES_01",
       "display_name": "Reservoir 1 to Manifold Link",
       "max_flow_m3s": 8.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_RES_01_OUT",
       "destination_port_id": "PORT_MAN_01_IN_1",
-      "actuator_id": "VALVE_OUT_RES_01"
+      "actuator_id": "VALVE_OUT_RES_01",
+      "design_head_m": 2.0
     },
     {
       "link_id": "LINK_OUT_RES_02",
       "display_name": "Reservoir 2 to Manifold Link",
       "max_flow_m3s": 8.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_RES_02_OUT",
       "destination_port_id": "PORT_MAN_01_IN_2",
-      "actuator_id": "VALVE_OUT_RES_02"
+      "actuator_id": "VALVE_OUT_RES_02",
+      "design_head_m": 2.0
     },
     {
       "link_id": "LINK_DRAIN_RES_01",
       "display_name": "Reservoir 1 Drain Link",
       "max_flow_m3s": 5.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_RES_01_DRAIN",
       "destination_port_id": "PORT_DRAIN_SINK_IN_RES_01",
-      "actuator_id": "VALVE_DRAIN_RES_01"
+      "actuator_id": "VALVE_DRAIN_RES_01",
+      "design_head_m": 18.0
     },
     {
       "link_id": "LINK_DRAIN_RES_02",
       "display_name": "Reservoir 2 Drain Link",
       "max_flow_m3s": 5.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_RES_02_DRAIN",
       "destination_port_id": "PORT_DRAIN_SINK_IN_RES_02",
-      "actuator_id": "VALVE_DRAIN_RES_02"
+      "actuator_id": "VALVE_DRAIN_RES_02",
+      "design_head_m": 18.0
     },
     {
       "link_id": "LINK_OUT_MAN_01",
       "display_name": "Manifold to Flash Mix Link",
       "max_flow_m3s": 12.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_MAN_01_OUT",
       "destination_port_id": "PORT_FM_01_IN",
-      "actuator_id": "VALVE_OUT_MAN_01"
+      "actuator_id": "VALVE_OUT_MAN_01",
+      "design_head_m": 2.0
     },
     {
       "link_id": "LINK_OUT_FM_01",
       "display_name": "Flash Mix to Dist Box Link",
       "max_flow_m3s": 12.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_FM_01_OUT",
       "destination_port_id": "PORT_DB_01_IN",
-      "actuator_id": "VALVE_OUT_FM_01"
+      "actuator_id": "VALVE_OUT_FM_01",
+      "design_head_m": 2.0
     },
     {
       "link_id": "LINK_OUT_DB_01",
       "display_name": "Dist Box to Basin 1 Link",
       "max_flow_m3s": 3.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_01",
       "destination_port_id": "PORT_BASIN_01_IN",
-      "actuator_id": "VALVE_OUT_DB_01"
+      "actuator_id": "VALVE_OUT_DB_01",
+      "design_head_m": 3.0
     },
     {
       "link_id": "LINK_OUT_DB_02",
       "display_name": "Dist Box to Basin 2 Link",
       "max_flow_m3s": 3.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_02",
       "destination_port_id": "PORT_BASIN_02_IN",
-      "actuator_id": "VALVE_OUT_DB_02"
+      "actuator_id": "VALVE_OUT_DB_02",
+      "design_head_m": 3.0
     },
     {
       "link_id": "LINK_OUT_DB_03",
       "display_name": "Dist Box to Basin 3 Link",
       "max_flow_m3s": 3.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_03",
       "destination_port_id": "PORT_BASIN_03_IN",
-      "actuator_id": "VALVE_OUT_DB_03"
+      "actuator_id": "VALVE_OUT_DB_03",
+      "design_head_m": 3.0
     },
     {
       "link_id": "LINK_OUT_DB_04",
       "display_name": "Dist Box to Basin 4 Link",
       "max_flow_m3s": 3.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_04",
       "destination_port_id": "PORT_BASIN_04_IN",
-      "actuator_id": "VALVE_OUT_DB_04"
+      "actuator_id": "VALVE_OUT_DB_04",
+      "design_head_m": 3.0
     },
     {
       "link_id": "LINK_OUT_DB_05",
       "display_name": "Dist Box to Basin 5 Link",
       "max_flow_m3s": 3.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_05",
       "destination_port_id": "PORT_BASIN_05_IN",
-      "actuator_id": "VALVE_OUT_DB_05"
+      "actuator_id": "VALVE_OUT_DB_05",
+      "design_head_m": 3.0
     },
     {
       "link_id": "LINK_OUT_BASIN_01",
       "display_name": "Basin 1 to Applied Channel Link",
       "max_flow_m3s": 4.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_01_OUT",
       "destination_port_id": "PORT_AC_IN_01",
-      "actuator_id": "VALVE_OUT_BASIN_01"
+      "actuator_id": "VALVE_OUT_BASIN_01",
+      "design_head_m": 3.0
     },
     {
       "link_id": "LINK_OUT_BASIN_02",
       "display_name": "Basin 2 to Applied Channel Link",
       "max_flow_m3s": 4.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_02_OUT",
       "destination_port_id": "PORT_AC_IN_02",
-      "actuator_id": "VALVE_OUT_BASIN_02"
+      "actuator_id": "VALVE_OUT_BASIN_02",
+      "design_head_m": 3.0
     },
     {
       "link_id": "LINK_OUT_BASIN_03",
       "display_name": "Basin 3 to Applied Channel Link",
       "max_flow_m3s": 4.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_03_OUT",
       "destination_port_id": "PORT_AC_IN_03",
-      "actuator_id": "VALVE_OUT_BASIN_03"
+      "actuator_id": "VALVE_OUT_BASIN_03",
+      "design_head_m": 3.0
     },
     {
       "link_id": "LINK_OUT_BASIN_04",
       "display_name": "Basin 4 to Applied Channel Link",
       "max_flow_m3s": 4.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_04_OUT",
       "destination_port_id": "PORT_AC_IN_04",
-      "actuator_id": "VALVE_OUT_BASIN_04"
+      "actuator_id": "VALVE_OUT_BASIN_04",
+      "design_head_m": 3.0
     },
     {
       "link_id": "LINK_OUT_BASIN_05",
       "display_name": "Basin 5 to Applied Channel Link",
       "max_flow_m3s": 4.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_05_OUT",
       "destination_port_id": "PORT_AC_IN_05",
-      "actuator_id": "VALVE_OUT_BASIN_05"
+      "actuator_id": "VALVE_OUT_BASIN_05",
+      "design_head_m": 3.0
     },
     {
       "link_id": "LINK_OUT_AC_01",
       "display_name": "Applied Channel to Filter Feed Link",
       "max_flow_m3s": 10.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_AC_01_OUT",
-      "destination_port_id": "PORT_FILTER_FEED_IN"
+      "destination_port_id": "PORT_FILTER_FEED_IN",
+      "design_head_m": 1.5
     },
     {
       "link_id": "LINK_DRAIN_BASIN_01",
       "display_name": "Basin 1 Drain Link",
       "max_flow_m3s": 2.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_01_DRAIN",
       "destination_port_id": "PORT_DRAIN_SINK_IN_BASIN_01",
-      "actuator_id": "VALVE_DRAIN_BASIN_01"
+      "actuator_id": "VALVE_DRAIN_BASIN_01",
+      "design_head_m": 9.0
     },
     {
       "link_id": "LINK_DRAIN_BASIN_02",
       "display_name": "Basin 2 Drain Link",
       "max_flow_m3s": 2.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_02_DRAIN",
       "destination_port_id": "PORT_DRAIN_SINK_IN_BASIN_02",
-      "actuator_id": "VALVE_DRAIN_BASIN_02"
+      "actuator_id": "VALVE_DRAIN_BASIN_02",
+      "design_head_m": 9.0
     },
     {
       "link_id": "LINK_DRAIN_BASIN_03",
       "display_name": "Basin 3 Drain Link",
       "max_flow_m3s": 2.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_03_DRAIN",
       "destination_port_id": "PORT_DRAIN_SINK_IN_BASIN_03",
-      "actuator_id": "VALVE_DRAIN_BASIN_03"
+      "actuator_id": "VALVE_DRAIN_BASIN_03",
+      "design_head_m": 9.0
     },
     {
       "link_id": "LINK_DRAIN_BASIN_04",
       "display_name": "Basin 4 Drain Link",
       "max_flow_m3s": 2.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_04_DRAIN",
       "destination_port_id": "PORT_DRAIN_SINK_IN_BASIN_04",
-      "actuator_id": "VALVE_DRAIN_BASIN_04"
+      "actuator_id": "VALVE_DRAIN_BASIN_04",
+      "design_head_m": 9.0
     },
     {
       "link_id": "LINK_DRAIN_BASIN_05",
       "display_name": "Basin 5 Drain Link",
       "max_flow_m3s": 2.0,
-      "flow_mode": "RESTRICTED",
+      "flow_mode": "GRAVITY",
       "source_port_id": "PORT_BASIN_05_DRAIN",
       "destination_port_id": "PORT_DRAIN_SINK_IN_BASIN_05",
-      "actuator_id": "VALVE_DRAIN_BASIN_05"
+      "actuator_id": "VALVE_DRAIN_BASIN_05",
+      "design_head_m": 9.0
     }
   ]
 }

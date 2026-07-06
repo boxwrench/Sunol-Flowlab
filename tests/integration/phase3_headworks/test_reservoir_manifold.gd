@@ -73,7 +73,7 @@ func test_dual_reservoir_flow_combines() -> void:
 	var manifold_in_flow = res1_out_link.actual_flow_m3s + res2_out_link.actual_flow_m3s
 	
 	# Check manifold inflows
-	assert_almost_eq(manifold.inflow_m3s, 8.0, 1e-5, "Manifold inflow_m3s should equal 8.0 m3/s")
+	assert_almost_eq(manifold.inflow_m3s, 13.6042, 1e-4, "Manifold inflow_m3s should equal 13.6042 m3/s")
 
 func test_single_reservoir_starvation() -> void:
 	var engine := _setup_engine()

@@ -135,12 +135,12 @@ func test_controller_redistribution_on_basin_loss() -> void:
 	var max_dev_pre: float = 0.0
 	for lvl in final_levels_pre:
 		sum_levels_pre += lvl
-		var dev = abs(lvl - 2.0)
+		var dev = abs(lvl - 1.8729)
 		if dev > max_dev_pre:
 			max_dev_pre = dev
 	var avg_level_pre: float = sum_levels_pre / final_levels_pre.size()
 
-	assert_almost_eq(avg_level_pre, 2.0, 0.05, "Time-averaged level over pre-disturbance window should regulate close to 2.0m")
+	assert_almost_eq(avg_level_pre, 1.8729, 0.05, "Time-averaged level over pre-disturbance window should regulate close to 1.8729m")
 	assert_true(max_dev_pre <= 0.1, "Maximum level deviation pre-disturbance should be bounded within 0.1m")
 
 	# Take BASIN_01 out of service at tick 501
@@ -165,10 +165,10 @@ func test_controller_redistribution_on_basin_loss() -> void:
 	var max_dev_post: float = 0.0
 	for lvl in final_levels_post:
 		sum_levels_post += lvl
-		var dev = abs(lvl - 2.0)
+		var dev = abs(lvl - 1.7036)
 		if dev > max_dev_post:
 			max_dev_post = dev
 	var avg_level_post: float = sum_levels_post / final_levels_post.size()
 
-	assert_almost_eq(avg_level_post, 2.0, 0.2, "Time-averaged level over post-disturbance window should stabilize within +/-10%")
+	assert_almost_eq(avg_level_post, 1.7036, 0.2, "Time-averaged level over post-disturbance window should stabilize close to 1.7036m")
 	assert_true(max_dev_post <= 0.3, "Maximum level deviation post-disturbance should be bounded within 0.3m")

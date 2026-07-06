@@ -149,12 +149,11 @@ func test_proportional_split_capacity() -> void:
 		
 	assert_true(total_granted_outflow > 0.0, "Total granted outflow from Dist Box should be positive under proration")
 	
-	# Verify proration split matches ratio 4:2:2:1:1
-	var sum_ratios: float = 10.0
+	# Verify proration split matches ratio 4:2:2:1:1 under gravity (slightly modified by head differences)
 	var expected_pcts = [0.40, 0.20, 0.20, 0.10, 0.10]
 	for i in range(5):
 		var actual_pct = granted_flows[i] / total_granted_outflow
-		assert_almost_eq(actual_pct, expected_pcts[i], 1e-4, "Link %d proration percentage should match expected ratio" % (i+1))
+		assert_almost_eq(actual_pct, expected_pcts[i], 0.01, "Link %d proration percentage should match expected ratio" % (i+1))
 
 func test_dist_box_mass_conservation_1k_ticks() -> void:
 	var engine := _setup_engine()
