@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 ## [Unreleased]
 
 ### Changed
+- **Roadmap / planning**: Folded the Ponytail/YAGNI audit into `docs/ROADMAP.md` as the numbered WP4.2-WP4.7 audit-closure plan, blocked Phase 4a on independent Phase 3/WP4.1 verification, and moved speculative capabilities behind observable revisit triggers.
 - **WP4.1 / phase3_headworks**: Migrated the `phase3_headworks` plant configuration from `RESTRICTED` to self-regulating `GRAVITY` hydraulics.
 - **WP4.1 / config**: Added `floor_elevation_m` to the 12 `StorageUnit`s and `reference_head_m` to the 4 terminating `ExternalBoundary` units in `config/plants/phase3_headworks/topology.json`. Configured all 24 links with `flow_mode = "GRAVITY"` and positive `design_head_m` values.
 - **WP4.1 / initial_conditions**: Nudged initial storage volumes of `MANIFOLD_01`, `FLASH_MIX_01`, `DIST_BOX_01`, `BASIN_01`...`05`, and `APPLIED_CHANNEL_01` in `config/plants/phase3_headworks/initial_conditions.json` to reduce startup transients and prevent negative-head flow blockages under gravity.

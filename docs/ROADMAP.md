@@ -1,105 +1,162 @@
 # Project Roadmap
 
-This roadmap organises development into numbered phases matching the rest of the
-repository (Phase 0–3 delivered, Phase 4 next). Detailed per-phase work packages live
-in the `*_IMPLEMENTATION_PLAN.md` documents; this file is the high-level map and status.
-Dates are intentionally omitted to allow flexibility.
-
-**Authority note:** per `docs/INDEX.md`, `REPOSITORY_ARCHITECTURE.md` and the binding
-specs win all conflicts. Where this roadmap and a phase plan disagree on scope, the phase
-plan governs the work — and this file must be updated to match rather than the reverse.
+This roadmap is the authoritative status and sequencing map. Historical work packages
+remain in phase implementation plans. New work uses the numbers defined here without
+renumbering history. A WP is complete only after evidence is recorded, pushed to `main`,
+and CI is green.
 
 ## Status at a glance
 
 | Phase | Scope | Status |
 |-------|-------|--------|
-| Phase 0 — Project Foundation | clock, engine shell, tick pipeline, CI, base classes | ✅ Delivered |
-| Phase 1 — Single Storage-Unit Prototype | mass-balance ledger, config load, snapshot, phase-1 verification | ✅ Delivered |
-| Phase 2 — Three-Unit Flow Sandbox | source→basin→receiver flow propagation, closed-loop level control | ✅ Delivered |
-| Phase 3 — Headworks + Sedimentation | reservoirs, manifold, flash mix, distribution box, 5 basins, applied channel, availability, 5 level loops |  Delivered — **pending exit gate (WP3.8 batch audit)** |
-| Phase 3.5 — Self-Regulating Hydraulics (WP4.0) | implement GRAVITY flow mode; re-baseline Phase 3 hydraulics | ✅ Delivered |
-| Phase 4a — Filtration + Clearwell | 12 filters, clearwell, filter flow splitting, one clearwell level loop | ⬜ Planned |
-| Phase 4b — Contact + Treated Water | 2 CT basins, treated-water reservoir, treated-water demand, plant flow control (cascade) | ⬜ Planned |
+| Phase 0 — Foundation | Clock, engine shell, tick pipeline, CI, base classes | ✅ Delivered |
+| Phase 1 — Single Storage Unit | Mass balance, configuration, snapshots, verification | ✅ Delivered |
+| Phase 2 — Three-Unit Sandbox | Connected flow and closed-loop level control | ✅ Delivered |
+| Phase 3 — Headworks + Sedimentation | Reservoirs through applied channel, availability, presentation | 🟨 Implemented; exit gate open |
+| WP4.0 — Self-Regulating Hydraulics | `GRAVITY` mode and deterministic port iteration | ✅ Delivered |
+| WP4.1 — Headworks Gravity Migration | Convert and re-baseline `phase3_headworks` | 🟨 Implemented; closure verification remains |
+| WP4.2–WP4.7 — Audit Closure | Contracts, unsupported modes, startup, alarms, CI, verification | ⬜ Next |
+| Phase 4a — Filtration + Clearwell | Twelve filters, clearwell, distribution and minimum control | ⛔ Blocked by WP4.7 |
+| Phase 4b — Contact + Treated Water | CT basins, treated storage/demand, one supervisory loop | ⬜ Planned |
 
-## Cross-cutting workstreams
+## Governing sequence
 
-### Continuous testing (CI)
-- GitHub Actions runs the full GUT test suite and config-schema validation on every
-  push to `main`. A green run means the suite passed — that's the signal a change is
-  good; if CI goes red, fix it before building on top. CI runs on GitHub's servers
-  in the background, so there's nothing to wait on — push and check back.
-- When you add or remove a test script, update `EXPECTED_SCRIPTS` in the workflow.
+Build only what makes the next plant section visibly operable and hydraulically correct.
+A future capability enters active architecture only when the next playable milestone
+requires it or a concrete failing case proves the current solution insufficient.
 
-### Hydraulic design basis (prerequisite for Phase 4a)
-- Maintain the authoritative design-basis table in `docs/PLANT_TOPOLOGY.md`. Every future
-  `max_flow_m3s` value must cite it. Phase 3's 15-vs-12 trunk defect was the direct result
-  of having no design basis; the filter phase multiplies that exposure.
+1. Complete WP4.2 through WP4.7 in order.
+2. Close the Phase 3 and WP4.1 gate with recorded evidence.
+3. Author the detailed Phase 4a implementation plan.
+4. Build filters and clearwell only.
 
-### Telemetry & trends (near-term)
-- Implement a minimal ring-buffer trend historian behind `_step_record_telemetry()`
-  (currently a `pass` stub) with simple UI overlays, per the scope goals. Beyond being a
-  stated goal, it makes control diagnostics (e.g. limit cycles) observable without
-  throwaway debug scripts.
+Do not begin another broad subsystem while the audit-closure gate is open.
 
-## Phase 3.5 / WP4.0 — Self-regulating hydraulics (next)
+## Audit-closure work plan
 
-The Phase 3 control effort — limit cycles at any gain, the velocity-PID escalation —
-traced to a plant with **zero self-regulation**: every downstream demand is a fixed-max,
-unactuated link. `SIMULATION_RULES.md` already specifies flow mode 3 (flow ∝ valve · √head)
-and `flow_link.gd` stubs it with a warn-once fallback. Implementing it makes basin and
-channel outflow level-dependent — self-regulating — and makes the Phase 4 clearwell and CT
-control problems materially easier.
+### WP4.2 — Align active documentation with executable reality
 
-**Sequencing note:** lightweight in code, heavy in re-verification. It changes existing
-Phase 3 steady-states, so it must land as its own gated WP that re-tunes the five Phase 3
-controllers and re-baselines the headworks and verification tests, with full determinism
-and mass-balance reverification. It is sequenced **before** Phase 4a so the filters build
-on self-regulating hydraulics.
+**Goal:** Reduce specification drift without changing runtime behavior.
 
-## Phase 4 — Filtration through Treated Water (split)
+**Scope:**
 
-Phase 3 required a mid-phase structural escalation; Phase 4's original single-phase scope
-is roughly twice Phase 3's surface area, so it is split at a natural batch-audit boundary:
+- Correct README Godot version, main scene, process train, and run steps.
+- Resolve authority contradictions in `docs/INDEX.md` and active guides.
+- Reduce `docs/REPOSITORY_ARCHITECTURE.md` to current directories, dependency
+  boundaries, tick/snapshot boundaries, and invariants. Move future rationale to an
+  explicitly non-binding appendix or existing archive.
+- Reconcile `docs/PROCESS_UNIT_CONTRACTS.md` with production symbols and schemas.
+- Correct stale references and label archived research historical and non-binding.
 
-- **Phase 4a — Filters + clearwell.** Reuses Phase 3 patterns (proration-based splitting,
-  one level loop), ideally on top of GRAVITY mode.
-- **Phase 4b — CT basins + treated-water reservoir + plant flow control.** Introduces the
-  first two-layer (cascade / supervisory) control loop, driven by treated-water level —
-  which gets its own spec-first WP, the way basin availability did.
+**Done when:** active documented paths exist; config fields exist in schemas; public
+methods match production; future material is non-binding; README steps work from a clean
+Godot 4.7 import; documentation links validate.
 
-Detailed WPs will be authored in `PHASE4_IMPLEMENTATION_PLAN.md` after the Phase 3 exit
-gate closes.
+### WP4.3 — Remove unsupported `COMMANDED` flow mode
 
-## Future enhancements
+**Goal:** Reject a configuration mode that is accepted but not implemented.
 
-- **Cyclic topology support (recycle streams).** A single structural capability — the
-  DAG-only solver rejects cycles today — and the shared precondition for backwash /
-  filter-to-waste return, backwash waste handling, **and** any wastewater port. Grouped so
-  the dependency is explicit.
-- Backwash sequences and filter-to-waste (depends on cyclic topology).
-- Coagulant dosing and simplified chemistry.
-- Interlocks / permissives (specced in `CONTROL_LOGIC.md`, unimplemented; first matters at
-  the filter phase for service-state preconditions).
-- Hydraulic grade line calculations with pump curves (the heavyweight hydraulics; distinct
-  from the near-term GRAVITY mode above).
-- Scenario scripting and training modules.
-- Historian playback and data export (the full version; the near-term trend buffer above is
-  the minimal slice).
-- Port the engine to other utilities (e.g. wastewater). ~95% portable at the code level
-  (boundary labels, ledger fields, display vocabulary), **but requires cyclic topology
-  support first** — a wastewater plant is built around recycle streams (return activated
-  sludge, supernatant returns, backwash recovery) that the DAG solver cannot represent. See
-  the portability appendix in `docs/BUILDING_A_PLANT_SIMULATOR.md`.
-- Integration with Node-RED, MQTT or external control systems — gated post-POC behind a
-  versioned snapshot/command API; not required by the scope doc's completion criteria.
+**Scope:** remove `COMMANDED` from schema, validator, `FlowLink` fallback, active
+rules/contracts, fixtures, and tests. Do not implement it.
 
-> Removed: "PID control with anti-reset windup." It is shipped — WP3.5 delivered a
-> velocity-form PID whose output clamping inherently avoids reset windup. The residual
-> control work is bumpless transfer on AUTO entry (WP3.5-R) and per-loop tuning guidance.
+**Done when:** no supported path remains; invalid configuration fails clearly; schema,
+solver, integration, replay, and mass-balance suites pass; `RESTRICTED` and `GRAVITY`
+results are unchanged.
 
-## Out of scope
+### WP4.4 — Remove inaccessible reverse-flow support
 
-- Real-time multiplayer operations.
-- Detailed CFD or finite element analysis.
-- Regulatory compliance calculations.
-- Live SCADA connections for a specific plant.
+**Goal:** Keep the directed-acyclic hydraulic contract honest.
+
+**Scope:** after a repository-wide reference search, remove `reverse_flow_allowed` and
+the negative-head gravity branch from production and current contracts. Negative head
+produces zero forward flow. Do not add bidirectional topology semantics.
+
+**Done when:** no production/config contract claims reverse flow; positive, zero, and
+negative head tests pass; replay and mass conservation pass; topology remains a DAG.
+
+### WP4.5 — Unify startup state and wire configured alarms
+
+**Goal:** Make the default visual plant start from configuration and expose required alarms.
+
+**Scope:**
+
+- Put demonstration valve positions in
+  `config/plants/phase3_headworks/initial_conditions.json`; remove scene-local commands.
+- Register loaded alarms through a direct bootstrap loop using existing `ThresholdAlarm`
+  and `AlarmEngine`; add no service/registry layer.
+- Replace duplicate map JSON loading with `PresentationMapHandler.load_map()`.
+
+**Done when:** first headless/visual snapshots match configuration; both alarm IDs appear;
+activation, delay, deadband, clearing, and single-event behavior are tested; the scene
+presents alarms; parity and the five-basin outage demonstration pass.
+
+### WP4.6 — Derive the CI test-script count
+
+**Goal:** Preserve defensive GUT validation without a manually maintained total.
+
+**Scope:** derive expected scripts from the runner's `tests/**/test_*.gd` convention.
+Retain skipped-test, zero-test, script-error, and loaded-versus-expected checks.
+
+**Done when:** CI prints derived and loaded counts; temporary valid and unparseable scripts
+prove count/failure behavior; temporary files are removed; normal CI is green.
+
+### WP4.7 — Close the Phase 3 and WP4.1 gate
+
+**Goal:** Independently prove the shipped headworks/gravity milestone complete.
+
+**Scope:** run full GUT and config suites; reverify replay, mass balance, no negative
+storage, 100k-tick soak/churn, headless/visual parity, five-basin outage, configured
+startup, and alarms in the actual main scene. Record exact totals.
+
+**Done when:** nonzero tests are collected with zero failures; manual checks are recorded;
+CI on `main` is green; Phase 3 and WP4.1 are marked delivered; worktree is clean. If
+execution is unavailable, report exactly “Tests written but NOT executed — unverified”
+and leave the gate open.
+
+## Phase 4a — Filters and clearwell
+
+Author its detailed plan only after WP4.7. Scope is limited to twelve reusable filters,
+existing-solver flow distribution, clearwell storage, minimum operability control,
+service state, snapshot-driven visuals, and invariant/integration tests. Do not build a
+filter inheritance framework without two concrete behaviors. Backwash and
+filter-to-waste are excluded.
+
+## Phase 4b — Contact basins and treated water
+
+After Phase 4a is playable and verified, add two CT basins, treated-water storage/demand,
+and one specified supervisory/cascade loop. Close full-train mass balance and availability
+demonstrations here.
+
+## Triggered later
+
+| Capability | Revisit trigger |
+|------------|-----------------|
+| Minimal trend buffer | A current problem cannot be diagnosed from snapshots/tests, or trends become a release criterion |
+| Interlocks/permissives | A real transition needs a precondition service state/link enablement cannot express |
+| Cyclic topology | A committed process path requires a recycle stream |
+| Backwash/filter-to-waste | A filter milestone requires it and cyclic topology is specified |
+| Pump curves/HGL | A named case defeats current modes and design data exists |
+| Chemistry/dosing | A training objective has a measurable result and defensible model/data |
+| Historian/export | A real run must be saved, exchanged, compared, or replayed |
+| External API/MQTT | A real consumer and versioned message contract exist |
+| Reverse flow | A real link needs bidirectional operation and DAG/ledger semantics are specified |
+| `COMMANDED` flow | A controller needs direct requests with specified config/integration contracts |
+
+Keep scenario frameworks, other-utility portability, cyber-physical scenarios, detailed
+settling, media optimization, and nonessential asset polish parked.
+
+## Protected foundations
+
+- Deterministic fixed-step simulation and explicit 14-step tick.
+- Two-pass DAG solver with one grant/proration authority.
+- `StorageBalance` as the single volume-mutating authority.
+- Mass ledger, invariant assertions, and no-negative-storage guarantee.
+- Typed outlet/drain semantics; schemas plus semantic validation.
+- Headless/presentation separation and command/snapshot boundaries.
+- Sorted registries and defensive GUT/CI checks.
+
+## Out of scope for the proof of concept
+
+CFD, pressure networks, detailed pump curves/HGL, detailed chemistry, regulatory CT,
+settling-performance models, live SCADA, multiplayer, scoring, scenario platforms,
+historian infrastructure, external messaging APIs, and other-utility portability.
