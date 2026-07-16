@@ -613,7 +613,8 @@ Responsibilities:
 - Handle asset selection.
 - Display operating states.
 
-The presentation layer reads immutable snapshots or public state interfaces.
+The presentation layer reads immutable snapshots. Quantitative and categorical mappings
+must follow `PRESENTATION_MAPPING.md`.
 
 It should not edit simulation state directly.
 
@@ -1250,6 +1251,12 @@ Example:
 ```
 
 Snapshots prevent UI and visual code from holding unsafe references to mutable simulation objects.
+
+For each rendered update, all data-bearing presentation and UI elements must use one
+completed snapshot. Redundant indications must use the same snapshot tick; presentation
+interpolation may lag but must never lead that snapshot or become a second source of
+simulation truth. The detailed encoding and validation rules are defined in
+`PRESENTATION_MAPPING.md`.
 
 ---
 

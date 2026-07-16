@@ -12,6 +12,7 @@ This index defines the authority order of the repository documentation. In the e
    - [PLANT_TOPOLOGY.md](PLANT_TOPOLOGY.md) — Connectivity, ports, and plant configuration.
    - [TAG_NAMING.md](TAG_NAMING.md) — Identifier format and tag structure.
    - [CONFIGURATION_REFERENCE.md](CONFIGURATION_REFERENCE.md) — Plant JSON configuration fields.
+   - [PRESENTATION_MAPPING.md](PRESENTATION_MAPPING.md) — Snapshot-to-visual encoding, fidelity, and mapping-validation rules.
 3. **Planning & reviews**
    - [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) — Work packages, gates, exit criteria, **Cold-Start Protocol**.
    - [ARCHITECTURE_REVIEW.md](ARCHITECTURE_REVIEW.md) — Invariants INV-1/2/3, gates G0–G5, design rationale.

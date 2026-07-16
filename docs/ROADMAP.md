@@ -132,6 +132,7 @@ demonstrations here.
 | Capability | Revisit trigger |
 |------------|-----------------|
 | Minimal trend buffer | A current problem cannot be diagnosed from snapshots/tests, or trends become a release criterion |
+| Enhanced presentation channels | A current playable milestone needs the channel and its snapshot source, monotone mapping, zero behavior, and validation are specified |
 | Interlocks/permissives | A real transition needs a precondition service state/link enablement cannot express |
 | Cyclic topology | A committed process path requires a recycle stream |
 | Backwash/filter-to-waste | A filter milestone requires it and cyclic topology is specified |
@@ -153,6 +154,7 @@ settling, media optimization, and nonessential asset polish parked.
 - Mass ledger, invariant assertions, and no-negative-storage guarantee.
 - Typed outlet/drain semantics; schemas plus semantic validation.
 - Headless/presentation separation and command/snapshot boundaries.
+- Monotone, same-tick presentation mappings defined in `PRESENTATION_MAPPING.md`.
 - Sorted registries and defensive GUT/CI checks.
 
 ## Out of scope for the proof of concept

@@ -36,5 +36,8 @@ This document lists the current limitations of the drinking water plant sandbox.
 
 - Presentation uses low-poly assets; water surfaces are represented as flat, translation-based planes rather than dynamic liquid meshes.
 - Visual indications of water quality (such as turbidity, color, or clarity changes) are out of scope.
+- Photorealistic water, plant clutter, detailed pipe routing, ambient process-like motion,
+  and decorative turbulence are intentionally excluded. Visual polish is limited to
+  legible, snapshot-backed state mappings defined in `PRESENTATION_MAPPING.md`.
 
 These scope definitions define the boundaries of the proof-of-concept simulation.  Users should not rely on this simulator for engineering design or regulatory compliance.

@@ -32,6 +32,19 @@ These tests run the full plant configuration and check global invariants:
 
 Use accelerated time to simulate extended operation and check invariants.
 
+## Presentation mapping tests
+
+Presentation tests validate the mapping rather than re-testing hydraulics. For every
+data-bearing visual channel, sweep production adapter inputs and verify monotonicity,
+zero/floor behavior, direction, endpoints, and declared presentation clamping. Redundant
+indications must derive from the same immutable snapshot tick. A step-change integration
+test should detect any disagreement among 3D state, numeric UI, and other redundant cues.
+
+Visual and headless runs driven by the same initial configuration and commands must end
+with identical simulation snapshots. Tests must instantiate production adapters and must
+not reproduce their mapping logic in a mock. See `PRESENTATION_MAPPING.md` for the binding
+contract and human-legibility check.
+
 ## Scenario regression tests
 
 Define a set of named scenarios (e.g., loss of one source reservoir, sedimentation basin isolation, filter capacity reduction).  For each scenario:
