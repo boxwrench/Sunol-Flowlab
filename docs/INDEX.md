@@ -33,6 +33,7 @@ This index defines the authority order of the repository documentation. In the e
    - [TESTING_STRATEGY.md](TESTING_STRATEGY.md) — Test categories and expectations.
 6. **Archive** (background, non-authoritative)
    - [archive/deep-research-report.md](archive/deep-research-report.md) — Pre-project engine research.
+   - [archive/2026-07-16-water-quality-layer1-research.md](archive/2026-07-16-water-quality-layer1-research.md) — Layer-1 water-quality research. Out of scope; chemistry trigger unfired. Proposes an invariant as "INV-4" that does not exist.
 
 Agent behavior rules live in [`AGENTS.md`](../AGENTS.md) at the repository root and apply above everything here except REPOSITORY_ARCHITECTURE.md structural rulings.
 
