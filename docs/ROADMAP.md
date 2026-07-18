@@ -15,7 +15,8 @@ and CI is green.
 | Phase 3 — Headworks + Sedimentation | Reservoirs through applied channel, availability, presentation | 🟨 Implemented; exit gate open |
 | WP4.0 — Self-Regulating Hydraulics | `GRAVITY` mode and deterministic port iteration | ✅ Delivered |
 | WP4.1 — Headworks Gravity Migration | Convert and re-baseline `phase3_headworks` | 🟨 Implemented; closure verification remains |
-| WP4.2–WP4.7 — Audit Closure | Contracts, unsupported modes, startup, alarms, CI, verification | ⬜ Next |
+| WP4.2 — Align Docs with Reality | Archive labeling, README/INDEX, contracts, architecture restructure | ✅ Delivered |
+| WP4.3–WP4.7 — Audit Closure | Unsupported modes, reverse flow, startup, alarms, CI, verification | ⬜ Next |
 | Phase 4a — Filtration + Clearwell | Twelve filters, clearwell, distribution and minimum control | ⛔ Blocked by WP4.7 |
 | Phase 4b — Contact + Treated Water | CT basins, treated storage/demand, one supervisory loop | ⬜ Planned |
 
@@ -25,7 +26,7 @@ Build only what makes the next plant section visibly operable and hydraulically 
 A future capability enters active architecture only when the next playable milestone
 requires it or a concrete failing case proves the current solution insufficient.
 
-1. Complete WP4.2 through WP4.7 in order.
+1. Complete WP4.3 through WP4.7 in order (WP4.2 delivered).
 2. Close the Phase 3 and WP4.1 gate with recorded evidence.
 3. Author the detailed Phase 4a implementation plan.
 4. Build filters and clearwell only.
@@ -51,6 +52,14 @@ Do not begin another broad subsystem while the audit-closure gate is open.
 **Done when:** active documented paths exist; config fields exist in schemas; public
 methods match production; future material is non-binding; README steps work from a clean
 Godot 4.7 import; documentation links validate.
+
+**Delivered** via PRs #1 (archive labeling/indexing), #2 (README + INDEX), #3
+(`PROCESS_UNIT_CONTRACTS.md` reconciled to production symbols and schemas), and #4
+(`REPOSITORY_ARCHITECTURE.md` restructured to a binding core plus non-binding appendix,
+1868→347 lines). All merged with CI green (config-schema + GUT). Symbols, config fields,
+directory paths, and documentation links were verified against the committed code and
+schemas; the Godot 4.7 import is evidenced by the passing headless GUT run rather than a
+manual editor session.
 
 ### WP4.3 — Remove unsupported `COMMANDED` flow mode
 
