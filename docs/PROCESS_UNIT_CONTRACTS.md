@@ -139,11 +139,11 @@ enablement is the `is_enabled` field, toggled by `SetBasinServiceCommand` on the
 - `link_id`, `display_name`
 - `source_port_id`, `destination_port_id`
 - `max_flow_m3s` – link capacity
-- `flow_mode` – enum `RESTRICTED | COMMANDED | GRAVITY`.
+- `flow_mode` – enum `RESTRICTED | GRAVITY`.
   - `RESTRICTED`: flow = capacity × valve opening.
   - `GRAVITY`: self-regulating on head difference, using `design_head_m`.
-  - `COMMANDED`: **Planned / Not Implemented** — warns once at runtime and behaves as
-    `RESTRICTED` fully open (removal tracked by ROADMAP WP4.3).
+  - The former `COMMANDED` placeholder was removed in WP4.3; a link using it is now rejected
+    at configuration load. It may return only under the ROADMAP "triggered later" contract.
 - `design_head_m` – reference head for `GRAVITY` mode (there is no `flow_coefficient` field).
 - `actuator_id` – the controlling `SimValve`, if any.
 

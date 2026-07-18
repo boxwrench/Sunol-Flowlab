@@ -43,7 +43,7 @@ static func solve_flows(context: SimulationContext) -> void:
 				link.granted_flow_m3s = 0.0
 				# Excluded from proration sets; do not append to incoming_links.
 				continue
-			# F2.2-5: COMMANDED / GRAVITY handling is now consolidated in
+			# F2.2-5: flow-mode (RESTRICTED / GRAVITY) handling is consolidated in
 			# FlowLink.calculate_requested_flow() — solver always calls it.
 			link.calculate_requested_flow()
 			incoming_links.append(link)

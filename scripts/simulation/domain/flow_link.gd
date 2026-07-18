@@ -9,7 +9,7 @@ var destination_port: FlowPort = null
 
 var max_flow_m3s: float = 0.0
 var reverse_flow_allowed: bool = false
-var flow_mode: StringName = &"RESTRICTED" # COMMANDED, RESTRICTED, GRAVITY
+var flow_mode: StringName = &"RESTRICTED" # RESTRICTED, GRAVITY
 var design_head_m: float = 0.0
 
 # Actuator controlling this link
@@ -23,8 +23,7 @@ var actual_flow_m3s: float = 0.0
 var is_enabled: bool = true
 var constraint_reason: String = ""
 
-# F2.2-5: warn-once flags prevent log flooding at 100k-tick soaks.
-var _commanded_warned: bool = false
+# F2.2-5: warn-once flag prevents log flooding at 100k-tick soaks.
 var _gravity_warned: bool = false
 
 func initialize(config: Dictionary, port_resolver: Callable) -> void:
@@ -75,18 +74,6 @@ func calculate_requested_flow() -> float:
 				constraint_reason = "Valve Restricted"
 		else:
 			requested_flow_m3s = max_flow_m3s
-	elif flow_mode == &"COMMANDED":
-		# F2.2-5 / Edge Rule 6: COMMANDED is unimplemented — warn once per link
-		# to avoid log flooding over 100k-tick soaks, then behave as RESTRICTED
-		# at full opening. Per guardrail 10: silent placeholder behavior prohibited.
-		if not _commanded_warned:
-			push_warning(
-				"FlowLink '%s': COMMANDED mode is unimplemented. Treating as RESTRICTED at opening=1.0." \
-				% link_id
-			)
-			_commanded_warned = true
-		constraint_reason = "COMMANDED (unimplemented, treated as RESTRICTED@1.0)"
-		requested_flow_m3s = max_flow_m3s
 	elif flow_mode == &"GRAVITY":
 		var opening: float = 1.0
 		if actuator != null:

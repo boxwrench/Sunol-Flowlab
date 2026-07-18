@@ -60,9 +60,10 @@ link its own port.
 
 A `FlowLink` (`flow_link.gd`) connects one source port to one destination port and carries
 `max_flow_m3s`. Its `flow_mode` is `RESTRICTED` (flow = `max_flow_m3s` × actuator opening) by
-default. `COMMANDED` is unimplemented — it warns once and falls back to RESTRICTED at full open;
-any unknown mode warns once and falls back to RESTRICTED at current
-opening. If a link names an `actuator_id`, that valve modulates its flow.
+default, or `GRAVITY` (self-regulating on head difference). These are the only supported modes;
+any other value is rejected at configuration load (as a defensive backstop, an unknown mode
+reaching `FlowLink` warns once and falls back to RESTRICTED at current opening). If a link names
+an `actuator_id`, that valve modulates its flow.
 
 ### 1.4 The two-pass flow solver
 Flow is resolved by `FlowSolver` (`scripts/simulation/hydraulics/flow_solver.gd`) over the

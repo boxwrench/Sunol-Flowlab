@@ -150,8 +150,8 @@
           "description": "Hydraulic capacity [m3/s]. RESTRICTED mode requests max_flow_m3s * actuator opening."
         },
         "flow_mode": {
-          "enum": ["RESTRICTED", "COMMANDED", "GRAVITY"],
-          "description": "RESTRICTED: flow = capacity x valve opening. COMMANDED: unimplemented — warns at runtime and behaves as RESTRICTED fully open. GRAVITY: flow is self-regulated based on head differences."
+          "enum": ["RESTRICTED", "GRAVITY"],
+          "description": "RESTRICTED: flow = capacity x valve opening. GRAVITY: flow is self-regulated based on head differences."
         },
         "design_head_m": {
           "$ref": "defs.schema.json#/$defs/positive_number",
