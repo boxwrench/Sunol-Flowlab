@@ -1,953 +1,179 @@
 # Repository Architecture
 
-## Drinking Water Digital Twin Sandbox
+Logical and modular architecture for the Sunol FlowLab drinking-water digital-twin
+sandbox (Godot 4.7, GDScript).
 
-This document defines the logical and modular repository architecture for the Godot-based drinking water digital twin sandbox.
+**How to read this document.** Part I is the **binding core**: the directory layout,
+architectural layers, module and tick/snapshot boundaries, dependency rules, and invariants
+that code must respect. Part II is a **non-binding appendix** holding aspirational and
+historical material (planned buildout, suggested patterns, original build order) — useful
+context, but not a contract on today's code.
 
-The architecture is designed to support:
-
-- Incremental development.
-- Reusable process-unit modules.
-- Clear separation between simulation logic and 3D presentation.
-- Deterministic hydraulic calculations.
-- Editable automation logic.
-- Automated testing.
-- Data-driven plant configuration.
-- Safe and efficient development with Claude Code and Codex.
-- Future expansion into water quality, training scenarios, PLC logic, and external integrations.
+This document is the architectural spine. Where a topic has a dedicated authority document
+(contracts, topology, units, testing, control, presentation), the detail lives there and this
+document points to it — see the **Authority Map** (§9). On any structural conflict,
+`REPOSITORY_ARCHITECTURE.md` wins per `docs/INDEX.md`; on symbol/field detail, the specialized
+doc and the committed code win.
 
 ---
 
-# 1. Architectural Principles
+# Part I — Binding Core
 
-## 1.1 Simulation First, Presentation Second
+## 1. Architectural Principles
 
-The hydraulic and automation simulation must not depend on:
+### 1.1 Simulation First, Presentation Second
 
-- 3D models.
-- Camera state.
-- UI panels.
-- Animation state.
-- Particle systems.
-- Visual water meshes.
-- Frame rate.
-
-The plant must be capable of running as a headless simulation with no 3D scene loaded.
-
-The 3D layer reads simulation state and presents it visually.
+The hydraulic and automation simulation must not depend on 3D models, camera state, UI
+panels, animation, particles, water meshes, or frame rate. The plant must run headless with no
+3D scene loaded. The 3D layer reads simulation state and presents it; it must never change
+hydraulic values directly — it sends commands through the command interface.
 
 ```text
-Simulation State
-      │
-      ▼
-Presentation Adapter
-      │
-      ▼
-3D Models and UI
+Simulation State → Presentation Adapter → 3D Models and UI
 ```
 
-The presentation layer must never directly change hydraulic values. It sends commands through the simulation command interface.
+### 1.2 Composition Over Inheritance
 
----
+Process units are assembled from small reusable components (storage model, ports, actuators,
+alarms, visual adapter) rather than deep inheritance trees. A filter reuses the same components
+a basin does, adding only filter-specific behavior.
 
-## 1.2 Composition Over Inheritance
+### 1.3 Data-Driven Plant Construction
 
-Process units should be assembled from small reusable components instead of deep inheritance trees.
-
-For example, a sedimentation basin should not contain all behavior in one large script.
-
-It should be composed from:
-
-```text
-Sedimentation Basin
-├── Storage Model
-├── Inlet Flow Port
-├── Outlet Flow Port
-├── Inlet Gate
-├── Outlet Gate
-├── Drain Valve
-├── Spillway
-├── Alarm Set
-├── Operating State Machine
-└── Visual Adapter
-```
-
-A filter can reuse many of the same components while adding filter-specific behavior.
-
----
-
-## 1.3 Data-Driven Plant Construction
-
-Plant capacities, elevations, flow limits, setpoints, and topology must be stored in configuration files or Godot Resources.
-
-Do not hard-code plant-specific values into reusable scripts.
-
-Reusable code defines behavior.
-
-Configuration defines a particular plant.
+Plant capacities, elevations, flow limits, setpoints, and topology live in configuration files,
+not in reusable scripts. Reusable code defines behavior; configuration defines a particular
+plant.
 
 ```text
 Reusable Code + Plant Configuration = Running Plant Model
 ```
 
----
+### 1.4 One Direction of Dependency
 
-## 1.4 One Direction of Dependency
-
-Dependencies should flow inward toward the simulation core.
+Dependencies flow inward toward the simulation core. The simulation domain must not import or
+reference UI or 3D presentation classes.
 
 ```text
-UI ───────────────┐
-                  │
+UI ──────────────┐
 3D Presentation ──┼──> Application Services ──> Simulation Domain
-                  │
-Scenario Tools ───┘
+Tools/Config ─────┘
 ```
 
-The simulation domain must not import or reference UI or 3D presentation classes.
+### 1.5 Explicit Interfaces Between Modules
 
----
+Modules communicate through defined interfaces and never reach into each other's internal
+variables: a flow link requests water from a source port; a controller commands an actuator;
+the UI sends a command through the command bus; a 3D scene reads a public snapshot.
 
-## 1.5 Explicit Interfaces Between Modules
+### 1.6 Deterministic Fixed-Step Simulation
 
-Modules communicate through defined interfaces and events.
+The simulation runs on a fixed timestep. The same initial state, configuration, commands, and
+timestep must produce identical results. Rendering frame rate must not affect hydraulic
+results. (INV-2 — Determinism.)
 
-They must not reach into each other's internal variables.
+### 1.7 Water Conservation as a Core Invariant
 
-Examples:
-
-- A flow link requests water from a source port.
-- A controller issues a command to an actuator.
-- An alarm reads an instrument value.
-- A 3D scene reads a public simulation snapshot.
-- The UI sends a command through a command bus.
-
----
-
-## 1.6 Deterministic Fixed-Step Simulation
-
-The simulation runs using a fixed timestep.
-
-The same:
-
-- Initial state.
-- Configuration.
-- User commands.
-- Simulation timestep.
-
-must produce the same results.
-
-Rendering frame rate must not affect hydraulic results.
-
----
-
-## 1.7 Water Conservation as a Core Invariant
-
-Every simulation tick must support a plant-wide mass-balance check.
+Every tick must support a plant-wide mass-balance check. Floating-point tolerance is allowed;
+unexplained creation or loss of water is not. (INV-1 — Water conservation.)
 
 ```text
-Starting Storage
-+ External Inflow
-- External Outflow
-- Spill
-- Drain
-= Ending Storage
+Starting Storage + External Inflow − External Outflow − Spill − Drain = Ending Storage
 ```
 
-Floating-point tolerance is allowed, but unexplained creation or loss of water is not.
+## 2. Repository Structure
 
----
-
-# 2. Repository Top-Level Structure
+Actual top-level layout:
 
 ```text
-water-digital-twin/
+Sunol FlowLab/
 ├── project.godot
-├── README.md
-├── LICENSE
-├── CHANGELOG.md
-├── CONTRIBUTING.md
-├── AGENTS.md
-├── .gitignore
-├── .editorconfig
-├── .gitattributes
-│
-├── addons/
-├── assets/
-├── config/
-├── data/
-├── docs/
-├── scenes/
-├── scripts/
-├── tests/
-├── tools/
-└── builds/
+├── README.md, LICENSE, CHANGELOG.md, CONTRIBUTING.md, AGENTS.md
+├── addons/        # third-party Godot addons (GUT)
+├── assets/        # models, materials, textures, licenses (see Appendix E)
+├── config/        # plant definitions and JSON schemas
+│   ├── plants/    # e.g. phase3_headworks/
+│   └── schema/    # topology, controllers, alarms, plant, initial_conditions, …
+├── docs/          # authority documentation (see INDEX.md)
+├── scenes/        # Godot scenes (presentation/UI only)
+├── scripts/       # all GDScript (see §3 for layers)
+├── tests/         # GUT tests: unit/, integration/, invariants/
+└── tools/         # standalone editor/dev tooling
 ```
 
----
-
-# 3. Recommended Complete Folder Structure
+`scripts/` is divided into layers:
 
 ```text
-water-digital-twin/
-│
-├── project.godot
-├── README.md
-├── LICENSE
-├── CHANGELOG.md
-├── CONTRIBUTING.md
-├── AGENTS.md
-├── .gitignore
-├── .editorconfig
-├── .gitattributes
-│
-├── addons/
-│   ├── gut/
-│   └── third_party/
-│
-├── assets/
-│   ├── models/
-│   │   ├── environment/
-│   │   ├── generic_equipment/
-│   │   ├── process_units/
-│   │   ├── structures/
-│   │   └── vehicles/
-│   │
-│   ├── materials/
-│   │   ├── concrete/
-│   │   ├── metal/
-│   │   ├── terrain/
-│   │   └── water/
-│   │
-│   ├── textures/
-│   ├── icons/
-│   ├── fonts/
-│   ├── audio/
-│   └── licenses/
-│
-├── config/
-│   ├── plants/
-│   │   └── default_surface_water_plant/
-│   │       ├── plant.json
-│   │       ├── topology.json
-│   │       ├── initial_conditions.json
-│   │       ├── alarms.json
-│   │       ├── controllers.json
-│   │       ├── process_units/
-│   │       └── scenarios/
-│   │
-│   ├── schemas/
-│   │   ├── plant.schema.json
-│   │   ├── topology.schema.json
-│   │   ├── process_unit.schema.json
-│   │   ├── alarm.schema.json
-│   │   └── controller.schema.json
-│   │
-│   └── defaults/
-│       ├── unit_defaults.json
-│       ├── alarm_defaults.json
-│       └── controller_defaults.json
-│
-├── data/
-│   ├── runtime/
-│   ├── saves/
-│   ├── snapshots/
-│   ├── trends/
-│   └── exports/
-│
-├── docs/
-│   ├── PROJECT_SCOPE.md
-│   ├── REPOSITORY_ARCHITECTURE.md
-│   ├── PLANT_TOPOLOGY.md
-│   ├── SIMULATION_RULES.md
-│   ├── CONTROL_LOGIC.md
-│   ├── PROCESS_UNIT_CONTRACTS.md
-│   ├── TAG_NAMING.md
-│   ├── INTERNAL_UNITS.md
-│   ├── TESTING_STRATEGY.md
-│   ├── ASSET_PIPELINE.md
-│   ├── AI_DEVELOPMENT_RULES.md
-│   ├── DECISIONS/
-│   └── diagrams/
-│
-├── scenes/
-│   ├── application/
-│   │   ├── main.tscn
-│   │   ├── bootstrap.tscn
-│   │   └── loading_screen.tscn
-│   │
-│   ├── plant/
-│   │   ├── complete_plant.tscn
-│   │   ├── headworks_area.tscn
-│   │   ├── sedimentation_area.tscn
-│   │   ├── filtration_area.tscn
-│   │   └── finished_water_area.tscn
-│   │
-│   ├── process_units/
-│   │   ├── reservoirs/
-│   │   ├── manifolds/
-│   │   ├── flash_mix/
-│   │   ├── distribution_box/
-│   │   ├── sedimentation/
-│   │   ├── applied_channel/
-│   │   ├── filters/
-│   │   ├── clearwell/
-│   │   ├── contact_basins/
-│   │   └── treated_storage/
-│   │
-│   ├── components/
-│   │   ├── actuators/
-│   │   ├── instruments/
-│   │   ├── water_surfaces/
-│   │   ├── flow_indicators/
-│   │   ├── alarms/
-│   │   └── selection/
-│   │
-│   ├── cameras/
-│   ├── environment/
-│   ├── ui/
-│   │   ├── shell/
-│   │   ├── asset_panel/
-│   │   ├── alarms/
-│   │   ├── controls/
-│   │   ├── trends/
-│   │   ├── overlays/
-│   │   └── debug/
-│   │
-│   └── debug/
-│
-├── scripts/
-│   ├── application/
-│   │   ├── app_bootstrap.gd
-│   │   ├── application_state.gd
-│   │   ├── command_bus.gd
-│   │   ├── event_bus.gd
-│   │   ├── save_service.gd
-│   │   └── snapshot_service.gd
-│   │
-│   ├── simulation/
-│   │   ├── core/
-│   │   │   ├── simulation_engine.gd
-│   │   │   ├── simulation_clock.gd
-│   │   │   ├── simulation_context.gd
-│   │   │   ├── simulation_snapshot.gd
-│   │   │   ├── mass_balance_tracker.gd
-│   │   │   └── simulation_result.gd
-│   │   │
-│   │   ├── domain/
-│   │   │   ├── plant_model.gd
-│   │   │   ├── process_unit.gd
-│   │   │   ├── storage_unit.gd
-│   │   │   ├── junction_unit.gd
-│   │   │   ├── flow_link.gd
-│   │   │   ├── flow_port.gd
-│   │   │   ├── actuator.gd
-│   │   │   ├── instrument.gd
-│   │   │   ├── alarm.gd
-│   │   │   └── controller.gd
-│   │   │
-│   │   ├── hydraulics/
-│   │   │   ├── storage_balance.gd
-│   │   │   ├── commanded_flow_model.gd
-│   │   │   ├── restricted_flow_model.gd
-│   │   │   ├── gravity_flow_model.gd
-│   │   │   ├── splitter_solver.gd
-│   │   │   ├── capacity_limiter.gd
-│   │   │   └── hydraulic_constraints.gd
-│   │   │
-│   │   ├── automation/
-│   │   │   ├── control_mode.gd
-│   │   │   ├── level_controller.gd
-│   │   │   ├── flow_controller.gd
-│   │   │   ├── split_controller.gd
-│   │   │   ├── lead_lag_controller.gd
-│   │   │   ├── interlock.gd
-│   │   │   ├── permissive.gd
-│   │   │   └── sequence_controller.gd
-│   │   │
-│   │   ├── state_machines/
-│   │   │   ├── unit_state_machine.gd
-│   │   │   ├── basin_state_machine.gd
-│   │   │   ├── filter_state_machine.gd
-│   │   │   └── reservoir_state_machine.gd
-│   │   │
-│   │   ├── process_units/
-│   │   │   ├── source_reservoir_model.gd
-│   │   │   ├── inlet_manifold_model.gd
-│   │   │   ├── flash_mix_model.gd
-│   │   │   ├── distribution_box_model.gd
-│   │   │   ├── sedimentation_basin_model.gd
-│   │   │   ├── applied_channel_model.gd
-│   │   │   ├── filter_model.gd
-│   │   │   ├── clearwell_model.gd
-│   │   │   ├── contact_basin_model.gd
-│   │   │   └── treated_reservoir_model.gd
-│   │   │
-│   │   ├── alarms/
-│   │   │   ├── alarm_engine.gd
-│   │   │   ├── threshold_alarm.gd
-│   │   │   ├── state_alarm.gd
-│   │   │   ├── delayed_alarm.gd
-│   │   │   └── alarm_record.gd
-│   │   │
-│   │   ├── commands/
-│   │   │   ├── simulation_command.gd
-│   │   │   ├── set_valve_position_command.gd
-│   │   │   ├── set_flow_setpoint_command.gd
-│   │   │   ├── set_control_mode_command.gd
-│   │   │   ├── set_basin_service_command.gd
-│   │   │   ├── set_unit_service_command.gd
-│   │   │   └── acknowledge_alarm_command.gd
-│   │   │
-│   │   ├── events/
-│   │   │   ├── simulation_event.gd
-│   │   │   ├── alarm_activated_event.gd
-│   │   │   ├── alarm_cleared_event.gd
-│   │   │   ├── unit_state_changed_event.gd
-│   │   │   └── spill_started_event.gd
-│   │   │
-│   │   └── validation/
-│   │       ├── plant_validator.gd
-│   │       ├── topology_validator.gd
-│   │       ├── configuration_validator.gd
-│   │       └── invariant_validator.gd
-│   │
-│   ├── configuration/
-│   │   ├── config_loader.gd
-│   │   ├── config_registry.gd
-│   │   ├── plant_factory.gd
-│   │   ├── resource_factory.gd
-│   │   └── schema_validator.gd
-│   │
-│   ├── presentation/
-│   │   ├── adapters/
-│   │   │   ├── process_unit_visual_adapter.gd
-│   │   │   ├── storage_visual_adapter.gd
-│   │   │   ├── valve_visual_adapter.gd
-│   │   │   ├── water_surface_adapter.gd
-│   │   │   └── alarm_visual_adapter.gd
-│   │   │
-│   │   ├── camera/
-│   │   ├── selection/
-│   │   ├── animation/
-│   │   └── overlays/
-│   │
-│   ├── ui/
-│   │   ├── view_models/
-│   │   ├── controllers/
-│   │   ├── formatters/
-│   │   └── widgets/
-│   │
-│   ├── telemetry/
-│   │   ├── trend_buffer.gd
-│   │   ├── tag_registry.gd
-│   │   ├── telemetry_snapshot.gd
-│   │   └── csv_exporter.gd
-│   │
-│   ├── scenarios/
-│   │   ├── scenario.gd
-│   │   ├── scenario_runner.gd
-│   │   ├── scheduled_action.gd
-│   │   └── scenario_condition.gd
-│   │
-│   └── utilities/
-│       ├── unit_conversion.gd
-│       ├── math_utils.gd
-│       ├── id_utils.gd
-│       ├── time_utils.gd
-│       └── result.gd
-│
-├── tests/
-│   ├── unit/
-│   │   ├── simulation/
-│   │   ├── hydraulics/
-│   │   ├── automation/
-│   │   ├── alarms/
-│   │   ├── configuration/
-│   │   └── utilities/
-│   │
-│   ├── integration/
-│   │   ├── three_unit_train/
-│   │   ├── sedimentation_train/
-│   │   ├── filtration_train/
-│   │   └── complete_plant/
-│   │
-│   ├── invariants/
-│   │   ├── test_mass_conservation.gd
-│   │   ├── test_no_negative_storage.gd
-│   │   ├── test_capacity_limits.gd
-│   │   └── test_deterministic_replay.gd
-│   │
-│   ├── scenarios/
-│   ├── fixtures/
-│   └── helpers/
-│
-├── tools/
-│   ├── config_editor/
-│   ├── topology_visualizer/
-│   ├── validation/
-│   ├── asset_import/
-│   ├── data_generation/
-│   └── ci/
-│
-└── builds/
-    ├── windows/
-    ├── linux/
-    └── web/
+scripts/
+├── simulation/     # domain core — no presentation dependencies
+│   ├── domain/       # ProcessUnit, StorageUnit, ExternalBoundary, FlowLink, FlowPort, SimValve, SimController
+│   ├── hydraulics/   # flow solver, storage balance
+│   ├── automation/   # LevelController
+│   ├── alarms/       # ThresholdAlarm, AlarmEngine
+│   ├── commands/     # SimulationCommand subclasses
+│   ├── events/       # domain events
+│   └── core/         # engine, clock, context, snapshot service
+├── application/    # bootstrap, hosting, command routing
+├── configuration/  # config loading, schema validation, plant factory
+├── presentation/   # 3D visual adapters (read snapshots)
+├── ui/             # panels, controls (emit commands)
+├── utilities/      # shared helpers (unit conversion, etc.)
+└── tools/          # editor-side script tooling
 ```
 
----
+There is no `scripts/telemetry/` or `scripts/scenarios/` layer today; trend/telemetry and
+scenario frameworks are parked (see `docs/ROADMAP.md`). Their planned shape is noted in the
+Appendix, not the binding core.
 
-# 4. Architectural Layers
+## 3. Architectural Layers
 
-## 4.1 Simulation Domain Layer
+| Layer | Location | Responsibility | Restriction |
+|-------|----------|----------------|-------------|
+| Simulation Domain | `scripts/simulation/` | Plant/unit state, flow, volume, level, automation, alarm evaluation, mass-balance, commands/events | No `Node3D`, camera, UI, asset, scene, or frame-rate dependency |
+| Application | `scripts/application/` | Start/stop, load config, build the plant, route commands, publish events, snapshots | Coordinates systems; contains no hydraulic equations |
+| Configuration | `scripts/configuration/`, `config/` | Load and validate plant files, construct domain objects, apply initial conditions | Converts data into domain objects only |
+| Presentation | `scripts/presentation/`, `scenes/` | Display units, animate valves/gates, move water surfaces, highlight alarms, camera | Reads immutable snapshots per `PRESENTATION_MAPPING.md`; never edits simulation state |
+| UI | `scripts/ui/`, `scenes/ui/` | Show values/alarms/trends, accept operator input, change speed/mode/setpoints | UI actions become `SimulationCommand`s; never mutate the model directly |
 
-Location:
+The simulation domain uses plain GDScript classes / `RefCounted` objects, not Godot Nodes,
+except where Godot lifecycle behavior is genuinely required.
+
+## 4. Module Boundaries
+
+Symbol-level interfaces (fields, methods, config keys) for `ProcessUnit`, `StorageUnit`,
+`FlowLink`, `FlowPort`, `SimValve`, `SimController`, and `ThresholdAlarm` are defined and kept
+reconciled with production in **`docs/PROCESS_UNIT_CONTRACTS.md`** — that document is the
+authority; do not restate signatures here (it caused drift historically).
+
+The architectural boundaries those contracts must preserve:
+
+- **Uniform lifecycle.** Every unit extends `ProcessUnit` and implements the tick lifecycle
+  (`pre_tick` / `solve_tick` / `post_tick`, `get_snapshot`, `validate`), so the engine can
+  drive any unit uniformly.
+- **Ports decouple units.** Units connect only through typed `FlowPort`s
+  (`INLET`/`OUTLET`/`DRAIN`, plus boundary ports); neither unit knows the other's internals.
+- **Controllers command actuators, not state.** A controller reads a process variable and
+  produces an actuator command; it must never write a stored volume.
+- **Alarm evaluation is centralized.** `AlarmEngine` decides alarm state over `ThresholdAlarm`
+  instances; UI and presentation only display it.
+- **Junctions are storage.** Manifolds, distribution boxes, and headers are modeled as small
+  `StorageUnit`s to keep the topology a pure DAG — there is no separate junction class.
+
+## 5. Simulation Tick Lifecycle
+
+The engine executes each fixed tick in this exact order. The order is **binding** because
+changing it changes results; it is asserted by `tests/unit/simulation/test_tick_order.gd` and
+specified authoritatively in **`docs/SIMULATION_RULES.md`**.
 
 ```text
-scripts/simulation/
-```
-
-Responsibilities:
-
-- Plant state.
-- Process-unit state.
-- Flow calculations.
-- Volume calculations.
-- Level calculations.
-- Automation logic.
-- Alarm evaluation.
-- State transitions.
-- Mass-balance tracking.
-- Simulation commands and events.
-
-Restrictions:
-
-- No references to `Node3D`.
-- No references to cameras.
-- No references to UI controls.
-- No loading of textures, meshes, or scenes.
-- No direct user-input handling.
-- No dependence on frame rendering.
-
-The simulation domain should use plain GDScript classes, Resources, RefCounted objects, or lightweight Nodes only where Godot lifecycle behavior is genuinely required.
-
----
-
-## 4.2 Application Layer
-
-Location:
-
-```text
-scripts/application/
-```
-
-Responsibilities:
-
-- Start and stop the application.
-- Load plant configuration.
-- Create the plant model.
-- Connect simulation, UI, and presentation.
-- Route commands.
-- Publish events.
-- Save and restore snapshots.
-- Manage application-level state.
-
-This layer coordinates systems but should not contain hydraulic equations.
-
----
-
-## 4.3 Configuration Layer
-
-Location:
-
-```text
-scripts/configuration/
-config/
-```
-
-Responsibilities:
-
-- Load plant files.
-- Validate schemas.
-- Create simulation objects.
-- Apply initial conditions.
-- Report configuration errors.
-- Support alternate plant definitions.
-
-The configuration layer converts data into domain objects.
-
-```text
-JSON or Resource
-      │
-      ▼
-Configuration Loader
-      │
-      ▼
-Plant Factory
-      │
-      ▼
-Simulation Domain Objects
-```
-
----
-
-## 4.4 Presentation Layer
-
-Location:
-
-```text
-scripts/presentation/
-scenes/process_units/
-scenes/plant/
-```
-
-Responsibilities:
-
-- Display process units.
-- Animate valves and gates.
-- Move water surfaces.
-- Show flow arrows.
-- Highlight alarms.
-- Support camera controls.
-- Handle asset selection.
-- Display operating states.
-
-The presentation layer reads immutable snapshots. Quantitative and categorical mappings
-must follow `PRESENTATION_MAPPING.md`.
-
-It should not edit simulation state directly.
-
----
-
-## 4.5 UI Layer
-
-Location:
-
-```text
-scripts/ui/
-scenes/ui/
-```
-
-Responsibilities:
-
-- Display selected asset values.
-- Display alarms.
-- Display trends.
-- Display plant summary.
-- Accept operator commands.
-- Change simulation speed.
-- Switch manual and automatic modes.
-- Edit setpoints.
-
-UI actions become simulation commands.
-
-```text
-Button or Slider
-      │
-      ▼
-UI Controller
-      │
-      ▼
-Simulation Command
-      │
-      ▼
-Command Bus
-      │
-      ▼
-Simulation Engine
-```
-
----
-
-## 4.6 Telemetry Layer
-
-Location:
-
-```text
-scripts/telemetry/
-```
-
-Responsibilities:
-
-- Maintain tag registry.
-- Produce current telemetry snapshots.
-- Maintain rolling trend buffers.
-- Export CSV data.
-- Support future MQTT or historian adapters.
-
-This layer observes simulation state without owning it.
-
----
-
-## 4.7 Scenario Layer
-
-Location:
-
-```text
-scripts/scenarios/
-config/plants/.../scenarios/
-```
-
-Responsibilities:
-
-- Schedule commands.
-- Inject disturbances.
-- Define scenario start conditions.
-- Define scenario completion conditions.
-- Support future training exercises.
-
-Scenario logic must use the same command interfaces as the UI.
-
-It must not modify internal simulation values directly.
-
----
-
-# 5. Module Boundaries
-
-## 5.1 Process Unit Contract
-
-Every process-unit model should expose a consistent public contract.
-
-```gdscript
-class_name ProcessUnit
-
-var unit_id: StringName
-var display_name: String
-var enabled: bool
-var operating_state: int
-
-func initialize(config: Dictionary) -> void
-func pre_tick(context: SimulationContext) -> void
-func solve_tick(context: SimulationContext) -> void
-func post_tick(context: SimulationContext) -> void
-func get_snapshot() -> Dictionary
-func validate() -> Array[String]
-```
-
-The exact implementation may change, but the lifecycle should remain consistent.
-
----
-
-## 5.2 Storage Unit Contract
-
-A storage unit should expose:
-
-```text
-Current volume
-Minimum volume
-Maximum volume
-Surface area or storage curve
-Bottom elevation
-Water elevation
-Inflow total
-Outflow total
-Drain flow
-Spill flow
-Available withdrawal
-Available receiving capacity
-```
-
-Recommended responsibilities:
-
-- Accept inflow.
-- Limit withdrawal.
-- Update stored volume.
-- Calculate water elevation.
-- Calculate spill.
-- Prevent negative volume.
-- Report mass-balance terms.
-
----
-
-## 5.3 Flow Port Contract
-
-Each process unit communicates through ports.
-
-Port types:
-
-```text
-INLET
-OUTLET
-DRAIN
-SPILL
-EXTERNAL_SOURCE
-EXTERNAL_SINK
-```
-
-A flow port should contain:
-
-```text
-Port ID
-Owner unit ID
-Direction
-Maximum flow
-Enabled state
-Connected link IDs
-Current requested flow
-Current accepted flow
-Current actual flow
-```
-
-Ports allow modules to be linked without either module knowing the internal implementation of the other.
-
----
-
-## 5.4 Flow Link Contract
-
-A flow link connects one source port to one destination port.
-
-Responsibilities:
-
-- Read requested flow.
-- Read source availability.
-- Read destination capacity.
-- Apply actuator restriction.
-- Apply link capacity.
-- Calculate actual flow.
-- Transfer equal volume out of the source and into the destination.
-- Record constrained-flow reasons.
-
-Suggested result:
-
-```gdscript
-{
-    "requested_flow": 1.5,
-    "actual_flow": 1.1,
-    "constraint": "DESTINATION_CAPACITY"
-}
-```
-
----
-
-## 5.5 Actuator Contract
-
-Actuator examples:
-
-- Valve.
-- Gate.
-- Pump command.
-- Mixer command.
-- Drain valve.
-
-Common state:
-
-```text
-Commanded position
-Actual position
-Opening rate
-Closing rate
-Control mode
-Availability
-Failure mode
-Minimum position
-Maximum position
-```
-
-Public methods:
-
-```gdscript
-func command_position(value: float) -> void
-func set_mode(mode: ControlMode) -> void
-func update_actuator(delta_seconds: float) -> void
-func get_effective_opening() -> float
-```
-
----
-
-## 5.6 Instrument Contract
-
-Instrument examples:
-
-- Level transmitter.
-- Flow transmitter.
-- Valve position indicator.
-- Runtime meter.
-- Turbidity placeholder.
-- Chlorine residual placeholder.
-
-Common state:
-
-```text
-Tag
-Engineering units
-Raw value
-Displayed value
-Quality
-Range
-Bias
-Noise
-Failure mode
-```
-
-The proof of concept can use perfect instruments initially, but the interface should allow future failures and noise.
-
----
-
-## 5.7 Controller Contract
-
-Each controller should:
-
-- Read one or more instrument values.
-- Compare values to setpoints.
-- Apply deadband and limits.
-- Produce actuator commands.
-- Report its internal state.
-
-Suggested interface:
-
-```gdscript
-func evaluate(context: SimulationContext) -> void
-func calculate_output(context: SimulationContext) -> float
-func reset() -> void
-func get_snapshot() -> Dictionary
-```
-
-Controllers must not directly change stored volumes.
-
-They command actuators.
-
----
-
-## 5.8 Alarm Contract
-
-Each alarm should define:
-
-```text
-Alarm ID
-Source tag
-Priority
-Condition
-Setpoint
-Deadband
-Activation delay
-Clear delay
-Acknowledgement state
-Active state
-Activation timestamp
-Clear timestamp
-```
-
-Alarm evaluation should be centralized in the alarm engine.
-
-UI code must not decide whether an alarm is active.
-
----
-
-# 6. Simulation Tick Lifecycle
-
-The simulation engine should execute each fixed tick in a defined order.
-
-```text
-1. Receive queued commands
-2. Apply mode and setpoint changes
-3. Update actuator positions
-4. Evaluate controllers
-5. Resolve requested flows
-6. Apply source and destination constraints
-7. Transfer water through links
-8. Update storage volumes
-9. Calculate levels and spills
+ 1. Receive queued commands
+ 2. Apply mode and setpoint changes
+ 3. Update actuator positions
+ 4. Evaluate controllers
+ 5. Resolve requested flows
+ 6. Apply source and destination constraints
+ 7. Transfer water through links
+ 8. Update storage volumes
+ 9. Calculate levels and spills
 10. Update process-unit state machines
 11. Evaluate alarms and interlocks
 12. Record telemetry
@@ -955,914 +181,167 @@ The simulation engine should execute each fixed tick in a defined order.
 14. Publish simulation snapshot
 ```
 
-Recommended method structure:
+Actuators integrate before controllers evaluate, so controller output takes effect on the next
+tick (intended one-tick scan lag).
 
-```gdscript
-func run_tick(delta_seconds: float) -> void:
-    command_processor.apply_pending_commands()
-    actuator_system.update(delta_seconds)
-    controller_system.evaluate(delta_seconds)
-    flow_solver.solve(delta_seconds)
-    storage_system.integrate(delta_seconds)
-    state_machine_system.update(delta_seconds)
-    alarm_system.evaluate(delta_seconds)
-    telemetry_system.record()
-    invariant_validator.validate()
-    snapshot_service.publish()
-```
+## 6. Command, Event, and Snapshot Boundaries
 
-The order must be documented and tested because changing it can change simulation results.
+These three boundaries keep presentation and simulation separated and make runs deterministic
+and replayable.
 
----
+- **Commands request changes.** All state-changing external actions are enqueued as
+  `SimulationCommand` subclasses (e.g. `SetValvePositionCommand`, `SetBasinServiceCommand`,
+  `SetLevelSetpointCommand`, `SetControllerModeCommand`) and applied at a scheduled tick. This
+  makes actions validatable, loggable, replayable, and identical whether they come from the UI
+  or a test.
+- **Events report changes.** Events communicate completed state changes; they must not be used
+  to implement hydraulic calculation, which stays inside the engine.
+- **Snapshots expose state.** Presentation and UI read an immutable, read-only snapshot taken
+  at the end of a tick — never a live reference to a mutable domain object. Within one rendered
+  update, all data-bearing elements must use the same snapshot tick; presentation may lag but
+  must never lead the snapshot or become a second source of truth. Encoding and validation
+  rules are defined in **`docs/PRESENTATION_MAPPING.md`**.
 
-# 7. Plant Topology Model
+Scene scripts may move a water plane, rotate a valve handle, change a material, show an alarm
+light, or update a label. They may **not** calculate volume or flow, apply capacity limits,
+decide spills, evaluate interlocks, or determine alarm state.
 
-The plant should be represented as a directed graph.
+## 7. Dependency Rules
 
-```text
-Process Units = Nodes
-Flow Links = Edges
-Ports = Connection Points
-```
+**Allowed:** `simulation/core`, `simulation/hydraulics`, `simulation/automation` may depend on
+`simulation/domain` and utilities. `application` may depend on simulation and configuration.
+`presentation` may depend on application interfaces and snapshots. `ui` may depend on
+application services, commands, snapshots, and formatters. `tests` may depend on any target.
 
-Example:
-
-```text
-RESERVOIR_01.OUTLET
-    │
-    ▼
-LINK_RAW_01
-    │
-    ▼
-INLET_MANIFOLD.INLET_01
-```
-
-A topology file should identify:
-
-- Process units.
-- Ports.
-- Links.
-- Source and destination.
-- Maximum flow.
-- Default actuator.
-- Flow model.
-- Enabled state.
-
-Example:
-
-```json
-{
-  "id": "LINK_SED_01_TO_APPLIED",
-  "source": "SED_BASIN_01.OUTLET",
-  "destination": "APPLIED_CHANNEL.INLET_01",
-  "flow_model": "commanded",
-  "maximum_flow_m3s": 2.0,
-  "actuator_id": "GV_SED_01_EFF"
-}
-```
-
----
-
-# 8. Reusable Process-Unit Package Pattern
-
-Each process unit should follow the same package pattern.
-
-Example:
+**Forbidden:**
 
 ```text
-scenes/process_units/sedimentation/
-├── sedimentation_basin.tscn
-├── sedimentation_basin_visual.gd
-├── meshes/
-├── materials/
-└── README.md
-
-scripts/simulation/process_units/
-└── sedimentation_basin_model.gd
-
-config/defaults/
-└── sedimentation_basin_defaults.json
-
-tests/unit/simulation/process_units/
-└── test_sedimentation_basin_model.gd
-```
-
-The model, visual scene, configuration, and tests remain separate but clearly associated.
-
----
-
-# 9. Scene Architecture
-
-## 9.1 Main Application Scene
-
-Suggested structure:
-
-```text
-Main
-├── ApplicationServices
-├── SimulationHost
-├── PlantWorld
-├── CameraRig
-├── UserInterface
-├── DebugOverlay
-└── Audio
-```
-
-The `SimulationHost` owns the simulation engine lifecycle.
-
-The `PlantWorld` owns only 3D presentation scenes.
-
----
-
-## 9.2 Process-Unit Scene Pattern
-
-Example storage-unit scene:
-
-```text
-SedimentationBasinVisual
-├── StaticGeometry
-├── WaterSurface
-├── InletGateVisual
-├── OutletGateVisual
-├── DrainVisual
-├── SpillVisual
-├── FlowIndicators
-├── AlarmIndicator
-├── SelectionCollider
-├── LabelAnchor
-└── VisualAdapter
-```
-
-The scene should receive a `unit_id` that links it to the simulation model.
-
-```gdscript
-@export var unit_id: StringName
-```
-
-The visual adapter requests the latest snapshot for that ID.
-
----
-
-## 9.3 No Simulation Logic in Scene Scripts
-
-A scene script may:
-
-- Move a water plane.
-- Rotate a valve handle.
-- Change a material.
-- Show an alarm light.
-- Update a label.
-
-A scene script may not:
-
-- Calculate basin volume.
-- Calculate actual flow.
-- Apply plant capacity limits.
-- Decide whether a spill occurs.
-- Evaluate an interlock.
-- Determine alarm state.
-
----
-
-# 10. Application Services and Autoloads
-
-Use autoloads sparingly.
-
-Recommended initial autoloads:
-
-```text
-AppState
-EventBus
-CommandBus
-ConfigRegistry
-UnitConverter
-```
-
-Possible later autoloads:
-
-```text
-SaveService
-AudioService
-TelemetryRegistry
-```
-
-Do not make every subsystem an autoload.
-
-The simulation engine should be instantiated and owned by the application scene so tests can create isolated simulation engines.
-
----
-
-# 11. Command Architecture
-
-All state-changing external actions should use commands.
-
-Example command types:
-
-```text
-SetValvePosition
-SetGatePosition
-SetFlowSetpoint
-SetLevelSetpoint
-SetControlMode
-SetBasinService
-SetSimulationSpeed
-AcknowledgeAlarm
-ResetSimulation
-LoadSnapshot
-```
-
-Command example:
-
-```gdscript
-class_name SetValvePositionCommand
-extends SimulationCommand
-
-var actuator_id: StringName
-var requested_position: float
-```
-
-Benefits:
-
-- Commands can be validated.
-- Commands can be logged.
-- Commands can be replayed.
-- Scenarios and UI use the same path.
-- Future multiplayer or external integration becomes easier.
-- Deterministic testing becomes possible.
-
----
-
-# 12. Event Architecture
-
-Events communicate completed state changes.
-
-Examples:
-
-```text
-ValvePositionChanged
-UnitStateChanged
-AlarmActivated
-AlarmCleared
-SpillStarted
-SpillStopped
-ControllerModeChanged
-SimulationReset
-MassBalanceViolation
-```
-
-Commands request changes.
-
-Events report changes.
-
-```text
-Command: Set Basin 3 Out of Service
-Event: Basin 3 State Changed to Draining
-```
-
-Avoid using events to implement tightly coupled hydraulic calculations. Hydraulic calculation should remain inside the simulation engine.
-
----
-
-# 13. Snapshot Architecture
-
-The presentation and UI should read simulation snapshots.
-
-A snapshot is a read-only representation of state at the end of a simulation tick.
-
-Example:
-
-```gdscript
-{
-  "simulation_time": 3600.0,
-  "units": {
-    "SED_BASIN_01": {
-      "state": "IN_SERVICE",
-      "volume_m3": 42000.0,
-      "level_m": 4.6,
-      "inflow_m3s": 1.2,
-      "outflow_m3s": 1.18,
-      "spill_m3s": 0.0
-    }
-  },
-  "actuators": {},
-  "alarms": {},
-  "plant_totals": {}
-}
-```
-
-Snapshots prevent UI and visual code from holding unsafe references to mutable simulation objects.
-
-For each rendered update, all data-bearing presentation and UI elements must use one
-completed snapshot. Redundant indications must use the same snapshot tick; presentation
-interpolation may lag but must never lead that snapshot or become a second source of
-simulation truth. The detailed encoding and validation rules are defined in
-`PRESENTATION_MAPPING.md`.
-
----
-
-# 14. Configuration Architecture
-
-## 14.1 Configuration Categories
-
-Separate configuration into:
-
-```text
-Plant Identity
-Plant Topology
-Equipment Parameters
-Initial Conditions
-Automation Parameters
-Alarm Parameters
-Scenario Definitions
-Presentation Mapping
-```
-
-Do not place all configuration in one large file.
-
----
-
-## 14.2 Configuration Validation
-
-Validate before creating the simulation.
-
-Validation checks should include:
-
-- Duplicate IDs.
-- Missing source or destination ports.
-- Invalid flow direction.
-- Negative capacities.
-- Initial volume above maximum.
-- Spill elevation below operating level.
-- Missing actuator references.
-- Invalid controller references.
-- Circular connections where prohibited.
-- Flow splits that do not total correctly.
-- Units with no valid downstream path.
-
-Configuration errors should stop plant loading with specific messages.
-
----
-
-## 14.3 Stable IDs
-
-Every important object should have a stable ID.
-
-Examples:
-
-```text
-RSV_RAW_01
-RSV_RAW_02
-MNF_INLET_01
-MXR_FLASH_01
-DBX_SED_01
-SED_BASIN_01
-FLT_01
-CWL_01
-CT_BASIN_01
-RSV_TREATED_01
-```
-
-IDs should not depend on scene-tree paths.
-
-Scene nodes can move without breaking simulation references.
-
----
-
-# 15. Internal Unit Strategy
-
-Use SI units internally.
-
-```text
-Volume: cubic meters
-Flow: cubic meters per second
-Length and elevation: meters
-Time: seconds
-Mass: kilograms
-Dose: milligrams per liter
-```
-
-Display units can include:
-
-```text
-Flow: MGD
-Level: feet
-Volume: million gallons
-Time: minutes or hours
-```
-
-All conversion should occur at system boundaries.
-
-```text
-User Input in MGD
-        │
-        ▼
-Unit Converter
-        │
-        ▼
-Simulation in m³/s
-```
-
-Do not store mixed units inside domain objects.
-
----
-
-# 16. Testing Architecture
-
-## 16.1 Unit Tests
-
-Unit tests cover isolated behavior.
-
-Examples:
-
-- Storage level increases when inflow exceeds outflow.
-- Volume cannot become negative.
-- Valve opening is clamped from 0 to 1.
-- Flow is limited by source availability.
-- Flow is limited by destination capacity.
-- Spill activates above maximum volume.
-- Alarm delay behaves correctly.
-- Controller output respects limits.
-
----
-
-## 16.2 Integration Tests
-
-Integration tests cover connected systems.
-
-Examples:
-
-```text
-Reservoir → Basin → Receiving Reservoir
-```
-
-```text
-Distribution Box → Five Sedimentation Basins → Applied Channel
-```
-
-```text
-Applied Channel → Twelve Filters → Clearwell
-```
-
-Integration tests should verify:
-
-- Correct flow propagation.
-- Correct redistribution.
-- Capacity handling.
-- Water conservation.
-- Correct alarm transitions.
-
----
-
-## 16.3 Invariant Tests
-
-Invariant tests run across the complete plant.
-
-Required invariants:
-
-- No negative storage.
-- No flow through closed valves.
-- No out-of-service unit accepts normal flow unless explicitly allowed.
-- No flow exceeds link capacity.
-- Total plant water is conserved.
-- Simulation replay is deterministic.
-- No NaN or infinite values.
-- Every active connection has valid ports.
-- Every simulated unit has a stable ID.
-
----
-
-## 16.4 Scenario Regression Tests
-
-Each major sandbox scenario should become a regression test.
-
-Examples:
-
-- Loss of one raw-water source.
-- Basin isolation.
-- Basin outlet restriction.
-- Multiple filters out of service.
-- Clearwell outlet closure.
-- High treated-water demand.
-- Full plant drain-down.
-
-A bug found during a scenario should result in a test that reproduces it.
-
----
-
-# 17. Dependency Rules
-
-## Allowed Dependencies
-
-```text
-simulation/core
-    may depend on simulation/domain and utilities
-
-simulation/hydraulics
-    may depend on simulation/domain and utilities
-
-simulation/automation
-    may depend on simulation/domain and utilities
-
-application
-    may depend on simulation, configuration, telemetry, and scenarios
-
-presentation
-    may depend on application interfaces and snapshots
-
-ui
-    may depend on application services, commands, snapshots, and formatters
-
-tests
-    may depend on any test target
-```
-
-## Forbidden Dependencies
-
-```text
-simulation → presentation
-simulation → UI
-simulation → camera
-simulation → asset files
-simulation → specific 3D scenes
-domain model → singleton UI state
+simulation → presentation        simulation → UI
+simulation → camera              simulation → asset files
+simulation → specific 3D scenes  domain model → singleton UI state
 process-unit model → another unit's private fields
 ```
 
----
+## 8. Invariants
 
-# 18. Naming Conventions
+Invariant tests run across the complete plant and are a release gate (see
+`tests/invariants/` and `docs/TESTING_STRATEGY.md`):
 
-## Files
+- **INV-1** — total plant water is conserved; no negative storage.
+- **INV-2** — simulation replay is deterministic.
+- **INV-3** — one-way dependency: presentation/UI → simulation, never the reverse.
+- No flow through closed valves; no flow exceeds link capacity.
+- No out-of-service unit accepts normal flow unless explicitly allowed.
+- No NaN or infinite values; every active connection has valid ports; every unit has a stable ID.
 
-Use snake_case:
+## 9. Authority Map
 
-```text
-simulation_engine.gd
-storage_unit.gd
-sedimentation_basin_model.gd
-```
+This document is the architectural spine. Topic detail is owned by these documents (all under
+`docs/`, ordered by `INDEX.md`):
 
-## Classes
+| Topic | Authority document |
+|-------|--------------------|
+| Unit interfaces (fields, methods, config keys) | `PROCESS_UNIT_CONTRACTS.md` |
+| Tick order, mass-balance, determinism mechanics | `SIMULATION_RULES.md` |
+| Connectivity, ports, plant configuration | `PLANT_TOPOLOGY.md` |
+| Plant JSON configuration fields | `CONFIGURATION_REFERENCE.md` |
+| Control modes, controller order, splitting | `CONTROL_LOGIC.md` |
+| Snapshot-to-visual encoding and validation | `PRESENTATION_MAPPING.md` |
+| SI internal units and display formatting | `INTERNAL_UNITS.md` |
+| Identifier/tag format | `TAG_NAMING.md` |
+| Test categories and expectations | `TESTING_STRATEGY.md` |
+| Adding a new process unit | `ADDING_A_PROCESS_UNIT.md` |
+| Architecture Decision Records | `DECISIONS/` (ADR 0001–0006) |
+| Agent behavior rules; PR/commit rules | `AGENTS.md`, `CONTRIBUTING.md` |
 
-Use PascalCase:
+## 10. Naming Conventions
 
-```text
-SimulationEngine
-StorageUnit
-SedimentationBasinModel
-```
+- **Files:** `snake_case` (`storage_unit.gd`).
+- **Classes:** `PascalCase` (`StorageUnit`).
+- **Variables/functions:** `snake_case`, with SI-unit suffixes on quantities
+  (`maximum_flow_m3s`, `level_m`).
+- **Constants:** `UPPER_SNAKE_CASE`.
+- **IDs/tags:** uppercase structured IDs independent of scene-tree paths (`SED_BASIN_01`);
+  see `TAG_NAMING.md`.
 
-## Variables and Functions
-
-Use snake_case:
-
-```gdscript
-current_volume_m3
-maximum_flow_m3s
-calculate_water_level()
-```
-
-## Constants
-
-Use uppercase snake case:
-
-```gdscript
-const MINIMUM_LEVEL_M := 0.0
-```
-
-## IDs and Tags
-
-Use uppercase structured IDs:
+## 11. Core Rule Summary
 
 ```text
-SED_BASIN_01
-FIT_SED_01_IN
-LIT_CWL_01
-GV_FLT_03_IN
+Simulation owns truth.        Snapshots expose state.
+Configuration defines plant.  Presentation shows state.
+Commands request changes.     UI sends commands.
+Events report changes.        Tests protect behavior.
 ```
 
----
-
-# 19. Documentation Per Module
-
-Every reusable process-unit module should contain documentation covering:
-
-- Purpose.
-- Inputs.
-- Outputs.
-- Stored state.
-- Equations.
-- Constraints.
-- Operating states.
-- Commands.
-- Events.
-- Alarms.
-- Configuration fields.
-- Assumptions.
-- Known limitations.
-- Tests.
-
-A short `README.md` may live beside each major process-unit scene or package.
+The architecture is working when: a simulation runs without loading the 3D plant; a unit can be
+tested independently; a unit's visual can be replaced without changing hydraulic code; a new
+basin or filter can be added through configuration; repeated units reuse one model; UI actions
+use commands rather than mutating fields; all values use one internal unit system; plant-wide
+mass balance can be checked every tick; configuration errors are reported before start; a run
+can be deterministically replayed; and an agent can identify the correct layer and folder for a
+change.
 
 ---
 
-# 20. Asset Architecture
+# Part II — Appendix (Non-Binding)
 
-## 20.1 Separate Generic and Plant-Specific Assets
+Everything below is **non-binding** — aspirational patterns, planned buildout, and historical
+sequencing kept for context. It is not a contract on current code, and it ranks below Part I and
+every authority document. Where it describes something not yet built, treat it as intent, not
+fact.
 
-```text
-assets/models/generic_equipment/
-assets/models/process_units/
-```
+## A. Planned Full Buildout
 
-Generic assets include:
+The current plant (`phase3_headworks`) covers reservoirs through sedimentation. The completed
+proof-of-concept train (per `docs/PROJECT_SCOPE.md`) also adds twelve filters, a clearwell, two
+CT basins, and a treated-water reservoir. As those are built, each is expected to follow the
+package pattern in §B and reuse one model per repeated unit type (one filter model × 12, etc.),
+with new scenes under `scenes/process_units/` and configuration under `config/plants/`. Parked
+layers — telemetry/trends (`scripts/telemetry/`), scenario frameworks (`scripts/scenarios/`),
+and their config — would be added only when a milestone requires them (see the ROADMAP
+"triggered later" table).
 
-- Pumps.
-- Valves.
-- Fences.
-- Handrails.
-- Buildings.
-- Roads.
-- Trees.
-- Electrical cabinets.
+## B. Reusable Process-Unit Package Pattern
 
-Plant-specific assets include:
-
-- Applied channel.
-- Sedimentation basin.
-- Filter cells.
-- Clearwell.
-- CT basins.
-- Distribution box.
-
----
-
-## 20.2 Asset Licensing
-
-Every third-party asset source must have a matching license record.
+Each process unit is intended to keep its model, visual scene, configuration, and tests
+separate but clearly associated, for example:
 
 ```text
-assets/licenses/
-├── kenney.md
-├── quaternius.md
-├── kaykit.md
-└── asset_manifest.csv
+scenes/process_units/<family>/   <unit>.tscn, <unit>_visual.gd, meshes/, materials/
+scripts/simulation/domain/       <unit>.gd (or a shared StorageUnit + config)
+config/plants/<plant>/           topology + parameters
+tests/unit/…                     test_<unit>.gd
 ```
 
-The asset manifest should include:
+See `docs/ADDING_A_PROCESS_UNIT.md` for the current, authoritative procedure.
 
-```text
-Asset name
-Source
-Creator
-License
-Modified
-Repository location
-```
+## C. Suggested Scene Composition
 
----
+An application scene separates simulation hosting from 3D presentation (e.g. a `SimulationHost`
+owning the engine lifecycle, a `PlantWorld` owning only 3D scenes, plus camera, UI, and debug
+overlays). A process-unit visual scene composes static geometry, a water surface, valve/gate
+visuals, flow indicators, an alarm indicator, a selection collider, and a visual adapter, and
+receives a `unit_id` (`@export var unit_id: StringName`) that links it to the simulation model.
 
-## 20.3 Replaceable Visual Assets
+## D. Autoload Guidance
 
-Simulation IDs must not depend on mesh names.
+Use autoloads sparingly. The simulation engine should be instantiated and owned by the
+application scene (not an autoload) so tests can create isolated engines. Genuinely global
+concerns (app state, event bus, command bus, config registry, unit converter) are the
+candidates; do not make every subsystem an autoload.
 
-A placeholder cube and a finished Blender model should be interchangeable without changing simulation code.
+## E. Asset Architecture
 
----
+Separate generic assets (`assets/models/generic_equipment/`) from plant-specific assets
+(`assets/models/process_units/`). Every third-party asset source has a matching license record
+under `assets/licenses/` with a manifest (name, source, creator, license, modified, location).
+Simulation IDs must not depend on mesh names — a placeholder cube and a finished model must be
+interchangeable without changing simulation code.
 
-# 21. Git and Branching Strategy
+## F. Historical — Initial Implementation Order
 
-Recommended branches:
-
-```text
-main
-develop
-feature/<short-name>
-fix/<short-name>
-docs/<short-name>
-```
-
-Keep commits focused.
-
-Examples:
-
-```text
-feat(sim): add storage mass-balance model
-feat(ui): add selected asset level display
-fix(flow): prevent withdrawal above source volume
-test(filter): add offline redistribution test
-docs(architecture): define process-unit contract
-```
-
-Avoid commits that mix:
-
-- Hydraulic behavior.
-- 3D art replacement.
-- UI redesign.
-- Configuration changes.
-- Unrelated refactoring.
-
----
-
-# 22. Pull Request Rules
-
-Each pull request should state:
-
-- What changed.
-- Why it changed.
-- Which architectural layer it affects.
-- What assumptions were made.
-- What tests were added or updated.
-- Whether configuration changed.
-- Whether saved simulations remain compatible.
-- Screenshots for visual changes.
-- Mass-balance result for hydraulic changes.
-
-A hydraulic behavior change should not be merged without tests.
-
----
-
-# 23. AI-Assisted Development Rules
-
-Claude Code and Codex must read these files before significant work:
-
-```text
-AGENTS.md
-docs/PROJECT_SCOPE.md
-docs/REPOSITORY_ARCHITECTURE.md
-docs/SIMULATION_RULES.md
-docs/CONTROL_LOGIC.md
-docs/TAG_NAMING.md
-docs/INTERNAL_UNITS.md
-```
-
-## Required Agent Behavior
-
-- Respect dependency boundaries.
-- Keep simulation and presentation separate.
-- Do not create new global singletons without justification.
-- Do not duplicate logic across repeated units.
-- Use factories and configuration for repeated units.
-- Add tests for every new hydraulic behavior.
-- Add regression tests for every bug fix.
-- Keep SI units inside the simulation.
-- Do not silently change public interfaces.
-- Update documentation when architecture changes.
-- Prefer small changes over large rewrites.
-- Do not add plugins without documenting purpose and license.
-- Do not replace deterministic calculations with frame-based logic.
-- Do not embed plant-specific values in reusable scripts.
-
----
-
-# 24. Recommended Initial Implementation Order
-
-## Step 1: Repository Foundation
-
-Create:
-
-- Folder structure.
-- Documentation.
-- GUT testing addon.
-- Base application scene.
-- Simulation engine shell.
-- Simulation clock.
-- Unit conversion utilities.
-- Command and event base classes.
-
-## Step 2: Core Domain
-
-Create:
-
-- ProcessUnit.
-- StorageUnit.
-- FlowPort.
-- FlowLink.
-- Actuator.
-- Instrument.
-- Alarm.
-- Controller.
-
-## Step 3: First Hydraulic Slice
-
-Create:
-
-```text
-Source Reservoir → Storage Basin → Receiving Reservoir
-```
-
-Include:
-
-- Inlet valve.
-- Outlet valve.
-- Drain.
-- Spill.
-- Mass-balance tracker.
-- Snapshot output.
-- Unit tests.
-
-## Step 4: Presentation Adapter
-
-Create:
-
-- Generic storage scene.
-- Water surface adapter.
-- Valve visual adapter.
-- Selection system.
-- Basic asset panel.
-
-## Step 5: Data-Driven Construction
-
-Create:
-
-- Configuration loader.
-- Plant factory.
-- Topology loader.
-- Schema validation.
-- Initial conditions.
-
-## Step 6: Expand Process Train
-
-Add modules in this order:
-
-1. Two raw-water reservoirs.
-2. Inlet manifold.
-3. Flash mix.
-4. Distribution box.
-5. Five flocculation/sedimentation basins.
-6. Applied channel.
-7. Twelve filters.
-8. Clearwell.
-9. Two CT basins.
-10. Treated-water reservoir.
-11. System demand.
-
----
-
-# 25. Architecture Decision Records
-
-Major architectural choices should be recorded in:
-
-```text
-docs/DECISIONS/
-```
-
-Example files:
-
-```text
-0001-use-godot-and-gdscript.md
-0002-use-fixed-step-simulation.md
-0003-use-si-internal-units.md
-0004-separate-simulation-and-presentation.md
-0005-use-command-event-boundary.md
-0006-use-json-plant-configuration.md
-```
-
-Each record should include:
-
-```text
-Status
-Context
-Decision
-Consequences
-Alternatives Considered
-```
-
-This helps future contributors and AI agents understand why the project is structured this way.
-
----
-
-# 26. Definition of Architectural Success
-
-The repository architecture is working when:
-
-- A simulation can run without loading the 3D plant.
-- A process unit can be tested independently.
-- A process unit visual can be replaced without changing hydraulic code.
-- A new basin or filter can be added through configuration.
-- Five basins reuse one basin model.
-- Twelve filters reuse one filter model.
-- UI actions use commands rather than modifying model fields.
-- Scenarios use the same commands as the UI.
-- All plant values use one internal unit system.
-- Plant-wide mass balance can be calculated every tick.
-- Configuration errors are reported before simulation starts.
-- A complete simulation can be deterministically replayed.
-- Claude Code or Codex can identify the correct layer and folder for a requested change.
-
----
-
-# 27. Core Rule Summary
-
-```text
-Simulation owns truth.
-Configuration defines the plant.
-Commands request changes.
-Events report changes.
-Snapshots expose state.
-Presentation shows state.
-UI sends commands.
-Tests protect behavior.
-```
-
-This architecture keeps the first proof of concept simple while preserving a clean path toward a larger operator-training and digital-twin platform.
+The project was built in roughly this sequence: (1) repository foundation and engine shell;
+(2) core domain classes; (3) a first source→basin→receiving hydraulic slice; (4) presentation
+adapters; (5) data-driven construction (config loader, plant factory, schema validation);
+(6) expansion of the process train. This is delivered through Phase 3 / WP4.1 — see
+`docs/ROADMAP.md` for authoritative status. Retained only as historical context.
