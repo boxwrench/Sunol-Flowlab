@@ -1,4 +1,12 @@
-# Next Task — WP3.6: Config Schema Sync (implementation agent brief)
+# WP3.6 Config Schema Sync — Implementation Brief (historical)
+
+> [!IMPORTANT]
+> **Historical. Non-binding. Not authoritative.**
+>
+> Implementation agent brief for WP3.6 config schema sync. First committed 2026-07-04.
+> Titled "Next Task" as written — it is not a live instruction. Do not execute it.
+>
+> Current status: see [ROADMAP.md](../ROADMAP.md). Authority order: see [INDEX.md](../INDEX.md) §6.
 
 Source of truth: `docs/PHASE3_IMPLEMENTATION_PLAN.md` §4 "WP3.6" and §5 Config & Schema.
 Per §8 Execution Protocol, WP3.6 runs sequentially after WP3.4/WP3.5 with no review pause

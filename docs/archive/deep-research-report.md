@@ -1,4 +1,11 @@
-# Best Options for a Drinking Water Digital Twin Built Like a Game
+# Pre-Project Engine Selection Research — Best Options for a Drinking Water Digital Twin Built Like a Game
+
+> [!IMPORTANT]
+> **Historical. Non-binding. Not authoritative.**
+>
+> Pre-project research comparing game engines and stacks. Predates the architecture. First committed 2026-07-03.
+>
+> Current status: see [ROADMAP.md](../ROADMAP.md). Authority order: see [INDEX.md](../INDEX.md) §6.
 
 ## Bottom line
 

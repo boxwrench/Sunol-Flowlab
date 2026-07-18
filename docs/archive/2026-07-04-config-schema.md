@@ -1,5 +1,12 @@
 # Plant-Definition JSON Schema Implementation Plan
 
+> [!IMPORTANT]
+> **Historical. Non-binding. Not authoritative.**
+>
+> Implementation plan for the plant-definition JSON schema. First committed 2026-07-04.
+>
+> Current status: see [ROADMAP.md](../ROADMAP.md). Authority order: see [INDEX.md](../INDEX.md) §6.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Formal JSON Schemas for all six plant-config file types, validated in CI without Godot, per `docs/superpowers/specs/2026-07-04-config-schema-design.md`.

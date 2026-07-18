@@ -1,4 +1,12 @@
-# Orchestrator Decision + Next Task — WP3.5 control-law damping
+# WP3.5 Control-Law Damping — Decision and Brief (historical)
+
+> [!IMPORTANT]
+> **Historical. Non-binding. Not authoritative.**
+>
+> Orchestrator decision and follow-on brief for WP3.5 control-law damping. First committed 2026-07-04.
+> Titled "Next Task" as written — it is not a live instruction. Do not execute it.
+>
+> Current status: see [ROADMAP.md](../ROADMAP.md). Authority order: see [INDEX.md](../INDEX.md) §6.
 
 [ESCALATION ACCEPTED]
 Your gain scan correctly proved this is structural: an I-only velocity-form controller

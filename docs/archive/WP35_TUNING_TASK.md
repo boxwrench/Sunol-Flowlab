@@ -1,4 +1,12 @@
-# Next Task — WP3.5 controller retune + bank the approved fixes, then resume WP3.6
+# WP3.5 Controller Retune — Implementation Brief (historical)
+
+> [!IMPORTANT]
+> **Historical. Non-binding. Not authoritative.**
+>
+> Implementation brief for the WP3.5 controller retune. First committed 2026-07-04.
+> Titled "Next Task" as written — it is not a live instruction. Do not execute it.
+>
+> Current status: see [ROADMAP.md](../ROADMAP.md). Authority order: see [INDEX.md](../INDEX.md) §6.
 
 [CONTEXT — verified by orchestrator]
 The WP3.4 capacity fix (LINK_OUT_AC_01 15→10) and the test-isolation MANUAL-mode fixes worked:

@@ -1,4 +1,12 @@
-# WP3.7 Kickoff — Phase 3 Verification & Soak Suite (cold-start prompt for implementation agent)
+# WP3.7 Verification & Soak Suite — Kickoff Prompt (historical)
+
+> [!IMPORTANT]
+> **Historical. Non-binding. Not authoritative.**
+>
+> Kickoff cold-start prompt for WP3.7 Phase 3 verification and soak suite. First committed 2026-07-04.
+> Written as a cold-start prompt — it is not a live instruction. Do not execute it.
+>
+> Current status: see [ROADMAP.md](../ROADMAP.md). Authority order: see [INDEX.md](../INDEX.md) §6.
 
 [ROLE]
 You are the implementation agent for Sunol FlowLab, a deterministic Godot 4.x / GDScript

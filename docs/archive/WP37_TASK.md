@@ -1,4 +1,12 @@
-# Next Task — WP3.7: Phase 3 Verification & Soak Suite (implementation agent brief)
+# WP3.7 Verification & Soak Suite — Implementation Brief (historical)
+
+> [!IMPORTANT]
+> **Historical. Non-binding. Not authoritative.**
+>
+> Implementation agent brief for WP3.7 Phase 3 verification and soak suite. First committed 2026-07-04.
+> Titled "Next Task" as written — it is not a live instruction. Do not execute it.
+>
+> Current status: see [ROADMAP.md](../ROADMAP.md). Authority order: see [INDEX.md](../INDEX.md) §6.
 
 Source of truth: `docs/PHASE3_IMPLEMENTATION_PLAN.md` §4 "WP3.7" and §6.
 Per §8 Execution Protocol, WP3.7 runs after WP3.6 with no review pause, but WP3.7 output IS

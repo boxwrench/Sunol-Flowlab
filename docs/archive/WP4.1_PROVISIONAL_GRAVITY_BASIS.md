@@ -1,5 +1,12 @@
 # WP4.1 Provisional Gravity Hydraulic Design Basis
 
+> [!IMPORTANT]
+> **Historical. Non-binding. Not authoritative.**
+>
+> Provisional gravity hydraulic design basis used during WP4.1. First committed 2026-07-06.
+>
+> Current status: see [ROADMAP.md](../ROADMAP.md). Authority order: see [INDEX.md](../INDEX.md) §6.
+
 This document records the provisional hydraulic elevation cascade synthesized for the `phase3_headworks` configuration re-baselined in WP4.1.
 
 These values are provisional and will be reconciled against the real plant design documents in a subsequent phase.

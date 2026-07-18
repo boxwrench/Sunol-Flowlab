@@ -1,4 +1,12 @@
-# Next Tasks — WP3.4 and WP3.5 (implementation agent briefs)
+# WP3.4 / WP3.5 Implementation Briefs (historical)
+
+> [!IMPORTANT]
+> **Historical. Non-binding. Not authoritative.**
+>
+> Implementation agent briefs for WP3.4 and WP3.5. First committed 2026-07-04.
+> Titled "Next Tasks" as written — they are not live instructions. Do not execute them.
+>
+> Current status: see [ROADMAP.md](../ROADMAP.md). Authority order: see [INDEX.md](../INDEX.md) §6.
 
 Source of truth: `docs/PHASE3_IMPLEMENTATION_PLAN.md` §3–§4, §8 Execution Protocol.
 Per §8, the per-WP review pause is suspended for Phase 3; WP3.4→WP3.5 run sequentially
