@@ -203,7 +203,7 @@ Every connection must enforce:
 - Maximum capacity limits.
 - Spill flow when maximum operating volume is exceeded.
 - Optional low-level cutoff.
-- Optional reverse-flow prohibition.
+- Reverse-flow prohibition (the topology is a directed acyclic graph).
 
 These constraints are more important initially than high hydraulic precision.
 

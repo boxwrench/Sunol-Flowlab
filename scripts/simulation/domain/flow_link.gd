@@ -8,7 +8,6 @@ var source_port: FlowPort = null
 var destination_port: FlowPort = null
 
 var max_flow_m3s: float = 0.0
-var reverse_flow_allowed: bool = false
 var flow_mode: StringName = &"RESTRICTED" # RESTRICTED, GRAVITY
 var design_head_m: float = 0.0
 
@@ -30,7 +29,6 @@ func initialize(config: Dictionary, port_resolver: Callable) -> void:
 	link_id = StringName(config.get("link_id", ""))
 	display_name = config.get("display_name", "")
 	max_flow_m3s = float(config.get("max_flow_m3s", 0.0))
-	reverse_flow_allowed = bool(config.get("reverse_flow_allowed", false))
 	flow_mode = StringName(config.get("flow_mode", "RESTRICTED"))
 	design_head_m = float(config.get("design_head_m", 0.0))
 	is_enabled = bool(config.get("is_enabled", true))
@@ -87,32 +85,20 @@ func calculate_requested_flow() -> float:
 		var downstream_elev: float = _get_port_elevation(destination_port)
 		var dh: float = upstream_elev - downstream_elev
 		
-		# Q calculation
+		# Q calculation. The topology is a DAG: negative head (downstream higher
+		# than upstream) yields zero forward flow — reverse flow is not supported.
 		var base: float = max_flow_m3s * opening
 		var Q: float = 0.0
-		if dh >= 0.0:
-			if design_head_m > 0.0:
-				Q = base * sqrt(dh / design_head_m)
-			else:
-				Q = 0.0
-		elif reverse_flow_allowed:
-			if design_head_m > 0.0:
-				Q = -base * sqrt(-dh / design_head_m)
-			else:
-				Q = 0.0
-		else:
-			Q = 0.0
+		if dh >= 0.0 and design_head_m > 0.0:
+			Q = base * sqrt(dh / design_head_m)
 
-		# Clamping and constraint reason setting
-		if abs(Q) > max_flow_m3s + 1e-9:
-			if Q > 0.0:
-				Q = max_flow_m3s
-			else:
-				Q = -max_flow_m3s
+		# Clamping and constraint reason setting (Q is always >= 0)
+		if Q > max_flow_m3s + 1e-9:
+			Q = max_flow_m3s
 			constraint_reason = "GRAVITY clamped@max"
 		elif abs(dh) < 1e-9:
 			constraint_reason = "GRAVITY equalized"
-		elif dh < 0.0 and not reverse_flow_allowed:
+		elif dh < 0.0:
 			constraint_reason = "GRAVITY reverse blocked"
 		else:
 			constraint_reason = "GRAVITY self-regulating"
@@ -141,7 +127,6 @@ func get_snapshot() -> Dictionary:
 		"source_port_id": source_port.port_id if source_port != null else &"",
 		"destination_port_id": destination_port.port_id if destination_port != null else &"",
 		"max_flow_m3s": max_flow_m3s,
-		"reverse_flow_allowed": reverse_flow_allowed,
 		"flow_mode": flow_mode,
 		"design_head_m": design_head_m,
 		"requested_flow_m3s": requested_flow_m3s,
