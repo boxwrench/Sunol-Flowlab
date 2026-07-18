@@ -33,8 +33,8 @@ ambient motion are not proof-of-concept requirements.
 2. Every quantitative mapping is monotone over its declared operating range. Increasing
    model values must never produce a decreasing visual indication unless direction is
    explicitly part of the contract.
-3. Zero flow produces zero flow animation. Reversed animation is prohibited unless the
-   simulation link contract supports and reports reverse flow.
+3. Zero flow produces zero flow animation. Reversed flow animation is prohibited: the
+   simulation link contract does not support reverse flow (the topology is a DAG).
 4. Water-surface elevation comes directly from snapshot `level_m` or
    `water_surface_elevation_m`; presentation code must not recompute level from volume.
 5. Valve pose represents actual actuator position, not commanded position. A separate

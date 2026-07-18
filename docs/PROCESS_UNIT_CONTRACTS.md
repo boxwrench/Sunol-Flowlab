@@ -147,8 +147,10 @@ enablement is the `is_enabled` field, toggled by `SetBasinServiceCommand` on the
 - `design_head_m` – reference head for `GRAVITY` mode (there is no `flow_coefficient` field).
 - `actuator_id` – the controlling `SimValve`, if any.
 
-Note: `reverse_flow_allowed` is still read by the loader but is **not in the topology schema**
-and is on the removal path (ROADMAP WP4.4). Do not rely on it in new configuration.
+The topology is a directed acyclic graph: reverse flow is not supported. Under `GRAVITY`,
+negative head (downstream higher than upstream) yields zero forward flow. The former
+`reverse_flow_allowed` field was removed in WP4.4, and the link schema rejects unknown
+properties (`additionalProperties: false`).
 
 ## SimValve contract
 

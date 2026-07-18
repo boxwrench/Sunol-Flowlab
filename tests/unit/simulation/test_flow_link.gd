@@ -132,21 +132,13 @@ func test_gravity_flow_orifice_law() -> void:
 	assert_almost_eq(link.calculate_requested_flow(), 0.0, 1e-9)
 	assert_eq(link.constraint_reason, "GRAVITY equalized")
 	
-	# Test dh < 0 with reverse flow disallowed (default is false)
+	# Test dh < 0 (downstream higher): reverse flow is not supported — zero forward flow.
 	# Basin B elevation is 11.0m (dh = 10.0 - 11.0 = -1.0)
 	unit_b.volume_m3 = 110.0
 	unit_b.update_level()
 	assert_almost_eq(link.calculate_requested_flow(), 0.0, 1e-9)
 	assert_eq(link.constraint_reason, "GRAVITY reverse blocked")
-	
-	# Test dh < 0 with reverse flow allowed
-	link.reverse_flow_allowed = true
-	# dh = -0.5m -> Q = -base * sqrt(0.5/2.0) = -4.0 * 0.5 = -2.0
-	unit_b.volume_m3 = 105.0
-	unit_b.update_level()
-	assert_almost_eq(link.calculate_requested_flow(), -2.0, 1e-9)
-	assert_eq(link.constraint_reason, "GRAVITY self-regulating")
-	
+
 	# Test clamping: dh = 10.0m (Basin B = 0m, Basin A = 10.0m -> dh = 10.0m)
 	# base = 4.0
 	# Q = 4.0 * sqrt(10.0 / 2.0) = 4.0 * sqrt(5.0) = 8.94 > 4.0 -> should clamp to 4.0
