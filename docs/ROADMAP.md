@@ -16,7 +16,9 @@ and CI is green.
 | WP4.0 — Self-Regulating Hydraulics | `GRAVITY` mode and deterministic port iteration | ✅ Delivered |
 | WP4.1 — Headworks Gravity Migration | Convert and re-baseline `phase3_headworks` | 🟨 Implemented; closure verification remains |
 | WP4.2 — Align Docs with Reality | Archive labeling, README/INDEX, contracts, architecture restructure | ✅ Delivered |
-| WP4.3–WP4.7 — Audit Closure | Unsupported modes, reverse flow, startup, alarms, CI, verification | ⬜ Next |
+| WP4.3 — Remove `COMMANDED` Mode | Reject the unimplemented flow mode at config load | ✅ Delivered |
+| WP4.4 — Remove Reverse-Flow Support | Drop `reverse_flow_allowed` and the negative-head branch | ✅ Delivered |
+| WP4.5–WP4.7 — Audit Closure | Startup, alarms, CI count, gate verification | ⬜ Next |
 | Phase 4a — Filtration + Clearwell | Twelve filters, clearwell, distribution and minimum control | ⛔ Blocked by WP4.7 |
 | Phase 4b — Contact + Treated Water | CT basins, treated storage/demand, one supervisory loop | ⬜ Planned |
 
@@ -26,7 +28,7 @@ Build only what makes the next plant section visibly operable and hydraulically 
 A future capability enters active architecture only when the next playable milestone
 requires it or a concrete failing case proves the current solution insufficient.
 
-1. Complete WP4.3 through WP4.7 in order (WP4.2 delivered).
+1. Complete WP4.5 through WP4.7 in order (WP4.2–WP4.4 delivered).
 2. Close the Phase 3 and WP4.1 gate with recorded evidence.
 3. Author the detailed Phase 4a implementation plan.
 4. Build filters and clearwell only.
@@ -72,6 +74,10 @@ rules/contracts, fixtures, and tests. Do not implement it.
 solver, integration, replay, and mass-balance suites pass; `RESTRICTED` and `GRAVITY`
 results are unchanged.
 
+**Delivered** via PR #6. `COMMANDED` removed from the `topology.schema.json` enum, the
+`PlantValidator` allowed set, and `FlowLink`; a validator test asserts rejection. CI green
+(GUT + config-schema). `RESTRICTED`/`GRAVITY` code paths untouched.
+
 ### WP4.4 — Remove inaccessible reverse-flow support
 
 **Goal:** Keep the directed-acyclic hydraulic contract honest.
@@ -82,6 +88,11 @@ produces zero forward flow. Do not add bidirectional topology semantics.
 
 **Done when:** no production/config contract claims reverse flow; positive, zero, and
 negative head tests pass; replay and mass conservation pass; topology remains a DAG.
+
+**Delivered** via PR #7. `reverse_flow_allowed` and the negative-head gravity branch removed
+from `FlowLink`; negative head yields zero forward flow. The field was already unreachable
+via config (link schema `additionalProperties: false`). CI green (GUT + config-schema);
+forward `GRAVITY`/`RESTRICTED` math untouched, topology remains a DAG.
 
 ### WP4.5 — Unify startup state and wire configured alarms
 
