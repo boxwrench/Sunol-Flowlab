@@ -1,5 +1,13 @@
 # Dispatch — WP2.2-R Remediation + Phase 3 Implementation Plan
 
+> [!IMPORTANT]
+> **Historical. Non-binding. Not authoritative.**
+>
+> Dispatch brief for WP2.2-R remediation and the Phase 3 implementation plan. First committed 2026-07-04.
+> Written as a live dispatch — it is not one now. Do not execute it.
+>
+> Current status: see [ROADMAP.md](../ROADMAP.md). Authority order: see [INDEX.md](../INDEX.md) §6.
+
 Date: 2026-07-04 · Issued by: orchestrator · Executor: implementation agent
 Authority: `AGENTS.md` (all 13 guardrails, binding) → `docs/INDEX.md` order.
 

@@ -1,4 +1,12 @@
-# Cold-Start Prompt — WP3.5 Control-Law Damping, then WP3.6
+# WP3.5 Control-Law Damping — Cold-Start Prompt (historical)
+
+> [!IMPORTANT]
+> **Historical. Non-binding. Not authoritative.**
+>
+> Cold-start prompt for WP3.5 control-law damping, then WP3.6. First committed 2026-07-04.
+> Written as a cold-start prompt — it is not a live instruction. Do not execute it.
+>
+> Current status: see [ROADMAP.md](../ROADMAP.md). Authority order: see [INDEX.md](../INDEX.md) §6.
 
 [ROLE]
 You are the implementation agent for Sunol FlowLab, a deterministic Godot 4.x / GDScript

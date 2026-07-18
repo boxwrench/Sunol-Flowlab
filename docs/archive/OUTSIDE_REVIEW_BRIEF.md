@@ -1,5 +1,12 @@
 # Sunol FlowLab — Briefing for an Outside Review
 
+> [!IMPORTANT]
+> **Historical. Non-binding. Not authoritative.**
+>
+> Briefing prepared for an outside architecture review. First committed 2026-07-04.
+>
+> Current status: see [ROADMAP.md](../ROADMAP.md). Authority order: see [INDEX.md](../INDEX.md) §6.
+
 Context for an independent reviewer. Form your own judgment; the framing below is descriptive, not
 a conclusion. Committed code is authoritative — verify claims against it (read via `git show
 HEAD:<path>`; the working tree may be served through a stale mount).

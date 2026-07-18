@@ -32,8 +32,33 @@ This index defines the authority order of the repository documentation. In the e
    - [DEBUGGING_GUIDE.md](DEBUGGING_GUIDE.md) — Tracing common errors.
    - [TESTING_STRATEGY.md](TESTING_STRATEGY.md) — Test categories and expectations.
 6. **Archive** (background, non-authoritative)
-   - [archive/deep-research-report.md](archive/deep-research-report.md) — Pre-project engine research.
+
+   Every file below is historical and non-binding. Documents titled "Next Task",
+   "Kickoff", "Dispatch", or "Cold-Start Prompt" describe completed work and are **not
+   live instructions** — do not execute them. Current status lives in `ROADMAP.md`.
+
+   *Research and reviews*
+   - [archive/deep-research-report.md](archive/deep-research-report.md) — Pre-project engine-selection research; predates the architecture.
    - [archive/2026-07-16-water-quality-layer1-research.md](archive/2026-07-16-water-quality-layer1-research.md) — Layer-1 water-quality research. Out of scope; chemistry trigger unfired. Proposes an invariant as "INV-4" that does not exist.
+   - [archive/PHASE3_OUTSIDE_REVIEW.md](archive/PHASE3_OUTSIDE_REVIEW.md) — Outside architecture/code review of Phase 3 (WP3.0–WP3.8).
+   - [archive/OUTSIDE_REVIEW_BRIEF.md](archive/OUTSIDE_REVIEW_BRIEF.md) — Briefing prepared for that outside review.
+
+   *Design and configuration*
+   - [archive/2026-07-04-config-schema-design.md](archive/2026-07-04-config-schema-design.md) — Plant-definition schema design proposal (Approach A).
+   - [archive/2026-07-04-config-schema.md](archive/2026-07-04-config-schema.md) — Plant-definition JSON schema implementation plan.
+   - [archive/WP4.1_PROVISIONAL_GRAVITY_BASIS.md](archive/WP4.1_PROVISIONAL_GRAVITY_BASIS.md) — Provisional gravity hydraulic design basis used during WP4.1.
+
+   *Completed work packages (task briefs, kickoffs, dispatches — not live)*
+   - [archive/DISPATCH_2026-07-04_WP22R_PHASE3_PLAN.md](archive/DISPATCH_2026-07-04_WP22R_PHASE3_PLAN.md) — WP2.2-R remediation + Phase 3 dispatch brief.
+   - [archive/ORCHESTRATOR_REVIEWER_COLDSTART.md](archive/ORCHESTRATOR_REVIEWER_COLDSTART.md) — Orchestrator/reviewer cold-start prompt.
+   - [archive/WP34_WP35_TASKS.md](archive/WP34_WP35_TASKS.md) — WP3.4 / WP3.5 implementation briefs.
+   - [archive/WP35_CONTROL_LAW_DECISION.md](archive/WP35_CONTROL_LAW_DECISION.md) — WP3.5 control-law damping decision and brief.
+   - [archive/WP35_CONTROL_LAW_COLDSTART.md](archive/WP35_CONTROL_LAW_COLDSTART.md) — WP3.5 control-law damping cold-start prompt.
+   - [archive/WP35_TUNING_TASK.md](archive/WP35_TUNING_TASK.md) — WP3.5 controller retune implementation brief.
+   - [archive/WP36_TASK.md](archive/WP36_TASK.md) — WP3.6 config schema sync implementation brief.
+   - [archive/WP36_KICKOFF.md](archive/WP36_KICKOFF.md) — WP3.6 config schema sync kickoff prompt.
+   - [archive/WP37_TASK.md](archive/WP37_TASK.md) — WP3.7 verification & soak suite implementation brief.
+   - [archive/WP37_KICKOFF.md](archive/WP37_KICKOFF.md) — WP3.7 verification & soak suite kickoff prompt.
 
 Agent behavior rules live in [`AGENTS.md`](../AGENTS.md) at the repository root and apply above everything here except REPOSITORY_ARCHITECTURE.md structural rulings.
 

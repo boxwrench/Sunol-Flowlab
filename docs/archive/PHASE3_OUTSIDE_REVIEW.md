@@ -1,5 +1,12 @@
 # Sunol FlowLab — Phase 3 (WP3.0–WP3.8) Architecture & Code Review Report
 
+> [!IMPORTANT]
+> **Historical. Non-binding. Not authoritative.**
+>
+> Outside architecture and code review report covering Phase 3 (WP3.0–WP3.8). First committed 2026-07-04.
+>
+> Current status: see [ROADMAP.md](../ROADMAP.md). Authority order: see [INDEX.md](../INDEX.md) §6.
+
 **Reviewer:** Independent outside review (Claude Fable 5)
 **Date:** 2026-07-04
 **Review baseline:** commit `46481aa` ("WP3.6: Author Presentation Map Configuration") — all code citations are to `git show 46481aa:<path>` unless noted.

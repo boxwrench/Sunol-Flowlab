@@ -1,5 +1,12 @@
 # Design: Formal Plant-Definition Schema (Approach A)
 
+> [!IMPORTANT]
+> **Historical. Non-binding. Not authoritative.**
+>
+> Design proposal for the formal plant-definition schema (Approach A). First committed 2026-07-04.
+>
+> Current status: see [ROADMAP.md](../ROADMAP.md). Authority order: see [INDEX.md](../INDEX.md) §6.
+
 Date: 2026-07-04
 Status: Approved (design); implementation plan to follow
 Audience: primary — repo owner + AI agents maintaining configs through Phases 3–5; secondary (later) — external plant operators via a schema-driven form.
