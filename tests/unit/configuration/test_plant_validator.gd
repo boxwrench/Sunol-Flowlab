@@ -127,6 +127,63 @@ func test_invalid_controller_config() -> void:
 	assert_true(found_mode, "Should catch invalid control mode")
 	assert_true(found_prop, "Should catch invalid pv_property")
 
+func test_commanded_flow_mode_rejected() -> void:
+	# WP4.3: COMMANDED is no longer a supported flow_mode. A link configured with
+	# it must be rejected clearly by the validator (the schema enum rejects it too).
+	var topology := {
+		"units": [
+			{
+				"unit_id": "BASIN",
+				"type": "StorageUnit",
+				"display_name": "Basin",
+				"maximum_volume_m3": 100.0,
+				"surface_area_m2": 10.0,
+				"bottom_elevation_m": 0.0,
+				"high_level_m": 9.0,
+				"spill_level_m": 10.0,
+				"min_operating_level_m": 0.5,
+				"spill_destination_id": "SINK",
+				"ports": [{"port_id": "BASIN_OUT", "port_type": "OUTLET"}]
+			},
+			{
+				"unit_id": "SINK",
+				"type": "ExternalBoundary",
+				"display_name": "Sink",
+				"boundary_type": "TREATED_DEMAND",
+				"ports": [{"port_id": "SINK_IN", "port_type": "INLET"}]
+			}
+		],
+		"actuators": [],
+		"links": [
+			{
+				"link_id": "LINK_OUT",
+				"display_name": "Basin Out",
+				"max_flow_m3s": 1.0,
+				"flow_mode": "COMMANDED",
+				"source_port_id": "BASIN_OUT",
+				"destination_port_id": "SINK_IN"
+			}
+		]
+	}
+
+	var res: Dictionary = PlantValidator.validate_config({}, topology, {})
+	assert_gt(res.errors.size(), 0, "COMMANDED flow_mode should be rejected")
+	var found: bool = false
+	for err in res.errors:
+		if "invalid flow_mode 'COMMANDED'" in err:
+			found = true
+			break
+	assert_true(found, "Error list should name the invalid flow_mode 'COMMANDED'")
+
+	# RESTRICTED and GRAVITY remain valid flow modes.
+	for mode in ["RESTRICTED", "GRAVITY"]:
+		topology.links[0].flow_mode = mode
+		if mode == "GRAVITY":
+			topology.links[0]["design_head_m"] = 2.0
+		var ok: Dictionary = PlantValidator.validate_config({}, topology, {})
+		for err in ok.errors:
+			assert_false("invalid flow_mode" in err, "%s must remain a valid flow_mode" % mode)
+
 func test_invalid_in_service_config() -> void:
 	var plant_data := {}
 	var topology_invalid_in_service := {

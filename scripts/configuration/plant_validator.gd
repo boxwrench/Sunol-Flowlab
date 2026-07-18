@@ -167,7 +167,7 @@ static func validate_config(
 							errors.append("%s: flow_mode must be a string" % link_prefix)
 						else:
 							var fm: String = link_dict["flow_mode"]
-							if fm != "RESTRICTED" and fm != "COMMANDED" and fm != "GRAVITY":
+							if fm != "RESTRICTED" and fm != "GRAVITY":
 								errors.append("%s: invalid flow_mode '%s'" % [link_prefix, fm])
 								
 					var fm: String = link_dict.get("flow_mode", "RESTRICTED")

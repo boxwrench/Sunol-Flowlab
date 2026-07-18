@@ -182,7 +182,7 @@ To preserve the pure Directed Acyclic Graph (DAG) and the single-mutator 1D Eule
 
 5. **Spill routing is per-unit.** Each `StorageUnit`'s `spill_destination_id` is read from config; no code default is injected. The plant validator errors if `spill_destination_id` is absent or does not resolve to a known boundary. A spill boundary receives only the spill routed to it — never the plant total. The prior engine behavior (every SPILL boundary receives total plant spill) is correct only while exactly one spill boundary exists and must be replaced when the second one appears.
 
-6. **COMMANDED mode is unimplemented.** Until Phase 2 controllers land, a link configured as `COMMANDED` must `push_warning` and behave as `RESTRICTED` at full opening. Silent placeholder behavior is prohibited (AGENTS.md guardrail 10).
+6. **`flow_mode` is `RESTRICTED` or `GRAVITY`.** These are the only supported flow modes. A link configured with any other value (including the former `COMMANDED` placeholder, removed in WP4.3) is rejected at configuration load by the schema and the plant validator — no silent fallback. `COMMANDED` may return only under the ROADMAP "triggered later" contract.
 
 ### Basin Availability Semantics (Phase 3 Spec)
 
