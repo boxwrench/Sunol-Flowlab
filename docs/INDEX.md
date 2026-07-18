@@ -28,6 +28,7 @@ This index defines the authority order of the repository documentation. In the e
    - [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) — Explicit scope exclusions.
    - [GLOSSARY.md](GLOSSARY.md) — Plant terminology.
 5. **Guides** (non-binding how-to)
+   - [BUILDING_A_PLANT_SIMULATOR.md](BUILDING_A_PLANT_SIMULATOR.md) — End-to-end build/extend tutorial sequencing the reference docs.
    - [ADDING_A_PROCESS_UNIT.md](ADDING_A_PROCESS_UNIT.md) — Adding new units.
    - [DEBUGGING_GUIDE.md](DEBUGGING_GUIDE.md) — Tracing common errors.
    - [TESTING_STRATEGY.md](TESTING_STRATEGY.md) — Test categories and expectations.

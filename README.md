@@ -1,10 +1,10 @@
 # 🌊 Sunol FlowLab — Drinking Water Plant Simulator
 
-[![Godot Engine](https://img.shields.io/badge/Godot-4.5-blue?logo=godot-engine&logoColor=white)](https://godotengine.org)
-[![Build Status](https://img.shields.io/badge/tests-55%20passed-green)](https://github.com/boxwrench/sunol-flowlab)
+[![Godot Engine](https://img.shields.io/badge/Godot-4.7-blue?logo=godot-engine&logoColor=white)](https://godotengine.org)
+[![Tests](https://img.shields.io/badge/tests-GUT-green)](https://github.com/boxwrench/sunol-flowlab)
 [![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 
-An interactive, real-time, low-poly 3D simulation of a drinking water treatment plant built with **Godot 4.5** and **GDScript**. The engine is built from the ground up on strict, deterministic mass-balance and hydraulics rules, separating simulation logic from 3D presentation adapter layers.
+An interactive, real-time, low-poly 3D simulation of a drinking water treatment plant built with **Godot 4.7** and **GDScript**. The engine is built from the ground up on strict, deterministic mass-balance and hydraulics rules, separating simulation logic from 3D presentation adapter layers.
 
 ![Sunol FlowLab Banner](docs/images/sunol_flowlab_banner.jpg)
 
@@ -55,39 +55,47 @@ The core simulation model operates entirely using **SI units** (m³, m³/s, mete
 
 ## 🚰 Simulated Process Train
 
-The sandbox topology currently maps a three-unit connected treatment train:
+The default plant (`headworks_area.tscn`, config `phase3_headworks`) models the headworks
+and sedimentation stages — reservoirs through the applied channel. Downstream filtration
+and disinfection are planned (see `docs/ROADMAP.md`, Phase 4) and are represented here by a
+single filter-feed boundary that draws treated flow away.
 
 ```
-  ┌─────────────────────────┐
-  │    SOURCE_RESERVOIR     │
-  │ (External inflow limit) │
-  └────────────┬────────────┘
-               │  VALVE_OUT_SRC (Inlet Gate)
-               ▼
-  ┌─────────────────────────┐
-  │          BASIN          │◀─── LC_BASIN (Proportional Level Controller)
-  │  (Flocculation/Sed)     │
-  └────────────┬────────────┘
-               │  VALVE_OUT_BASIN (Outlet Gate)
-               ▼
-  ┌─────────────────────────┐
-  │   RECEIVING_RESERVOIR   │
-  │     (Treated Water)     │
-  └────────────┬────────────┘
-               │  VALVE_OUT_RCV (Demand Gate)
-               ▼
-  ┌─────────────────────────┐
-  │    EXTERNAL_SINK /      │
-  │       SPILL_SINK        │
-  └─────────────────────────┘
+  EXTERNAL_SOURCE_01     EXTERNAL_SOURCE_02
+          │                      │
+          ▼                      ▼
+    RESERVOIR_01           RESERVOIR_02
+          └──────────┬───────────┘
+                     ▼
+                 MANIFOLD_01            (inlet manifold)
+                     │
+                     ▼
+                FLASH_MIX_01            (coagulant flash mix)
+                     │
+                     ▼
+                 DIST_BOX_01            (splits flow five ways)
+          ┌─────┬─────┼─────┬─────┐
+          ▼     ▼     ▼     ▼     ▼
+       BASIN_01 … … … … … BASIN_05    (sedimentation / flocculation)
+          └─────┴─────┼─────┴─────┘
+                      ▼
+             APPLIED_CHANNEL_01         (combines basin effluent)
+                      │
+                      ▼
+              FILTER_FEED_01            (treated-demand boundary; stands in
+                                         for the future filter train)
 ```
+
+Reservoir and basin drains discharge to a shared `DRAIN_SINK`; over-elevation storage
+discharges to `SPILL_SINK`. A smaller three-unit demo (`three_unit_train.tscn`) is also
+included for inspecting the closed-loop level controller in isolation.
 
 ---
 
 ## 🛠️ Getting Started
 
 ### Prerequisites
-* [Godot Engine 4.5 (stable)](https://godotengine.org/download) installed on your system path.
+* [Godot Engine 4.7 (stable)](https://godotengine.org/download) installed on your system path.
 
 ### Running the Simulator
 1. Clone the repository:
@@ -97,9 +105,9 @@ The sandbox topology currently maps a three-unit connected treatment train:
    ```
 2. Open the project in Godot:
    * Import the project folder containing `project.godot`.
-3. Play the presentation scenes:
-   * Run `res://scenes/plant/three_unit_train.tscn` to view the three-unit train simulation, select assets, toggle auto/manual controller modes, and command setpoints.
-   * Run `res://scenes/application/main.tscn` to view the single-basin prototype.
+3. Play the plant:
+   * Press **Play** to run the default scene, `res://scenes/plant/headworks_area.tscn` — the full headworks-and-sedimentation plant. Select assets, toggle auto/manual controller modes, command setpoints, and take basins in and out of service.
+   * Or open `res://scenes/plant/three_unit_train.tscn` for the smaller three-unit level-control demo, or `res://scenes/application/main.tscn` for the single-basin prototype.
 
 ---
 
