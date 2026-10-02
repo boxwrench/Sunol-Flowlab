@@ -41,7 +41,7 @@ func _process(_delta: float) -> void:
 		var unit_snap: Dictionary = unit_snaps[basin_id]
 		var in_service: bool = bool(unit_snap.get("in_service", true))
 		var display_name: String = String(unit_snap.get("display_name", String(basin_id)))
-		button.text = "%s: %s" % [display_name, "IN SERVICE" if in_service else "OUT OF SERVICE"]
+		button.text = "%s: %s" % [display_name.replace("Flocculation/Sedimentation ", ""), "In service" if in_service else "Offline"]
 		button.modulate = Color(0.90, 0.97, 0.92, 1.0) if in_service else Color(0.98, 0.84, 0.84, 1.0)
 
 func _on_basin_button_pressed(basin_id: StringName) -> void:

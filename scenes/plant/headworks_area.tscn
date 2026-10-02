@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/application/headworks_area_bootstrap.gd" id="1_bootstrap"]
 [ext_resource type="Script" path="res://scripts/application/simulation_host.gd" id="2_host"]
@@ -9,6 +9,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/asset_panel/asset_panel.tscn" id="7_asset_panel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/controls/basin_service_panel.tscn" id="8_service_panel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/controls/alarm_panel.tscn" id="9_alarm_panel"]
+[ext_resource type="Script" path="res://scripts/presentation/headworks/headworks_site_visual.gd" id="10_site"]
+[ext_resource type="Theme" path="res://scenes/ui/plant_theme.tres" id="11_theme"]
 
 [node name="HeadworksArea" type="Node3D"]
 script = ExtResource("1_bootstrap")
@@ -18,10 +20,15 @@ script = ExtResource("2_host")
 
 [node name="PlaceholderEnvironment" parent="." instance=ExtResource("3_env")]
 
+[node name="HeadworksSite" type="Node3D" parent="."]
+script = ExtResource("10_site")
+
 [node name="HeadworksCameraRig" type="Camera3D" parent="."]
 script = ExtResource("4_camera_rig")
-height = 100.0
-target = Vector3(0, 0, 0)
+projection = 1
+size = 75.0
+height = 75.0
+target = Vector3(8, 0, 0)
 
 [node name="HeadworksPresentation" type="Node3D" parent="."]
 script = ExtResource("5_presenter")
@@ -29,10 +36,47 @@ script = ExtResource("5_presenter")
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="TimeControls" parent="CanvasLayer" instance=ExtResource("6_controls")]
+theme = ExtResource("11_theme")
 
 [node name="AssetPanel" parent="CanvasLayer" instance=ExtResource("7_asset_panel")]
 selected_unit_id = &"BASIN_03"
+theme = ExtResource("11_theme")
 
 [node name="BasinServicePanel" parent="CanvasLayer" instance=ExtResource("8_service_panel")]
+theme = ExtResource("11_theme")
 
 [node name="AlarmPanel" parent="CanvasLayer" instance=ExtResource("9_alarm_panel")]
+theme = ExtResource("11_theme")
+offset_top = 88.0
+offset_bottom = 185.0
+
+[node name="ProjectTitle" type="Label" parent="CanvasLayer"]
+offset_left = 24.0
+offset_top = 20.0
+theme_override_colors/font_color = Color(0.95, 0.98, 0.95, 1)
+theme_override_colors/font_shadow_color = Color(0.1, 0.2, 0.15, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 32
+text = "Sunol FlowLab"
+
+[node name="Subtitle" type="Label" parent="CanvasLayer"]
+offset_left = 26.0
+offset_top = 60.0
+theme_override_colors/font_color = Color(0.95, 0.98, 0.95, 1)
+theme_override_colors/font_shadow_color = Color(0.1, 0.2, 0.15, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+text = "Headworks sandbox | Reservoirs through sedimentation"
+
+[node name="CameraHelp" type="Label" parent="CanvasLayer"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -38.0
+offset_bottom = -14.0
+theme_override_colors/font_color = Color(0.95, 0.98, 0.95, 1)
+theme_override_colors/font_shadow_color = Color(0.1, 0.2, 0.15, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+text = "Click a unit to inspect | Right-drag to pan | Scroll to zoom"

@@ -1,9 +1,11 @@
 class_name HeadworksUnitVisual
 extends Node3D
 
-const STORAGE_LARGE_SIZE := Vector3(5.0, 4.0, 5.0)
-const STORAGE_MEDIUM_SIZE := Vector3(4.0, 2.5, 3.0)
-const STORAGE_SMALL_SIZE := Vector3(2.6, 2.2, 2.6)
+signal unit_selected(unit_id: StringName)
+
+const STORAGE_LARGE_SIZE := Vector3(15.0, 2.8, 5.0)
+const STORAGE_MEDIUM_SIZE := Vector3(5.0, 2.8, 36.0)
+const STORAGE_SMALL_SIZE := Vector3(3.0, 2.8, 3.0)
 const BOUNDARY_SIZE := Vector3(2.2, 1.6, 2.2)
 
 var unit_id: StringName = &""
@@ -22,6 +24,8 @@ var _label: Label3D = null
 var _size: Vector3 = STORAGE_SMALL_SIZE
 var _fill_ratio: float = 0.0
 var _last_level_m: float = 0.0
+var _walls: Array[MeshInstance3D] = []
+var _selection_mesh: MeshInstance3D = null
 
 func configure(definition: Dictionary, placement: Dictionary) -> void:
 	unit_id = StringName(definition.get("unit_id", ""))
@@ -39,7 +43,6 @@ func configure(definition: Dictionary, placement: Dictionary) -> void:
 
 func apply_snapshot(unit_snap: Dictionary) -> void:
 	var in_service: bool = bool(unit_snap.get("in_service", true))
-	var operating_state: String = "IN_SERVICE" if in_service else "OUT_OF_SERVICE"
 	_last_level_m = float(unit_snap.get("level_m", 0.0))
 	_fill_ratio = 0.0
 
@@ -47,6 +50,8 @@ func apply_snapshot(unit_snap: Dictionary) -> void:
 		var body_material: StandardMaterial3D = _body_mesh.get_active_material(0) as StandardMaterial3D
 		if body_material != null:
 			body_material.albedo_color = _body_color(in_service)
+	for wall in _walls:
+		wall.material_override.albedo_color = _body_color(in_service)
 
 	if _water_mesh != null:
 		if max_level_m > 0.0:
@@ -60,14 +65,18 @@ func apply_snapshot(unit_snap: Dictionary) -> void:
 			_water_mesh.position = Vector3(0.0, (water_height * 0.5) + 0.05, 0.0)
 			var water_material: StandardMaterial3D = _water_mesh.get_active_material(0) as StandardMaterial3D
 			if water_material != null:
-				water_material.albedo_color = Color(0.16, 0.56, 0.86, 0.72) if in_service else Color(0.35, 0.40, 0.48, 0.60)
+				water_material.albedo_color = (Color("42b9cd") if in_service else Color("7c9297")).srgb_to_linear()
 
 	if _label != null:
 		if unit_type == "StorageUnit":
-			_label.text = "%s\n%s %.2fm" % [display_name, operating_state, _last_level_m]
+			_label.text = "%s\n%s%s" % [display_name.replace("Flocculation/Sedimentation ", ""), DisplayUnits.format_level(_last_level_m), " | Offline" if not in_service else ""]
 		else:
 			var boundary_flow: float = float(unit_snap.get("current_flow_m3s", 0.0))
-			_label.text = "%s\n%s %.2f m3/s" % [display_name, operating_state, boundary_flow]
+			_label.text = "%s\n%s" % [display_name, DisplayUnits.format_flow(boundary_flow)]
+
+func set_selected(selected: bool) -> void:
+	if _selection_mesh != null:
+		_selection_mesh.visible = selected
 
 func get_fill_ratio() -> float:
 	return _fill_ratio
@@ -76,6 +85,7 @@ func get_last_level_m() -> float:
 	return _last_level_m
 
 func _build_visual() -> void:
+	_walls.clear()
 	for child in get_children():
 		child.queue_free()
 
@@ -91,8 +101,15 @@ func _build_visual() -> void:
 			_body_mesh = null
 	else:
 		_body_mesh = MeshInstance3D.new()
-		_body_mesh.mesh = _create_body_mesh()
-		_body_mesh.position = Vector3(0.0, _size.y * 0.5, 0.0)
+		if unit_type == "StorageUnit":
+			var floor_mesh := BoxMesh.new()
+			floor_mesh.size = Vector3(_size.x, 0.16, _size.z)
+			_body_mesh.mesh = floor_mesh
+			_body_mesh.position.y = 0.08
+			_build_walls()
+		else:
+			_body_mesh.mesh = _create_body_mesh()
+			_body_mesh.position = Vector3(0.0, _size.y * 0.5, 0.0)
 		_body_mesh.set_surface_override_material(0, _make_body_material())
 		add_child(_body_mesh)
 
@@ -107,16 +124,66 @@ func _build_visual() -> void:
 
 	_label = Label3D.new()
 	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_label.modulate = Color(0.96, 0.97, 0.99, 1.0)
-	_label.font_size = 32
-	_label.outline_modulate = Color(0.04, 0.06, 0.08, 1.0)
-	_label.outline_size = 6
+	_label.modulate = Color("203d43")
+	_label.font_size = 34
+	_label.pixel_size = 0.035
+	_label.outline_modulate = Color("edf2e9")
+	_label.outline_size = 3
 	var label_height := _size.y + 0.75
 	if mesh_path != "":
 		label_height = max(mesh_scale_m.y * 3.0, 3.0)
 	_label.position = Vector3(0.0, label_height, 0.0)
 	_label.text = display_name
 	add_child(_label)
+	_build_selection()
+
+func _build_walls() -> void:
+	for z in [-1.0, 1.0]:
+		_add_wall(Vector3(_size.x, _size.y, 0.25), Vector3(0, _size.y / 2, z * (_size.z / 2 - 0.125)))
+	for x in [-1.0, 1.0]:
+		_add_wall(Vector3(0.25, _size.y, _size.z), Vector3(x * (_size.x / 2 - 0.125), _size.y / 2, 0))
+	if maximum_volume_m3 >= 500 and maximum_volume_m3 < 1000:
+		# Static access bridge; it does not imply mixing or settling simulation.
+		_add_wall(Vector3(0.65, 0.16, _size.z), Vector3(-_size.x * 0.22, _size.y + 0.15, 0))
+		for z in [-1.0, 1.0]:
+			_add_wall(Vector3(_size.x, 0.08, 0.08), Vector3(0, _size.y + 0.65, z * (_size.z / 2 - 0.12)))
+			for x in range(-6, 7, 3):
+				_add_wall(Vector3(0.08, 0.65, 0.08), Vector3(x, _size.y + 0.325, z * (_size.z / 2 - 0.12)))
+
+func _add_wall(size: Vector3, at: Vector3) -> void:
+	var node := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	node.mesh = mesh
+	node.position = at
+	node.material_override = _make_body_material()
+	add_child(node)
+	_walls.append(node)
+
+func _build_selection() -> void:
+	var body := StaticBody3D.new()
+	var collider := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = _size
+	collider.shape = shape
+	collider.position.y = _size.y / 2
+	body.add_child(collider)
+	body.input_event.connect(_on_input_event)
+	add_child(body)
+	_selection_mesh = MeshInstance3D.new()
+	var pad := BoxMesh.new()
+	pad.size = Vector3(_size.x + 0.8, 0.06, _size.z + 0.8)
+	_selection_mesh.mesh = pad
+	_selection_mesh.position.y = 0.035
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color("ecc46c")
+	_selection_mesh.material_override = material
+	_selection_mesh.visible = false
+	add_child(_selection_mesh)
+
+func _on_input_event(_camera: Node, event: InputEvent, _position: Vector3, _normal: Vector3, _shape: int) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		unit_selected.emit(unit_id)
 
 func _find_first_mesh(node: Node) -> MeshInstance3D:
 	if node is MeshInstance3D:
@@ -146,6 +213,8 @@ func _create_body_mesh() -> Mesh:
 func _pick_size() -> Vector3:
 	if unit_type != "StorageUnit":
 		return BOUNDARY_SIZE
+	if maximum_volume_m3 >= 1000.0:
+		return Vector3(11, 4, 11)
 	if maximum_volume_m3 >= 500.0:
 		return STORAGE_LARGE_SIZE
 	if maximum_volume_m3 >= 100.0:
@@ -154,19 +223,14 @@ func _pick_size() -> Vector3:
 
 func _make_body_material() -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.albedo_color = _body_color(true)
-	material.roughness = 0.25
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.roughness = 0.9
 	return material
 
 func _make_water_material() -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.albedo_color = Color(0.16, 0.56, 0.86, 0.72)
-	material.emission_enabled = true
-	material.emission = Color(0.08, 0.26, 0.42, 1.0)
-	material.roughness = 0.08
+	material.albedo_color = Color("42b9cd").srgb_to_linear()
+	material.roughness = 0.35
 	return material
 
 func _body_color(in_service: bool) -> Color:
@@ -176,4 +240,4 @@ func _body_color(in_service: bool) -> Color:
 		if boundary_type == "TREATED_DEMAND":
 			return Color(0.58, 0.48, 0.26, 0.92) if in_service else Color(0.24, 0.22, 0.18, 0.72)
 		return Color(0.42, 0.32, 0.24, 0.90) if in_service else Color(0.20, 0.18, 0.16, 0.72)
-	return Color(0.92, 0.95, 0.98, 0.22) if in_service else Color(0.55, 0.57, 0.60, 0.12)
+	return (Color("dce0d4") if in_service else Color("9b9e98")).srgb_to_linear()

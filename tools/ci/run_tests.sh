@@ -21,7 +21,7 @@ GUT_RC=$?
 set -e
 cat "$OUTPUT_LOG"
 
-ACTUAL_SCRIPTS=$(awk '/^Scripts[[:space:]]+[0-9]+[[:space:]]*$/ {print $2}' "$OUTPUT_LOG")
+ACTUAL_SCRIPTS=$(awk '/^Scripts[[:space:]]+[0-9]+[[:space:]]*$/ {gsub(/\r/, ""); print $2}' "$OUTPUT_LOG")
 echo "Loaded test-script count: ${ACTUAL_SCRIPTS:-unavailable}"
 
 if grep -qiE 'Failing Tests|SCRIPT ERROR' "$OUTPUT_LOG"; then

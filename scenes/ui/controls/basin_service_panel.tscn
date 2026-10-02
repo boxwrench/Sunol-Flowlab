@@ -8,7 +8,7 @@ anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -320.0
-offset_top = 84.0
+offset_top = 24.0
 offset_right = -16.0
 offset_bottom = 340.0
 grow_horizontal = 0
@@ -30,7 +30,7 @@ text = "Basin Service"
 [node name="HelpLabel" type="Label" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Send service-state changes through the command path."
+text = "Click to change service status."
 
 [node name="ButtonList" type="VBoxContainer" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2

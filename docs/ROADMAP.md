@@ -25,6 +25,10 @@ and CI is green.
 
 ## Governing sequence
 
+The user-requested headworks visual preview is recorded in
+[HEADWORKS_VISUAL_PREVIEW.md](HEADWORKS_VISUAL_PREVIEW.md). It improves the current
+scene's geometry, camera and controls without adding process stages or closing WP4.7.
+
 Build only what makes the next plant section visibly operable and hydraulically correct.
 A future capability enters active architecture only when the next playable milestone
 requires it or a concrete failing case proves the current solution insufficient.
@@ -125,7 +129,7 @@ prove count/failure behavior; temporary files are removed; normal CI is green.
 **Implementation and verification:** see [WP4.6_VERIFICATION.md](WP4.6_VERIFICATION.md).
 The workflow calls the shared shell runner and its real-GUT guardrail probes; the manual
 total is removed. Local verification loaded all 34 derived scripts and passed 106/106
-tests, plus 9 guardrail cases. Delivery remains subject to green CI on main.
+tests, plus 9 guardrail cases. Main CI run 36960262617 passed after PR #10 merged.
 
 ### WP4.7 — Close the Phase 3 and WP4.1 gate
 

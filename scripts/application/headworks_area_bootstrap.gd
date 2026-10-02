@@ -46,6 +46,8 @@ func _ready() -> void:
 		return
 
 	presenter.configure(host.engine, config.topology_data, presentation_map)
+	var asset_panel: AssetPanel = get_node("CanvasLayer/AssetPanel")
+	presenter.unit_selected.connect(func(unit_id: StringName) -> void: asset_panel.selected_unit_id = unit_id)
 	alarm_panel.configure(host.engine)
 
 	# Seed the first frame so the scene is populated before the first tick advances.

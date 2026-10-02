@@ -65,6 +65,26 @@ ambient motion are not proof-of-concept requirements.
 
 ## Declared visual exaggeration
 
+### Current headworks visual preview
+
+The main scene uses a compact illustrative site layout, rather than a surveyed plant.
+Open concrete walls surround water volumes supplied only by snapshot `level_m`.
+For each unit, `r = clamp(level_m / max_level_m, 0, 1)` and displayed water depth is
+`max(visual_height * r - 0.15, 0)`; a zero depth hides water. Display heights are 4 m
+for reservoirs, 2.8 m for the five basins, channel and small junctions. Model ranges
+are respectively 0–10 m, 0–5 m, 0–5 m and 0–10 m, defined by the existing config.
+These are compressed, per-unit display scales, not literal hydraulic elevations.
+Numeric labels retain actual snapshot levels, including over-range values, and
+convert them to feet through `DisplayUnits`. No interpolation or render lag is added.
+
+Flow bars show snapshot `actual_flow_m3s`, bounded by each link's configured
+`max_flow_m3s`. Width is `lerp(0.10, 0.45, clamp(actual/max, 0, 1))` in scene units;
+zero or disabled flow hides the bar. Connections show the logical process network,
+not surveyed pipe routing. There is no decorative process-flow animation.
+Offline basins carry an explicit “Offline” label and a grey material; selection uses
+a gold footprint and the inspector. Buildings, trees, hills and the scenic river
+are static context with no hydraulic connections or implied treatment behavior.
+
 A visual may render an otherwise invisible state, such as flow inside an opaque pipe, or
 use representative particles rather than literal water parcels. Each such mapping must
 be documented beside the adapter or shader with:
