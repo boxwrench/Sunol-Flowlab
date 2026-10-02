@@ -49,6 +49,11 @@ Time              185.502s
 Collected: 106. Passed: 106. Failed: 0. The runner omits the `Failing Tests` line when zero.
 Exit code: 0. No script/parse errors or silently skipped test scripts were reported.
 
+Pull-request CI also passed both `test` and `config-schema` jobs in
+[run 36955569604](https://github.com/boxwrench/Sunol-Flowlab/actions/runs/36955569604).
+Delivery to main is through [PR #9](https://github.com/boxwrench/Sunol-Flowlab/pull/9);
+the roadmap's delivered status is gated by green CI on main as usual.
+
 The suite includes configured first-snapshot parity, same-command headless/main-scene
 parity through each of the five basin outages and returns, high-alarm activation and
 clearing with exactly one event per transition, an empty-start low alarm, low-alarm delay
