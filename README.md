@@ -107,6 +107,7 @@ included for inspecting the closed-loop level controller in isolation.
    * Import the project folder containing `project.godot`.
 3. Play the plant:
    * Press **Play** to run the default scene, `res://scenes/plant/headworks_area.tscn` — the full headworks-and-sedimentation plant. Select assets, toggle auto/manual controller modes, command setpoints, and take basins in and out of service.
+   * The headworks plant starts from its committed configuration in both headless and visual runs. Four upstream valves travel from closed toward the demonstration opening. The top-left alarm panel shows the configured applied-channel high/low alarms, their active/clear status, and the snapshot tick.
    * Or open `res://scenes/plant/three_unit_train.tscn` for the smaller three-unit level-control demo, or `res://scenes/application/main.tscn` for the single-basin prototype.
 
 ---

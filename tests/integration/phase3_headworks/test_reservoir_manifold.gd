@@ -72,8 +72,11 @@ func test_dual_reservoir_flow_combines() -> void:
 	var res2_out_link = engine.context.links_dict[&"LINK_OUT_RES_02"]
 	var manifold_in_flow = res1_out_link.actual_flow_m3s + res2_out_link.actual_flow_m3s
 	
-	# Check manifold inflows
-	assert_almost_eq(manifold.inflow_m3s, 13.6042, 1e-4, "Manifold inflow_m3s should equal 13.6042 m3/s")
+	# Verify the combining behavior independently of demonstration startup targets.
+	assert_gt(res1_out_link.actual_flow_m3s, 0.0, "Reservoir 1 must contribute flow")
+	assert_gt(res2_out_link.actual_flow_m3s, 0.0, "Reservoir 2 must contribute flow")
+	assert_almost_eq(manifold.inflow_m3s, manifold_in_flow, 1e-9,
+		"Manifold inflow must equal the sum of both reservoir outlet flows")
 
 func test_single_reservoir_starvation() -> void:
 	var engine := _setup_engine()

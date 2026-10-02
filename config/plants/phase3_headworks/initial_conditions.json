@@ -93,13 +93,13 @@
     {
       "actuator_id": "VALVE_OUT_RES_01",
       "is_manual": true,
-      "commanded_position": 0.0,
+      "commanded_position": 80.0,
       "position": 0.0
     },
     {
       "actuator_id": "VALVE_OUT_RES_02",
       "is_manual": true,
-      "commanded_position": 0.0,
+      "commanded_position": 80.0,
       "position": 0.0
     },
     {
@@ -117,13 +117,13 @@
     {
       "actuator_id": "VALVE_OUT_MAN_01",
       "is_manual": true,
-      "commanded_position": 0.0,
+      "commanded_position": 80.0,
       "position": 0.0
     },
     {
       "actuator_id": "VALVE_OUT_FM_01",
       "is_manual": true,
-      "commanded_position": 0.0,
+      "commanded_position": 80.0,
       "position": 0.0
     },
     {
