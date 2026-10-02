@@ -18,7 +18,8 @@ and CI is green.
 | WP4.2 — Align Docs with Reality | Archive labeling, README/INDEX, contracts, architecture restructure | ✅ Delivered |
 | WP4.3–WP4.4 — Audit Closure | Remove unsupported commanded and reverse flow | ✅ Delivered via PRs #6 and #7 |
 | WP4.5 — Startup + Alarms | Configuration-driven startup and visible configured alarms | ✅ Delivered via PR #9 |
-| WP4.6–WP4.7 — Audit Closure | CI script counting and milestone verification | ⬜ Next |
+| WP4.6 — CI Script Counting | Derived counts and defensive shared GUT runner | ✅ Delivered; see verification record |
+| WP4.7 — Audit Closure | Independent milestone verification | ⬜ Next |
 | Phase 4a — Filtration + Clearwell | Twelve filters, clearwell, distribution and minimum control | ⛔ Blocked by WP4.7 |
 | Phase 4b — Contact + Treated Water | CT basins, treated storage/demand, one supervisory loop | ⬜ Planned |
 
@@ -28,7 +29,7 @@ Build only what makes the next plant section visibly operable and hydraulically 
 A future capability enters active architecture only when the next playable milestone
 requires it or a concrete failing case proves the current solution insufficient.
 
-1. Complete WP4.6 through WP4.7 in order (WP4.2–WP4.5 delivered).
+1. Complete WP4.7 (WP4.2–WP4.6 delivered).
 2. Close the Phase 3 and WP4.1 gate with recorded evidence.
 3. Author the detailed Phase 4a implementation plan.
 4. Build filters and clearwell only.
@@ -120,6 +121,11 @@ Retain skipped-test, zero-test, script-error, and loaded-versus-expected checks.
 
 **Done when:** CI prints derived and loaded counts; temporary valid and unparseable scripts
 prove count/failure behavior; temporary files are removed; normal CI is green.
+
+**Implementation and verification:** see [WP4.6_VERIFICATION.md](WP4.6_VERIFICATION.md).
+The workflow calls the shared shell runner and its real-GUT guardrail probes; the manual
+total is removed. Local verification loaded all 34 derived scripts and passed 106/106
+tests, plus 9 guardrail cases. Delivery remains subject to green CI on main.
 
 ### WP4.7 — Close the Phase 3 and WP4.1 gate
 

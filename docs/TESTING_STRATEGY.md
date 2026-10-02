@@ -72,7 +72,17 @@ Run all tests from the command line:
 godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit
 ```
 
-Include this command in continuous integration workflows.
+For the same defensive validation used by CI, run from the repository root:
+
+```bash
+bash tools/ci/run_tests.sh
+```
+
+This derives the expected script count from `tests/**/test_*.gd`, prints the count loaded
+by GUT, and fails on missing scripts, malformed output, zero tests, skipped/pending tests,
+script errors, test failures, or a nonzero engine exit. An executable path may be supplied
+as the first argument. `tools/ci/verify_test_runner.sh` checks these guardrails using
+temporary real GUT scripts and removes its fixtures on exit; CI runs it before the suite.
 
 ## Regression policy
 
