@@ -70,12 +70,21 @@ ambient motion are not proof-of-concept requirements.
 The main scene uses a compact illustrative site layout, rather than a surveyed plant.
 Open concrete walls surround water volumes supplied only by snapshot `level_m`.
 For each unit, `r = clamp(level_m / max_level_m, 0, 1)` and displayed water depth is
-`max(visual_height * r - 0.15, 0)`; a zero depth hides water. Display heights are 4 m
-for reservoirs, 2.8 m for the five basins, channel and small junctions. Model ranges
+`max(visual_height * r - 0.15, 0)`; a zero depth hides water. Display heights are 1.6 m
+for the lake reservoirs, 2.8 m for the five basins, channel and small junctions. Model ranges
 are respectively 0–10 m, 0–5 m, 0–5 m and 0–10 m, defined by the existing config.
 These are compressed, per-unit display scales, not literal hydraulic elevations.
 Numeric labels retain actual snapshot levels, including over-range values, and
 convert them to feet through `DisplayUnits`. No interpolation or render lag is added.
+
+The two reservoir placements explicitly select `lake_reservoir.tscn` via the existing
+`mesh_path` field. `HeadworksLakeVisual` builds a static irregular bed and sloping earth
+banks, plus a horizontal water mesh; it does not identify units by name or capacity.
+The common unit adapter moves that surface to `displayed_depth + 0.05` scene metres,
+with zero hiding the surface. Rising water covers more of the sloping inner banks.
+The footprint (26×22 scene metres) and banks are illustrative, not a reservoir survey,
+and do not change configured storage geometry or conservation. No shoreline animation,
+river hydraulics or additional simulation fields are introduced.
 
 Flow bars show snapshot `actual_flow_m3s`, bounded by each link's configured
 `max_flow_m3s`. Width is `lerp(0.10, 0.45, clamp(actual/max, 0, 1))` in scene units;
