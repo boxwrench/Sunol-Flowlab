@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/application/headworks_area_bootstrap.gd" id="1_bootstrap"]
 [ext_resource type="Script" path="res://scripts/application/simulation_host.gd" id="2_host"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/controls/time_controls.tscn" id="6_controls"]
 [ext_resource type="PackedScene" path="res://scenes/ui/asset_panel/asset_panel.tscn" id="7_asset_panel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/controls/basin_service_panel.tscn" id="8_service_panel"]
+[ext_resource type="PackedScene" path="res://scenes/ui/controls/alarm_panel.tscn" id="9_alarm_panel"]
 
 [node name="HeadworksArea" type="Node3D"]
 script = ExtResource("1_bootstrap")
@@ -33,3 +34,5 @@ script = ExtResource("5_presenter")
 selected_unit_id = &"BASIN_03"
 
 [node name="BasinServicePanel" parent="CanvasLayer" instance=ExtResource("8_service_panel")]
+
+[node name="AlarmPanel" parent="CanvasLayer" instance=ExtResource("9_alarm_panel")]

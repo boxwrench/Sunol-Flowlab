@@ -16,7 +16,9 @@ and CI is green.
 | WP4.0 — Self-Regulating Hydraulics | `GRAVITY` mode and deterministic port iteration | ✅ Delivered |
 | WP4.1 — Headworks Gravity Migration | Convert and re-baseline `phase3_headworks` | 🟨 Implemented; closure verification remains |
 | WP4.2 — Align Docs with Reality | Archive labeling, README/INDEX, contracts, architecture restructure | ✅ Delivered |
-| WP4.3–WP4.7 — Audit Closure | Unsupported modes, reverse flow, startup, alarms, CI, verification | ⬜ Next |
+| WP4.3–WP4.4 — Audit Closure | Remove unsupported commanded and reverse flow | ✅ Delivered via PRs #6 and #7 |
+| WP4.5 — Startup + Alarms | Configuration-driven startup and visible configured alarms | ✅ Delivered via PR #9 |
+| WP4.6–WP4.7 — Audit Closure | CI script counting and milestone verification | ⬜ Next |
 | Phase 4a — Filtration + Clearwell | Twelve filters, clearwell, distribution and minimum control | ⛔ Blocked by WP4.7 |
 | Phase 4b — Contact + Treated Water | CT basins, treated storage/demand, one supervisory loop | ⬜ Planned |
 
@@ -26,7 +28,7 @@ Build only what makes the next plant section visibly operable and hydraulically 
 A future capability enters active architecture only when the next playable milestone
 requires it or a concrete failing case proves the current solution insufficient.
 
-1. Complete WP4.3 through WP4.7 in order (WP4.2 delivered).
+1. Complete WP4.6 through WP4.7 in order (WP4.2–WP4.5 delivered).
 2. Close the Phase 3 and WP4.1 gate with recorded evidence.
 3. Author the detailed Phase 4a implementation plan.
 4. Build filters and clearwell only.
@@ -72,6 +74,8 @@ rules/contracts, fixtures, and tests. Do not implement it.
 solver, integration, replay, and mass-balance suites pass; `RESTRICTED` and `GRAVITY`
 results are unchanged.
 
+**Delivered** via PR #6; the unsupported mode is removed from production and active contracts.
+
 ### WP4.4 — Remove inaccessible reverse-flow support
 
 **Goal:** Keep the directed-acyclic hydraulic contract honest.
@@ -82,6 +86,8 @@ produces zero forward flow. Do not add bidirectional topology semantics.
 
 **Done when:** no production/config contract claims reverse flow; positive, zero, and
 negative head tests pass; replay and mass conservation pass; topology remains a DAG.
+
+**Delivered** via PR #7; negative head produces zero forward flow and no active reverse-flow field remains.
 
 ### WP4.5 — Unify startup state and wire configured alarms
 
@@ -98,6 +104,12 @@ negative head tests pass; replay and mass conservation pass; topology remains a 
 **Done when:** first headless/visual snapshots match configuration; both alarm IDs appear;
 activation, delay, deadband, clearing, and single-event behavior are tested; the scene
 presents alarms; parity and the five-basin outage demonstration pass.
+
+**Implementation and verification:** see [WP4.5_VERIFICATION.md](WP4.5_VERIFICATION.md).
+Delivered via PR #9: 106 tests collected/passed, zero failures, 34 scripts loaded;
+18 valid configs accepted and 6 invalid fixtures rejected; rendered captures inspected.
+The configured low threshold equals the channel's outlet cutoff, so normal demand stops
+at the threshold; the low alarm is demonstrated with a valid empty initial channel.
 
 ### WP4.6 — Derive the CI test-script count
 
