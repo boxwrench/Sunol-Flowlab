@@ -2,6 +2,58 @@ extends "res://addons/gut/test.gd"
 
 const ADAPTER_SCRIPT = preload("res://scripts/presentation/headworks/headworks_presentation_adapter.gd")
 
+func test_open_basin_water_mapping_is_monotone_and_snapshot_is_unchanged() -> void:
+	var visual := HeadworksUnitVisual.new()
+	add_child_autofree(visual)
+	visual.configure({"unit_id": "BASIN_01", "display_name": "Basin 1",
+		"type": "StorageUnit", "maximum_volume_m3": 500.0, "max_level_m": 5.0}, {})
+	var previous_height := -1.0
+	for level in [0.0, 1.0, 2.5, 5.0, 6.0]:
+		var snapshot := {"level_m": level, "in_service": true}
+		var original := snapshot.duplicate(true)
+		visual.apply_snapshot(snapshot)
+		assert_eq_deep(snapshot, original)
+		assert_gte(visual._water_mesh.position.y, previous_height)
+		previous_height = visual._water_mesh.position.y
+		assert_eq(visual.get_last_level_m(), level, "Numeric value preserves an over-range level")
+		if level == 0.0:
+			assert_false(visual._water_mesh.visible)
+	assert_eq(visual.get_fill_ratio(), 1.0)
+	assert_eq(visual._walls.size(), 17, "Open walls, bridge and railings replace an opaque box")
+	visual.apply_snapshot({"level_m": 1.0, "in_service": false})
+	assert_true("Offline" in visual._label.text, "Offline status has a text cue")
+
+func test_flow_bars_hide_at_zero_and_when_disabled() -> void:
+	var visual := HeadworksLinkVisual.new()
+	add_child_autofree(visual)
+	visual.configure({"link_id": "FLOW", "max_flow_m3s": 10.0}, Vector3.ZERO, Vector3(10, 0, 0))
+	var previous_width := 0.0
+	for flow in [0.0, 2.0, 5.0, 10.0]:
+		visual.apply_snapshot({"actual_flow_m3s": flow, "is_enabled": true})
+		assert_eq(visual._bar_mesh.visible, flow > 0.0)
+		assert_gte(visual._bar_mesh.scale.x, previous_width)
+		previous_width = visual._bar_mesh.scale.x
+	visual.apply_snapshot({"actual_flow_m3s": 10.0, "is_enabled": false})
+	assert_false(visual._bar_mesh.visible)
+
+func test_main_scene_selection_connects_inspector_and_highlight() -> void:
+	var scene: Node3D = load("res://scenes/plant/headworks_area.tscn").instantiate()
+	add_child_autofree(scene)
+	scene.process_mode = Node.PROCESS_MODE_DISABLED
+	var presenter: HeadworksPresentationAdapter = scene.get_node("HeadworksPresentation")
+	var basin: HeadworksUnitVisual = presenter.get_node("BASIN_02Visual")
+	var snapshot: Dictionary = scene.get_node("SimulationHost").engine.latest_snapshot
+	var original := snapshot.duplicate(true)
+	basin.unit_selected.emit(&"BASIN_02")
+	assert_eq(scene.get_node("CanvasLayer/AssetPanel").selected_unit_id, &"BASIN_02")
+	var inspector: AssetPanel = scene.get_node("CanvasLayer/AssetPanel")
+	var host: SimulationHost = scene.get_node("SimulationHost")
+	assert_eq(inspector._find_selected_controller(host).controller_id, &"LC_BASIN_02",
+		"Basin inspector shows its inlet loop even when that loop measures the shared channel")
+	assert_true(basin._selection_mesh.visible)
+	assert_false(presenter.get_node("BASIN_03Visual")._selection_mesh.visible)
+	assert_eq_deep(snapshot, original)
+
 func test_reference_plane_creation_when_configured() -> void:
 	var presenter = ADAPTER_SCRIPT.new()
 	add_child_autofree(presenter)

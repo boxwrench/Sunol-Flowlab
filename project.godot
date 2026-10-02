@@ -14,6 +14,14 @@ config/name="Sunol FlowLab"
 run/main_scene="res://scenes/plant/headworks_area.tscn"
 config/features=PackedStringArray("4.7")
 
+[display]
+
+window/size/viewport_width=1600
+window/size/viewport_height=900
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+
 [autoload]
 
 CommandBus="*res://scripts/application/command_bus.gd"

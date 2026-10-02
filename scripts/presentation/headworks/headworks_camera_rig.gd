@@ -10,6 +10,7 @@ extends Camera3D
 # Current camera height/zoom
 @export var height: float = 80.0
 @export var target: Vector3 = Vector3(0.0, 0.0, 0.0)
+@export var oblique: bool = true
 
 var _is_dragging: bool = false
 var _last_mouse_pos: Vector2 = Vector2.ZERO
@@ -37,7 +38,7 @@ func _process(delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT or event.button_index == MOUSE_BUTTON_RIGHT or event.button_index == MOUSE_BUTTON_MIDDLE:
+		if event.button_index == MOUSE_BUTTON_RIGHT or event.button_index == MOUSE_BUTTON_MIDDLE:
 			if event.pressed:
 				_is_dragging = true
 				_last_mouse_pos = event.position
@@ -63,5 +64,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			_update_camera()
 
 func _update_camera() -> void:
-	global_position = Vector3(target.x, height, target.z)
-	look_at(target, Vector3.FORWARD)
+	if projection == Camera3D.PROJECTION_ORTHOGONAL:
+		size = height
+	if oblique:
+		global_position = target + Vector3(-height * 0.35, height, height * 0.72)
+		look_at(target, Vector3.UP)
+	else:
+		global_position = Vector3(target.x, height, target.z)
+		look_at(target, Vector3.FORWARD)

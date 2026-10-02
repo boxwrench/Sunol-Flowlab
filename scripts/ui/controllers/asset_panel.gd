@@ -1,6 +1,9 @@
 class_name AssetPanel
 extends Control
 
+const COMMAND_BUS_SCRIPT = preload("res://scripts/application/command_bus.gd")
+@onready var _command_bus: COMMAND_BUS_SCRIPT = get_node("/root/CommandBus")
+
 @export var selected_unit_id: StringName = &"BASIN_01"
 
 @onready var title_label: Label = get_node_or_null("PanelContainer/VBoxContainer/TitleLabel")
@@ -67,7 +70,7 @@ func _process(_delta: float) -> void:
 	var unit_snap: Dictionary = snap.units[selected_unit_id]
 	
 	if title_label != null:
-		title_label.text = String(unit_snap.get("display_name", selected_unit_id))
+		title_label.text = String(unit_snap.get("display_name", selected_unit_id)).replace("Flocculation/Sedimentation ", "")
 	if state_label != null:
 		state_label.text = String(unit_snap.get("operating_state", "IN_SERVICE"))
 	
@@ -78,15 +81,15 @@ func _process(_delta: float) -> void:
 	var spill: float = float(unit_snap.get("spill_flow_m3s", 0.0))
 	
 	if level_label != null:
-		level_label.text = DisplayUnits.format_level(lvl)
+		level_label.text = "Level: " + DisplayUnits.format_level(lvl)
 	if volume_label != null:
-		volume_label.text = DisplayUnits.format_volume(vol)
+		volume_label.text = "Volume: " + DisplayUnits.format_volume(vol)
 	if inflow_label != null:
-		inflow_label.text = DisplayUnits.format_flow(inflow)
+		inflow_label.text = "Inflow: " + DisplayUnits.format_flow(inflow)
 	if outflow_label != null:
-		outflow_label.text = DisplayUnits.format_flow(outflow)
+		outflow_label.text = "Outflow: " + DisplayUnits.format_flow(outflow)
 	if spill_label != null:
-		spill_label.text = DisplayUnits.format_flow(spill)
+		spill_label.text = "Spill: " + DisplayUnits.format_flow(spill)
 		
 	# Find actuators connected to the selected unit dynamically
 	_current_inlet_actuator = null
@@ -187,17 +190,17 @@ func _process(_delta: float) -> void:
 func _on_inlet_slider_changed(val: float) -> void:
 	if _updating_sliders or _current_inlet_actuator == null:
 		return
-	CommandBus.submit(SetValvePositionCommand.new(_current_inlet_actuator.actuator_id, val))
+	_command_bus.submit(SetValvePositionCommand.new(_current_inlet_actuator.actuator_id, val))
 
 func _on_outlet_slider_changed(val: float) -> void:
 	if _updating_sliders or _current_outlet_actuator == null:
 		return
-	CommandBus.submit(SetValvePositionCommand.new(_current_outlet_actuator.actuator_id, val))
+	_command_bus.submit(SetValvePositionCommand.new(_current_outlet_actuator.actuator_id, val))
 
 func _on_drain_slider_changed(val: float) -> void:
 	if _updating_sliders or _current_drain_actuator == null:
 		return
-	CommandBus.submit(SetValvePositionCommand.new(_current_drain_actuator.actuator_id, val))
+	_command_bus.submit(SetValvePositionCommand.new(_current_drain_actuator.actuator_id, val))
 
 func _on_toggle_mode_pressed() -> void:
 	var host: SimulationHost = get_tree().current_scene.find_child("SimulationHost", true, false) as SimulationHost
@@ -207,7 +210,7 @@ func _on_toggle_mode_pressed() -> void:
 	if unit_controller != null:
 		var current_mode = unit_controller.control_mode
 		var new_mode = &"AUTO" if current_mode == &"MANUAL" else &"MANUAL"
-		CommandBus.submit(SetControllerModeCommand.new(unit_controller.controller_id, new_mode))
+		_command_bus.submit(SetControllerModeCommand.new(unit_controller.controller_id, new_mode))
 
 func _on_increase_setpoint_pressed() -> void:
 	var host: SimulationHost = get_tree().current_scene.find_child("SimulationHost", true, false) as SimulationHost
@@ -216,7 +219,7 @@ func _on_increase_setpoint_pressed() -> void:
 	var unit_controller = _find_selected_controller(host)
 	if unit_controller != null and "setpoint" in unit_controller:
 		var new_sp = unit_controller.setpoint + 0.25
-		CommandBus.submit(SetLevelSetpointCommand.new(unit_controller.controller_id, new_sp))
+		_command_bus.submit(SetLevelSetpointCommand.new(unit_controller.controller_id, new_sp))
 
 func _on_decrease_setpoint_pressed() -> void:
 	var host: SimulationHost = get_tree().current_scene.find_child("SimulationHost", true, false) as SimulationHost
@@ -225,9 +228,19 @@ func _on_decrease_setpoint_pressed() -> void:
 	var unit_controller = _find_selected_controller(host)
 	if unit_controller != null and "setpoint" in unit_controller:
 		var new_sp = max(0.0, unit_controller.setpoint - 0.25)
-		CommandBus.submit(SetLevelSetpointCommand.new(unit_controller.controller_id, new_sp))
+		_command_bus.submit(SetLevelSetpointCommand.new(unit_controller.controller_id, new_sp))
 
 func _find_selected_controller(host: SimulationHost) -> SimController:
+	# A basin inlet loop measures the shared applied channel. Associate its
+	# faceplate with the actuator it drives, rather than only its measured unit.
+	for ctrl in host.engine.context.controllers_list:
+		for link in host.engine.context.links_list:
+			if link.actuator == null or link.actuator.actuator_id != ctrl.target_actuator_id:
+				continue
+			if link.destination_port != null and link.destination_port.parent_unit.unit_id == selected_unit_id:
+				return ctrl
+			if link.source_port != null and link.source_port.parent_unit.unit_id == selected_unit_id:
+				return ctrl
 	for ctrl in host.engine.context.controllers_list:
 		if ctrl.pv_unit_id == selected_unit_id:
 			return ctrl

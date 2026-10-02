@@ -1,6 +1,8 @@
 class_name HeadworksPresentationAdapter
 extends Node3D
 
+signal unit_selected(unit_id: StringName)
+
 const UNIT_VISUAL_SCRIPT = preload("res://scripts/presentation/headworks/headworks_unit_visual.gd")
 const LINK_VISUAL_SCRIPT = preload("res://scripts/presentation/headworks/headworks_link_visual.gd")
 
@@ -59,7 +61,9 @@ func configure(engine: SimulationEngine, topology_data: Dictionary, presentation
 		unit_visual.name = "%sVisual" % String(unit_id)
 		add_child(unit_visual)
 		unit_visual.configure(_unit_definitions[unit_id], placement)
+		unit_visual.unit_selected.connect(_on_unit_selected)
 		_unit_visuals[unit_id] = unit_visual
+	select_unit(&"BASIN_03")
 
 	var link_presentation_settings := {}
 	for entry in presentation_map.get("links", []):
@@ -108,6 +112,14 @@ func refresh_from_snapshot() -> void:
 	for link_id in _link_visuals.keys():
 		if link_snaps.has(link_id):
 			_link_visuals[link_id].apply_snapshot(link_snaps[link_id])
+
+func select_unit(unit_id: StringName) -> void:
+	for id in _unit_visuals:
+		_unit_visuals[id].set_selected(id == unit_id)
+
+func _on_unit_selected(unit_id: StringName) -> void:
+	select_unit(unit_id)
+	unit_selected.emit(unit_id)
 
 func get_unit_fill_ratio(unit_id: StringName) -> float:
 	var visual = _unit_visuals.get(unit_id)

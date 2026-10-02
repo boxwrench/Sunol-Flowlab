@@ -8,6 +8,15 @@ An interactive, real-time, low-poly 3D simulation of a drinking water treatment 
 
 ![Sunol FlowLab Banner](docs/images/sunol_flowlab_banner.jpg)
 
+The banner is visual inspiration. The current running Godot scene is shown below;
+it covers reservoirs through sedimentation, with downstream treatment still planned.
+
+![Current headworks visual preview](docs/images/headworks-visual-preview.png)
+
+See [the visual verification record](docs/HEADWORKS_VISUAL_PREVIEW.md) for the offline
+view and capture instructions. Click units to inspect them, right-drag to pan, and
+scroll to zoom.
+
 ---
 
 ## 🚀 Key Features

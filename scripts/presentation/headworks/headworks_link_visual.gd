@@ -62,6 +62,9 @@ func _build_mesh(mesh_path: String, mesh_scale_m: Vector3) -> void:
 func _update_bar_visual(flow_ratio: float, is_enabled: bool) -> void:
 	if _bar_mesh == null:
 		return
+	# Snapshot actual_flow_m3s / max_flow_m3s controls width (0.10..0.45).
+	# These bars indicate flow, not surveyed pipes: zero/disabled flow hides the bar.
+	_bar_mesh.visible = is_enabled and flow_ratio > 0.0
 	var thickness: float = lerp(0.10, 0.45, flow_ratio)
 	
 	if _bar_mesh.name == "CustomPipe":
@@ -79,8 +82,8 @@ func _update_bar_visual(flow_ratio: float, is_enabled: bool) -> void:
 				material.albedo_color = Color(0.22, 0.22, 0.24, 0.70)
 				material.emission = Color(0.06, 0.06, 0.07, 1.0)
 			else:
-				material.albedo_color = Color(0.18 + (0.72 * flow_ratio), 0.32 + (0.30 * flow_ratio), 0.78 - (0.36 * flow_ratio), 0.88)
-				material.emission = Color(0.06 + (0.32 * flow_ratio), 0.10 + (0.18 * flow_ratio), 0.20 + (0.04 * flow_ratio), 1.0)
+				material.albedo_color = Color("348da2")
+				material.emission = Color(0.04, 0.1, 0.12)
 
 func _make_material() -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
