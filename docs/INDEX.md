@@ -28,6 +28,7 @@ This index defines the authority order of the repository documentation. In the e
    - [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) — Explicit scope exclusions.
    - [GLOSSARY.md](GLOSSARY.md) — Plant terminology.
 5. **Guides** (non-binding how-to)
+   - [WP4.7_VERIFICATION.md](WP4.7_VERIFICATION.md) — Executed headworks/gravity exit evidence.
    - [HEADWORKS_VISUAL_PREVIEW.md](HEADWORKS_VISUAL_PREVIEW.md) — Current in-engine visuals, screenshots and verification.
    - [BUILDING_A_PLANT_SIMULATOR.md](BUILDING_A_PLANT_SIMULATOR.md) — End-to-end build/extend tutorial sequencing the reference docs.
    - [ADDING_A_PROCESS_UNIT.md](ADDING_A_PROCESS_UNIT.md) — Adding new units.
