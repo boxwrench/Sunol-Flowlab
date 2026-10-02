@@ -2,6 +2,31 @@ extends "res://addons/gut/test.gd"
 
 const ADAPTER_SCRIPT = preload("res://scripts/presentation/headworks/headworks_presentation_adapter.gd")
 
+func test_lake_custom_scene_preserves_snapshot_level_mapping() -> void:
+	var map := PresentationMapHandler.load_map("res://config/plants/phase3_headworks/presentation_map.json")
+	var lake_path := "res://scenes/process_units/reservoirs/lake_reservoir.tscn"
+	for entry in map.units:
+		if entry.unit_id in ["RESERVOIR_01", "RESERVOIR_02"]:
+			assert_eq(entry.mesh_path, lake_path, "Both source reservoirs use the explicit lake scene")
+	var visual := HeadworksUnitVisual.new()
+	add_child_autofree(visual)
+	visual.configure({"unit_id": "RESERVOIR_01", "display_name": "Source Reservoir 1",
+		"type": "StorageUnit", "maximum_volume_m3": 1000.0, "max_level_m": 10.0}, {"mesh_path": lake_path})
+	assert_true(visual._lake_visual is HeadworksLakeVisual)
+	assert_eq(visual._walls.size(), 0, "Lake shores must not have concrete tank walls")
+	assert_true(visual._water_mesh.mesh is ArrayMesh)
+	var previous_surface := -1.0
+	for level in [0.0, 2.0, 5.0, 10.0]:
+		var snapshot := {"level_m": level, "in_service": true}
+		var original := snapshot.duplicate(true)
+		visual.apply_snapshot(snapshot)
+		assert_eq_deep(snapshot, original)
+		assert_eq(visual.get_last_level_m(), level)
+		assert_gte(visual._water_mesh.position.y, previous_surface)
+		previous_surface = visual._water_mesh.position.y
+		assert_eq(visual._water_mesh.visible, level > 0.0)
+	assert_almost_eq(visual._water_mesh.position.y, 1.50, 1e-6)
+
 func test_open_basin_water_mapping_is_monotone_and_snapshot_is_unchanged() -> void:
 	var visual := HeadworksUnitVisual.new()
 	add_child_autofree(visual)

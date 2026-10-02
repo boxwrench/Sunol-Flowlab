@@ -11,9 +11,11 @@ This pass is not WP4.7 and does not close the Phase 3 / WP4.1 audit gate.
 
 ## Delivered
 
-- A compact site with two raw-water reservoirs, five open basins and the applied channel.
+- A compact site with two lake-like raw-water reservoirs, five open basins and the applied channel.
   Native Godot meshes form concrete walls, access bridges and simple railings; there are
-  no new third-party downloads or runtime asset dependencies.
+  no new third-party downloads or runtime asset dependencies. Reservoirs use irregular
+  earth banks, exposed soil and shore rocks instead of concrete tank walls. The site apron
+  stops beside the lakes; their drawing is illustrative and leaves the storage model intact.
 - Static operations buildings, service road, trees, hills and a scenic river. These are
   illustrative context, not additional modeled process units or connected water bodies.
 - Snapshot-driven water surfaces, levels, offline labels and flow bars. Display scales
@@ -104,3 +106,38 @@ Existing shutdown diagnostics remain: the scene reports 129 ObjectDB instances a
 6 resources in use at exit; the first full run reports 4,937 instances and 6 resources.
 The added main-scene integration test instantiates another production context, exposing
 the existing cleanup issue again. This task does not resolve that lifecycle limitation.
+
+## Lake-reservoir correction
+
+The user clarified that the source reservoirs are lakes. The explicit custom scene
+`scenes/process_units/reservoirs/lake_reservoir.tscn` uses
+`scripts/presentation/headworks/headworks_lake_visual.gd` for static terrain and water
+mesh creation. The common `HeadworksUnitVisual` adapter remains the only snapshot-level
+mapping authority; the new geometry class does not read the engine or calculate volume.
+Existing `mesh_path` fields select this scene for both reservoirs, so this behavior does
+not depend on unit-ID substrings or capacity heuristics. No schema fields changed.
+
+After the final shoreline-height adjustment, the presentation subset executed:
+
+```text
+Scripts               2
+Tests                 9
+Passing Tests         9
+Asserts              92
+Time              0.496s
+Verified 2 of 2 test scripts; Godot exit status 0.
+```
+
+Collected 9, passed 9, failed 0. The production lake adapter is swept from dry to full,
+its water position is monotone, both reservoir placements select the lake scene, and
+snapshot inputs are unchanged. Updated graphical captures saved at ticks 120 and 200;
+viewport picking still passed. Visual review caught and corrected triangle winding and
+water extending outside the banks before delivery. Config validation accepted all 17
+plant JSON files and rejected all 6 invalid fixtures, exit 0. These checks supplement
+the full regression run; the 109-test record above is the earlier visual-pass baseline.
+
+The expanded full regression run, before the final shoreline-height adjustment, returned
+exit 0 with 34 scripts, 110 collected, 110 passed, 0 failed, 513,421 asserts and 170.195 s.
+It included the same 100k-tick, replay, conservation, nonnegative-storage and parity checks.
+The final geometry adjustment was then verified by the 9-test subset and graphical
+captures above; CI executes the complete suite again on the published correction.

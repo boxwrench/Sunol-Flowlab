@@ -8,11 +8,11 @@ func _ready() -> void:
     var pine := _material(Color("365c45"))
     var trunk := _material(Color("76614b"))
     _box("SiteLand", Vector3(100, 2, 78), Vector3(0, -1.4, 0), grass)
-    _box("PlantApron", Vector3(78, 0.3, 49), Vector3(-1, -0.15, 0), concrete)
+    _box("PlantApron", Vector3(55, 0.3, 49), Vector3(10, -0.15, 0), concrete)
     _box("ServiceRoad", Vector3(82, 0.12, 5), Vector3(-1, 0.02, 28), asphalt)
     for x in range(-38, 39, 8):
         _box("RoadMark", Vector3(3, 0.03, 0.15), Vector3(x, 0.09, 28), concrete)
-    _building(Vector3(-15, 0, -19), Vector3(13, 6, 7), concrete)
+    _building(Vector3(-7, 0, -19), Vector3(13, 6, 7), concrete)
     _building(Vector3(-12, 0, 18), Vector3(9, 3.5, 5), concrete)
     var river := _material(Color("459ab1"))
     _box("ScenicRiver", Vector3(180, 0.1, 12), Vector3(0, -0.4, -45), river)

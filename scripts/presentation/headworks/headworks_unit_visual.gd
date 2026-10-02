@@ -26,6 +26,7 @@ var _fill_ratio: float = 0.0
 var _last_level_m: float = 0.0
 var _walls: Array[MeshInstance3D] = []
 var _selection_mesh: MeshInstance3D = null
+var _lake_visual: HeadworksLakeVisual = null
 
 func configure(definition: Dictionary, placement: Dictionary) -> void:
 	unit_id = StringName(definition.get("unit_id", ""))
@@ -46,7 +47,7 @@ func apply_snapshot(unit_snap: Dictionary) -> void:
 	_last_level_m = float(unit_snap.get("level_m", 0.0))
 	_fill_ratio = 0.0
 
-	if _body_mesh != null:
+	if _body_mesh != null and _lake_visual == null:
 		var body_material: StandardMaterial3D = _body_mesh.get_active_material(0) as StandardMaterial3D
 		if body_material != null:
 			body_material.albedo_color = _body_color(in_service)
@@ -62,7 +63,10 @@ func apply_snapshot(unit_snap: Dictionary) -> void:
 			var water_mesh: BoxMesh = _water_mesh.mesh as BoxMesh
 			if water_mesh != null:
 				water_mesh.size = Vector3(_size.x - 0.45, water_height, _size.z - 0.45)
-			_water_mesh.position = Vector3(0.0, (water_height * 0.5) + 0.05, 0.0)
+			if _lake_visual != null:
+				_water_mesh.position.y = water_height + 0.05
+			else:
+				_water_mesh.position = Vector3(0.0, (water_height * 0.5) + 0.05, 0.0)
 			var water_material: StandardMaterial3D = _water_mesh.get_active_material(0) as StandardMaterial3D
 			if water_material != null:
 				water_material.albedo_color = (Color("42b9cd") if in_service else Color("7c9297")).srgb_to_linear()
@@ -86,6 +90,7 @@ func get_last_level_m() -> float:
 
 func _build_visual() -> void:
 	_walls.clear()
+	_lake_visual = null
 	for child in get_children():
 		child.queue_free()
 
@@ -96,6 +101,9 @@ func _build_visual() -> void:
 			instance.name = "CustomMesh"
 			add_child(instance)
 			instance.scale = mesh_scale_m
+			if instance is HeadworksLakeVisual:
+				_lake_visual = instance
+				_size = HeadworksLakeVisual.VISUAL_SIZE
 			_body_mesh = _find_first_mesh(instance)
 		else:
 			_body_mesh = null
@@ -114,11 +122,14 @@ func _build_visual() -> void:
 		add_child(_body_mesh)
 
 	if unit_type == "StorageUnit":
-		_water_mesh = MeshInstance3D.new()
-		_water_mesh.mesh = BoxMesh.new()
+		if _lake_visual != null:
+			_water_mesh = _lake_visual.water_mesh
+		else:
+			_water_mesh = MeshInstance3D.new()
+			_water_mesh.mesh = BoxMesh.new()
+			add_child(_water_mesh)
 		_water_mesh.visible = false
-		_water_mesh.set_surface_override_material(0, _make_water_material())
-		add_child(_water_mesh)
+		_water_mesh.material_override = _make_water_material()
 	else:
 		_water_mesh = null
 
@@ -130,7 +141,7 @@ func _build_visual() -> void:
 	_label.outline_modulate = Color("edf2e9")
 	_label.outline_size = 3
 	var label_height := _size.y + 0.75
-	if mesh_path != "":
+	if mesh_path != "" and _lake_visual == null:
 		label_height = max(mesh_scale_m.y * 3.0, 3.0)
 	_label.position = Vector3(0.0, label_height, 0.0)
 	_label.text = display_name

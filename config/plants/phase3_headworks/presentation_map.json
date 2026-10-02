@@ -3,23 +3,25 @@
   "units": [
     {
       "unit_id": "EXTERNAL_SOURCE_01",
-      "position_m": [-38, 0, -13],
+      "position_m": [-47, 0, -16],
       "rotation_deg": [0.0, 0.0, 0.0]
     },
     {
       "unit_id": "EXTERNAL_SOURCE_02",
-      "position_m": [-38, 0, 7],
+      "position_m": [-47, 0, 12],
       "rotation_deg": [0.0, 0.0, 0.0]
     },
     {
       "unit_id": "RESERVOIR_01",
-      "position_m": [-26, 0, -13],
-      "rotation_deg": [0.0, 0.0, 0.0]
+      "position_m": [-30, 0, -16],
+      "rotation_deg": [0.0, 0.0, 0.0],
+      "mesh_path": "res://scenes/process_units/reservoirs/lake_reservoir.tscn"
     },
     {
       "unit_id": "RESERVOIR_02",
-      "position_m": [-26, 0, 7],
-      "rotation_deg": [0.0, 0.0, 0.0]
+      "position_m": [-30, 0, 12],
+      "rotation_deg": [0.0, 0.0, 0.0],
+      "mesh_path": "res://scenes/process_units/reservoirs/lake_reservoir.tscn"
     },
     {
       "unit_id": "MANIFOLD_01",
