@@ -12,31 +12,30 @@ and CI is green.
 | Phase 0 — Foundation | Clock, engine shell, tick pipeline, CI, base classes | ✅ Delivered |
 | Phase 1 — Single Storage Unit | Mass balance, configuration, snapshots, verification | ✅ Delivered |
 | Phase 2 — Three-Unit Sandbox | Connected flow and closed-loop level control | ✅ Delivered |
-| Phase 3 — Headworks + Sedimentation | Reservoirs through applied channel, availability, presentation | 🟨 Implemented; exit gate open |
+| Phase 3 — Headworks + Sedimentation | Reservoirs through applied channel, availability, presentation | ✅ Delivered; WP4.7 evidence recorded |
 | WP4.0 — Self-Regulating Hydraulics | `GRAVITY` mode and deterministic port iteration | ✅ Delivered |
-| WP4.1 — Headworks Gravity Migration | Convert and re-baseline `phase3_headworks` | 🟨 Implemented; closure verification remains |
+| WP4.1 — Headworks Gravity Migration | Convert and re-baseline `phase3_headworks` | ✅ Delivered; verified in WP4.7 |
 | WP4.2 — Align Docs with Reality | Archive labeling, README/INDEX, contracts, architecture restructure | ✅ Delivered |
 | WP4.3–WP4.4 — Audit Closure | Remove unsupported commanded and reverse flow | ✅ Delivered via PRs #6 and #7 |
 | WP4.5 — Startup + Alarms | Configuration-driven startup and visible configured alarms | ✅ Delivered via PR #9 |
 | WP4.6 — CI Script Counting | Derived counts and defensive shared GUT runner | ✅ Delivered; see verification record |
-| WP4.7 — Audit Closure | Independent milestone verification | ⬜ Next |
-| Phase 4a — Filtration + Clearwell | Twelve filters, clearwell, distribution and minimum control | ⛔ Blocked by WP4.7 |
+| WP4.7 — Audit Closure | Independent milestone verification | ✅ Delivered; see verification record |
+| Phase 4a — Filtration + Clearwell | Twelve filters, clearwell, distribution and minimum control | ⬜ Next: detailed plan, then build |
 | Phase 4b — Contact + Treated Water | CT basins, treated storage/demand, one supervisory loop | ⬜ Planned |
 
 ## Governing sequence
 
 The user-requested headworks visual preview is recorded in
 [HEADWORKS_VISUAL_PREVIEW.md](HEADWORKS_VISUAL_PREVIEW.md). It improves the current
-scene's geometry, camera and controls without adding process stages or closing WP4.7.
+scene's geometry, camera and controls without adding process stages. WP4.7 subsequently
+verified the shipped headworks, separately from that presentation pass.
 
 Build only what makes the next plant section visibly operable and hydraulically correct.
 A future capability enters active architecture only when the next playable milestone
 requires it or a concrete failing case proves the current solution insufficient.
 
-1. Complete WP4.7 (WP4.2–WP4.6 delivered).
-2. Close the Phase 3 and WP4.1 gate with recorded evidence.
-3. Author the detailed Phase 4a implementation plan.
-4. Build filters and clearwell only.
+1. Author the detailed Phase 4a implementation plan (WP4.2–WP4.7 delivered).
+2. Build filters and clearwell only.
 
 Do not begin another broad subsystem while the audit-closure gate is open.
 
@@ -143,6 +142,13 @@ startup, and alarms in the actual main scene. Record exact totals.
 CI on `main` is green; Phase 3 and WP4.1 are marked delivered; worktree is clean. If
 execution is unavailable, report exactly “Tests written but NOT executed — unverified”
 and leave the gate open.
+
+**Verification:** [WP4.7_VERIFICATION.md](WP4.7_VERIFICATION.md). Fresh production-main
+CI collected and passed 110 tests, zero failures, across all 34 scripts, including
+100k-tick soak/churn, replay, conservation, no negative storage and parity. All four
+main-scene captures (startup, high alarm, clearing/all-five outage, valid empty-start
+low alarm) were executed and inspected. Config validation accepted 17 JSON files and
+rejected 6 invalid fixtures. Delivery requires green CI after the evidence lands on main.
 
 ## Phase 4a — Filters and clearwell
 

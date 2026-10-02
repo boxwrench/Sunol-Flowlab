@@ -4,14 +4,13 @@ This document describes the automation rules used by the drinking water plant sa
 
 ## Control modes
 
-Every controllable asset supports four modes:
+The current controller contract supports two modes:
 
 - **MANUAL** – the user directly sets valve positions, flow setpoints or equipment states.  Automatic controllers are bypassed.
 - **AUTO** – controllers compute commands based on measured variables and setpoints.
-- **FORCED** – a test or scenario overrides normal logic (e.g., to simulate a stuck valve).
-- **FAILED** – the asset cannot follow its commands and remains at its failure state.
-
-Controllers must respect the asset's mode.  In MANUAL or FORCED modes, controllers should not override the user command.
+Controllers must respect their configured mode. In MANUAL, they do not override the
+operator's actuator command. FORCED/FAILED controller modes are planned, not accepted
+by the current schemas or validator; actuator failure state is a separate existing contract.
 
 ## Controller execution order
 
@@ -106,5 +105,4 @@ Although conventionally named a "proportional" controller, the velocity-form imp
 
 When pairing controllers with physical actuators:
 - **Reverse-acting vs. Direct-acting**: With a positive gain, the error formula `setpoint - measured_level` is reverse-acting (output increases when PV is below setpoint). It must only target inflow control elements (e.g., inflow valves) to be stable. Targeting an outflow control element with a positive gain results in positive feedback and loop instability.
-
 

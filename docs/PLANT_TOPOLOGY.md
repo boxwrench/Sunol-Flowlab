@@ -28,10 +28,10 @@ margin over this basis; capacities are intentionally NOT uniform.
 violation of this rule (trunk 12 vs an original AC demand of 15); `cf64d5e` restored it by
 setting the demand to 10.
 
-**Non-self-regulation caveat:** the applied-channel demand is a fixed-max *unactuated* link,
-so the Phase 3 plant has no self-regulation — this is what makes the level loops hard (see
-Phase 3.5 / WP4.0, GRAVITY flow mode, in `ROADMAP.md`). Record any change to this design
-choice here.
+**Current flow basis:** WP4.1 migrated the headworks links to `GRAVITY`; the unactuated
+applied-channel outlet is capacity-limited at 10 m³/s and self-regulates on head. The
+former RESTRICTED plant's fixed outflow and lack of self-regulation are historical.
+See WP4.0/WP4.1 in `ROADMAP.md`; no pressure-network solver is implied.
 
 ## Process‑flow diagram
 

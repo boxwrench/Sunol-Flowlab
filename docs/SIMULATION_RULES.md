@@ -25,11 +25,14 @@ Where all terms have been converted to consistent units (e.g., cubic metres).  U
 
 ## Flow calculation modes
 
-Each link between units specifies one of three modes:
+Each link specifies one of two supported modes:
 
-1. **Commanded flow** – the controller requests a specific flow; actual flow is the minimum of the request, available supply and capacity.
-2. **Restricted flow** – actual flow = `max_flow × valve_opening`.
-3. **Simple gravity flow** – actual flow = `flow_coefficient × valve_opening × sqrt(head_difference)`.  Use this only where elevation differences matter.
+1. **Restricted flow** – request = `max_flow_m3s × valve_opening`.
+2. **Simple gravity flow** – request = `max_flow_m3s × valve_opening × sqrt(max(head_difference, 0) / design_head_m)`, bounded by link capacity. Negative head produces zero forward flow.
+
+The solver grants requests subject to storage and flow constraints below. `COMMANDED`
+is not implemented or accepted; WP4.3 removed the former placeholder. There is no
+configured `flow_coefficient` field.
 
 ## Flow constraints
 
@@ -197,7 +200,6 @@ A floc/sed basin's availability (in-service / out-of-service status) is controll
    - `surface_area_m2` $\le 1.0\text{ m}^2$
    - `maximum_volume_m3` $\le 10.0\text{ m}^3$
    - `min_operating_level_m` $= 0.0\text{ m}$
-
 
 
 
